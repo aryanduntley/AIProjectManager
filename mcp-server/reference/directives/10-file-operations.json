@@ -5,7 +5,7 @@
     "priority": "high",
     "frequency": "file-modification",
     "version": "1.0.0",
-    "humanReadable": "docs/directives/10-file-operations.md"
+    "humanReadable": "../docs/directives/10-file-operations.md"
   },
   "triggers": [
     "File modification",
@@ -190,7 +190,7 @@
     "commonIssues": {
       "lineLimitExceeded": {
         "basicResponse": "File [FILE] exceeds line limit ([N]/[LIMIT]). Modularizing into logical components: [COMPONENT_LIST]",
-        "escalationTrigger": "IF modularization complex or affects multiple files → ESCALATE to docs/directives/10-file-operations.md for advanced modularization strategies"
+        "escalationTrigger": "IF modularization complex or affects multiple files → ESCALATE to ../docs/directives/10-file-operations.md for advanced modularization strategies"
       },
       "sharedFileModification": {
         "basicResponse": "Modifying shared file [FILE]. Impact assessment: affects themes [THEME_LIST]. Proceeding with cross-theme validation.",
@@ -205,6 +205,6 @@
         "escalationTrigger": "IF README updates affect multiple directories or complex documentation → ESCALATE for comprehensive documentation protocols"
       }
     },
-    "escalationAwareness": "WHEN file operations encounter complexity beyond basic handling → ESCALATE to docs/directives/10-file-operations.md for comprehensive file management protocols"
+    "escalationAwareness": "WHEN file operations encounter complexity beyond basic handling → ESCALATE to ../docs/directives/10-file-operations.md for comprehensive file management protocols"
   }
 }

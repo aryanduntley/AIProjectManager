@@ -5,7 +5,7 @@
     "priority": "critical",
     "frequency": "session-start",
     "version": "1.0.0",
-    "humanReadable": "docs/directives/01-system-initialization.md"
+    "humanReadable": "../docs/directives/01-system-initialization.md"
   },
   "triggers": [
     "MCP server startup",

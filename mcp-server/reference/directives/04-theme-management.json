@@ -5,7 +5,7 @@
     "priority": "high",
     "frequency": "project-setup,ongoing",
     "version": "1.0.0",
-    "humanReadable": "docs/directives/04-theme-management.md"
+    "humanReadable": "../docs/directives/04-theme-management.md"
   },
   "triggers": [
     "Theme discovery",
@@ -250,7 +250,7 @@
     "commonIssues": {
       "themeConflicts": {
         "basicResponse": "Theme overlap detected between [THEME1] and [THEME2]. Shared files: [FILE_LIST]. Proceeding with conflict resolution.",
-        "escalationTrigger": "IF theme conflicts complex or affect multiple workflows → ESCALATE to docs/directives/04-theme-management.md for advanced conflict resolution"
+        "escalationTrigger": "IF theme conflicts complex or affect multiple workflows → ESCALATE to ../docs/directives/04-theme-management.md for advanced conflict resolution"
       },
       "autoDiscoveryUncertain": {
         "basicResponse": "Theme auto-discovery found [N] potential themes. Requires user review before proceeding.",
@@ -261,6 +261,6 @@
         "escalationTrigger": "IF shared file management affects multiple workflows → ESCALATE for detailed shared file strategies"
       }
     },
-    "escalationAwareness": "WHEN theme management encounters complexity beyond basic handling → ESCALATE to docs/directives/04-theme-management.md for comprehensive theme management protocols"
+    "escalationAwareness": "WHEN theme management encounters complexity beyond basic handling → ESCALATE to ../docs/directives/04-theme-management.md for comprehensive theme management protocols"
   }
 }

@@ -5,7 +5,7 @@
     "priority": "high",
     "frequency": "session-start",
     "version": "1.0.0",
-    "humanReadable": "docs/directives/03-session-management.md"
+    "humanReadable": "../docs/directives/03-session-management.md"
   },
   "triggers": [
     "Session start",
@@ -408,7 +408,7 @@
     "commonEdgeCases": {
       "corruptedFiles": {
         "basicResponse": "Notify user: 'Project file [FILE] appears corrupted. Options: [1] Restore from backup [2] Rebuild from database [3] Request manual repair'",
-        "escalationTrigger": "IF corruption complex or affects multiple files → ESCALATE to docs/directives/03-session-management.md for comprehensive recovery procedures"
+        "escalationTrigger": "IF corruption complex or affects multiple files → ESCALATE to ../docs/directives/03-session-management.md for comprehensive recovery procedures"
       },
       "databaseConnectionFailed": {
         "basicResponse": "Inform user: 'Database unavailable. Running in file-only mode with limited session persistence.'",
@@ -423,6 +423,6 @@
         "escalationTrigger": "IF conflicts affect multiple tasks or critical workflows → ESCALATE for detailed conflict resolution procedures"
       }
     },
-    "generalEscalationTrigger": "WHEN edge case handling unclear or insufficient → ESCALATE to docs/directives/03-session-management.md for comprehensive edge case protocols"
+    "generalEscalationTrigger": "WHEN edge case handling unclear or insufficient → ESCALATE to ../docs/directives/03-session-management.md for comprehensive edge case protocols"
   }
 }

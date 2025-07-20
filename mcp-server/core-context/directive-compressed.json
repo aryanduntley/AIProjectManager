@@ -212,7 +212,7 @@
     "dataIntegrity": "Cross-reference consistency, file existence validation, dependency checking"
   },
   "directiveContextEscalation": {
-    "escalationChain": "directive-compressed.json \u2192 reference/directives/*.json \u2192 docs/directives/*.md",
+    "escalationChain": "directive-compressed.json \u2192 reference/directives/*.json \u2192 ../docs/directives/*.md",
     "escalationTriggers": [
       "Ambiguity in directive interpretation",
       "First-time complex workflow execution", 
@@ -224,7 +224,7 @@
     "escalationProtocol": {
       "level1Compressed": "Always start with directive-compressed.json for basic workflow understanding",
       "level2JSON": "Escalate to reference/directives/{directive}.json for detailed implementation specifications when compressed context insufficient",
-      "level3MD": "Escalate to docs/directives/{directive}.md for comprehensive context, examples, user communication protocols, and edge case handling",
+      "level3MD": "Escalate to ../docs/directives/{directive}.md for comprehensive context, examples, user communication protocols, and edge case handling",
       "automaticEscalation": "AI can escalate to JSON level without user approval when facing ambiguity",
       "userApprovalRequired": "AI should request permission before escalating to MD level for complex analysis"
     },

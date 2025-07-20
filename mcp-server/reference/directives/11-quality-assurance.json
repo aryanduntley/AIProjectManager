@@ -5,7 +5,7 @@
     "priority": "critical",
     "frequency": "continuous",
     "version": "1.0.0",
-    "humanReadable": "docs/directives/11-quality-assurance.md"
+    "humanReadable": "../docs/directives/11-quality-assurance.md"
   },
   "triggers": [
     "Code modification",

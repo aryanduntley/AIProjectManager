@@ -5,7 +5,7 @@
     "priority": "critical",
     "frequency": "continuous",
     "version": "1.0.0",
-    "humanReadable": "docs/directives/12-user-interaction.md"
+    "humanReadable": "../docs/directives/12-user-interaction.md"
   },
   "triggers": [
     "User approval required",
@@ -81,7 +81,7 @@
         "Configuration changes with complex consequences",
         "First-time complex workflow execution"
       ],
-      "escalationProtocol": "WHEN communication unclear or user confused → ESCALATE to docs/directives/12-user-interaction.md for comprehensive communication protocols",
+      "escalationProtocol": "WHEN communication unclear or user confused → ESCALATE to ../docs/directives/12-user-interaction.md for comprehensive communication protocols",
       "steps": [
         {
           "action": "assessCommunicationNeeds",

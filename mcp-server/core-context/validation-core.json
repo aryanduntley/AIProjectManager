@@ -88,7 +88,7 @@
       "escalationSequence": [
         "Check directive-compressed.json for basic workflow",
         "Escalate to reference/directives/{directive}.json for detailed specifications",
-        "If still ambiguous, escalate to docs/directives/{directive}.md for comprehensive context"
+        "If still ambiguous, escalate to ../docs/directives/{directive}.md for comprehensive context"
       ],
       "automaticEscalation": "Compressed → JSON escalation automatic for workflow clarification",
       "approvalRequired": "JSON → MD escalation requires user consent for complex analysis",

@@ -5,7 +5,7 @@
     "priority": "high",
     "frequency": "continuous",
     "version": "1.0.0",
-    "humanReadable": "docs/directives/13-metadata-management.md"
+    "humanReadable": "../docs/directives/13-metadata-management.md"
   },
   "triggers": [
     "ProjectBlueprint creation/update",

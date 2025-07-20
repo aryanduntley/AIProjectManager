@@ -5,7 +5,7 @@
     "priority": "high",
     "frequency": "per-task",
     "version": "1.0.0",
-    "humanReadable": "docs/directives/05-context-loading.md"
+    "humanReadable": "../docs/directives/05-context-loading.md"
   },
   "triggers": [
     "Task initialization",
@@ -234,7 +234,7 @@
     "commonEdgeCases": {
       "themeNotFound": {
         "basicResponse": "Warning: 'Theme [THEME] not found. Options: [1] Use project-wide context [2] Create missing theme [3] Select alternative theme'",
-        "escalationTrigger": "IF theme issues affect multiple tasks → ESCALATE to docs/directives/05-context-loading.md for theme resolution procedures"
+        "escalationTrigger": "IF theme issues affect multiple tasks → ESCALATE to ../docs/directives/05-context-loading.md for theme resolution procedures"
       },
       "insufficientContext": {
         "basicResponse": "Context insufficient for task. Options: [1] Escalate to theme-expanded [2] Request specific files [3] Switch to project-wide context'",
@@ -249,6 +249,6 @@
         "escalationTrigger": "IF theme conflicts complex or affect workflow → ESCALATE for conflict resolution protocols"
       }
     },
-    "generalEscalationTrigger": "WHEN context loading unclear or problematic → ESCALATE to docs/directives/05-context-loading.md for comprehensive context management protocols"
+    "generalEscalationTrigger": "WHEN context loading unclear or problematic → ESCALATE to ../docs/directives/05-context-loading.md for comprehensive context management protocols"
   }
 }

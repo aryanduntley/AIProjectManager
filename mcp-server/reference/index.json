@@ -6,7 +6,7 @@
     "description": "Flow-based index of AI Project Manager directives for MCP workflow navigation",
     "totalDirectives": 14,
     "flowPhases": 6,
-    "humanReadableDocs": "docs/directives/",
+    "humanReadableDocs": "../docs/directives/",
     "organizationReference": "reference/organization.json"
   },
   "projectLifecycleFlow": {

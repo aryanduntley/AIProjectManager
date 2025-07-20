@@ -5,7 +5,7 @@
     "priority": "high",
     "frequency": "ongoing",
     "version": "1.0.0",
-    "humanReadable": "docs/directives/06-task-management.md"
+    "humanReadable": "../docs/directives/06-task-management.md"
   },
   "triggers": [
     "Task creation",
@@ -121,7 +121,7 @@
             "sidequestCompletion": "AI MUST inform user: 'Sidequest completed: [TITLE]. Returning to main task [PARENT_TITLE]'",
             "limitExceededMessage": "AI MUST present: 'Sidequest limit reached ([N]/[MAX]). Available options:' followed by option list",
             "contextSwitching": "AI MUST announce: 'Switching to sidequest: [TITLE]. Main task context preserved.'",
-            "escalationTrigger": "IF user communication unclear or insufficient → ESCALATE to docs/directives/06-task-management.md for detailed communication protocols"
+            "escalationTrigger": "IF user communication unclear or insufficient → ESCALATE to ../docs/directives/06-task-management.md for detailed communication protocols"
           }
         }
       },

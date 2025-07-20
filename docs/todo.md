@@ -5,7 +5,7 @@ docs/README.md
 docs/organization.md
 reference/organization.json
 reference/index.json
-reference/templates/database/schema.sql
+mcp-server/database/schema.sql
 mcp-server/core/mcp_api.py
 mcp-server/core-context/directive-compressed.json
 directives human readable in docs/directives/ with index directives.json
@@ -29,3 +29,12 @@ review.
 Need database cleaning maintenance and backups.
 
 need project README
+
+mcp-server/core/mcp_api.py CONNOT BE RESOLVED:
+from mcp.server import Server
+from mcp.types import Tool, TextContent, CallToolRequest
+from pydantic import BaseModel
+
+ensure mcp-implementation plan is fully complete. mcp-server full code review.
+
+review directives and mcp flow regarding directives. Does it follow the instructions well end escalate directives/instructions context well.

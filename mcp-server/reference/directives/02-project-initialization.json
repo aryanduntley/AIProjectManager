@@ -5,7 +5,7 @@
     "priority": "critical",
     "frequency": "project-start",
     "version": "1.0.0",
-    "humanReadable": "docs/directives/02-project-initialization.md"
+    "humanReadable": "../docs/directives/02-project-initialization.md"
   },
   "triggers": [
     "New project creation",

@@ -5,7 +5,7 @@
     "priority": "high",
     "frequency": "milestone-based",
     "version": "1.0.0",
-    "humanReadable": "docs/directives/07-implementation-plans.md"
+    "humanReadable": "../docs/directives/07-implementation-plans.md"
   },
   "triggers": [
     "Milestone readiness",

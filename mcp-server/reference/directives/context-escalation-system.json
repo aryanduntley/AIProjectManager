@@ -29,7 +29,7 @@
       },
       "tier3": {
         "name": "Markdown Directives",
-        "files": "docs/directives/{directive-id}.md",
+        "files": "../docs/directives/{directive-id}.md",
         "purpose": "Comprehensive context with examples, edge cases, and communication protocols",
         "coverage": "100% of directive information",
         "usage": "Escalate for complex scenarios requiring user communication or edge case handling",

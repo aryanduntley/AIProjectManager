@@ -5,7 +5,7 @@
     "priority": "critical",
     "frequency": "ongoing",
     "version": "1.0.0",
-    "humanReadable": "docs/directives/08-project-management.md"
+    "humanReadable": "../docs/directives/08-project-management.md"
   },
   "triggers": [
     "Project initialization",
