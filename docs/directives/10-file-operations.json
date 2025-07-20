@@ -1,0 +1,237 @@
+{
+  "directive": "10-file-operations",
+  "title": "File Operations Directives",
+  "version": "1.0.0",
+  "priority": "high",
+  "purpose": "Handle file modifications, line limits, anti-placeholder protocols, and README management",
+  "triggers": ["File modification", "Code generation", "Line limit enforcement", "README updates"],
+  "sections": {
+    "line_limit_enforcement": {
+      "purpose": "Enforce maximum file line limits to prevent unwieldy files",
+      "config_key": "project.maxFileLineCount",
+      "default_value": 900,
+      "rules": [
+        "Read line limit from project.maxFileLineCount in config.json",
+        "Check line count after every file modification",
+        "If limit exceeded, modularize into logical functional groups",
+        "Create properly named module files",
+        "Update imports and references",
+        "Maintain proper linking system (index files)"
+      ],
+      "modularization_guidelines": {
+        "group_by": "function/responsibility",
+        "maintain": "clear naming conventions",
+        "preserve": "all functionality", 
+        "update": "all references",
+        "document": "modularization in README.md"
+      },
+      "required_actions": [
+        "Evaluate file line count after any code edit",
+        "Modularize content into smaller logically grouped files if limit exceeded",
+        "Ensure modularized files are properly named and referenced"
+      ]
+    },
+    "anti_placeholder_protocol": {
+      "purpose": "Never use placeholder text or truncated outputs",
+      "config_key": "project.avoidPlaceholders",
+      "default_value": true,
+      "prohibited_patterns": [
+        "...continued",
+        "rest of file unchanged",
+        "// TODO: implement this",
+        "/* placeholder */",
+        "Truncated code blocks",
+        "Incomplete implementations without explicit user permission"
+      ],
+      "required_behavior": [
+        "Always output complete implementations when project.avoidPlaceholders is true",
+        "If file too large, modularize before outputting",
+        "If scope unclear, ask for clarification",
+        "No speculative summarization",
+        "Full content required unless user explicitly allows partial output",
+        "Track any TODO items in Placeholders/todos.jsonl for later resolution"
+      ],
+      "avoidance_strategies": [
+        "Avoid partial edits - no placeholder markers",
+        "Modularize if file exceeds limit post-edit",
+        "Evaluate full content capability before editing",
+        "No speculative summarization unless requested"
+      ],
+      "common_causes": [
+        "Context window misjudgment",
+        "Legacy training behavior",
+        "False efficiency heuristic",
+        "Internal tooling mismatch",
+        "Human training oversight"
+      ]
+    },
+    "file_modification_protocol": {
+      "purpose": "Handle file operations with proper validation and backup",
+      "pre_modification_checks": [
+        "Verify file exists and is accessible",
+        "Check if file is shared across themes",
+        "Assess impact on related themes",
+        "Review README context for directory",
+        "Validate against line limits",
+        "Consider backup if destructive operation"
+      ],
+      "shared_file_handling": [
+        "Identify all themes sharing the file",
+        "Read READMEs for affected themes",
+        "Assess cross-theme impact",
+        "Document modifications in ai-decisions.jsonl",
+        "Note potential impacts in noteworthy.json",
+        "Update theme READMEs if necessary"
+      ]
+    },
+    "global_dependencies_access": {
+      "purpose": "Define always-accessible files regardless of theme context",
+      "always_accessible_files": {
+        "project_root": [
+          "package.json",
+          "requirements.txt",
+          "Cargo.toml",
+          "composer.json",
+          ".env",
+          ".env.local",
+          "config.json",
+          "settings.json",
+          "Dockerfile",
+          "docker-compose.yml",
+          "Makefile",
+          "*.config.js",
+          "README.md",
+          "LICENSE",
+          "CHANGELOG.md",
+          ".gitignore",
+          ".gitattributes"
+        ],
+        "source_root": [
+          "index.js",
+          "main.ts",
+          "app.js",
+          "App.tsx",
+          "config/",
+          "constants/",
+          "types/",
+          "utils/",
+          "router.js",
+          "store.js"
+        ]
+      },
+      "access_protocol": [
+        "Files available for assessment when contextually relevant",
+        "AI determines necessity using standard evaluation methods",
+        "No forced loading - access only when needed",
+        "Global files accessible from any theme context",
+        "No theme boundaries for global dependencies",
+        "Modification allowed when contextually appropriate"
+      ],
+      "shared_file_impact_assessment": {
+        "process": [
+          "Identify affected themes from sharedWith array",
+          "Quick impact review by reading README.md files for affected themes",
+          "Conflict assessment - evaluate if changes might break other functionality",
+          "Proceed with awareness considering cross-theme implications"
+        ],
+        "documentation_requirements": [
+          "Log cross-theme modifications in ai-decisions.jsonl",
+          "Update affected theme README files if necessary"
+        ],
+        "modification_guidelines": [
+          "Changes are contextually appropriate for current task",
+          "Modifications align with project-wide standards",
+          "Updates improve overall project consistency"
+        ],
+        "assessment_criteria": [
+          "Will this change affect other themes negatively?",
+          "Are there alternative approaches that minimize cross-theme impact?",
+          "Is this the appropriate time to make this change?"
+        ]
+      }
+    },
+    "version_control_integration": {
+      "purpose": "Work harmoniously with version control systems",
+      "awareness_requirements": [
+        "Respect .gitignore and similar patterns",
+        "Document significant changes in appropriate commit contexts",
+        "Consider impact on code reviews",
+        "Maintain clean file states for commits",
+        "Avoid creating conflicts with development workflows"
+      ]
+    }
+  },
+  "config_settings": {
+    "project.maxFileLineCount": {
+      "default": 900,
+      "purpose": "Maximum number of lines allowed in a single code file",
+      "enforcement": "Check after every file modification"
+    },
+    "project.avoidPlaceholders": {
+      "default": true,
+      "purpose": "Prevent placeholder text or truncated outputs",
+      "enforcement": "Always output complete implementations"
+    },
+    "project.autoModularize": {
+      "purpose": "Automatically modularize files exceeding line limits",
+      "trigger": "Line count exceeded"
+    },
+    "project.backwardsCompatibility": {
+      "purpose": "Maintain backwards compatibility during modifications",
+      "enforcement": "Consider existing integrations"
+    },
+    "project.productionMode": {
+      "purpose": "Enable production-ready file handling",
+      "enforcement": "Stricter validation and testing"
+    }
+  },
+  "integrations": [
+    "04-theme-management",
+    "11-quality-assurance", 
+    "05-context-loading",
+    "06-task-management"
+  ],
+  "dependencies": [
+    "Project files",
+    "README.md files",
+    "Theme validation",
+    "UserSettings/config.json",
+    "ai-decisions.jsonl",
+    "noteworthy.json",
+    "Placeholders/todos.jsonl"
+  ],
+  "key_operations": [
+    "Line count checking",
+    "Modularization",
+    "Placeholder avoidance",
+    "README updates",
+    "Cross-theme impact assessment",
+    "Version control integration"
+  ],
+  "frequency": "file-modification",
+  "validation_rules": [
+    "All file modifications must respect line limits",
+    "No placeholder text unless explicitly approved by user",
+    "Shared files must be assessed for cross-theme impact",
+    "README files must be updated when directory structure changes",
+    "All modularization must maintain functional integrity"
+  ],
+  "documentation_format": {
+    "shared_file_modification": {
+      "timestamp": "ISO 8601 format",
+      "type": "shared-file-modification",
+      "file": "file path",
+      "sharedWith": "array of theme names",
+      "changes": "description of changes made",
+      "impactAssessment": "impact level and description",
+      "themeReadmeReviewed": "array of reviewed theme READMEs"
+    }
+  },
+  "enforcement_triggers": [
+    "Before any file write operation",
+    "After any file modification",
+    "During code generation",
+    "When creating new files",
+    "During refactoring operations"
+  ]
+}

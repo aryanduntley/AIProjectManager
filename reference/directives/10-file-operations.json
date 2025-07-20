@@ -1,0 +1,188 @@
+{
+  "metadata": {
+    "id": "10-file-operations",
+    "title": "File Operations Directives",
+    "priority": "high",
+    "frequency": "file-modification",
+    "version": "1.0.0",
+    "humanReadable": "docs/directives/10-file-operations.md"
+  },
+  "triggers": [
+    "File modification",
+    "Code generation",
+    "Line limit enforcement",
+    "README updates"
+  ],
+  "workflows": {
+    "lineLimitEnforcement": {
+      "directive": "Enforce maximum file line limits to prevent unwieldy files",
+      "rules": [
+        "Read line limit from project.maxFileLineCount in config.json",
+        "Check line count after every file modification",
+        "If limit exceeded, modularize into logical functional groups",
+        "Create properly named module files",
+        "Update imports and references",
+        "Maintain proper linking system (index files)"
+      ],
+      "modularizationGuidelines": {
+        "groupBy": "function/responsibility",
+        "maintain": "clear naming conventions",
+        "preserve": "all functionality",
+        "update": "all references",
+        "document": "modularization in README.md"
+      }
+    },
+    "antiPlaceholderProtocol": {
+      "directive": "Never use placeholder text or truncated outputs",
+      "prohibited": [
+        "...continued",
+        "rest of file unchanged",
+        "// TODO: implement this",
+        "/* placeholder */",
+        "Truncated code blocks",
+        "Incomplete implementations without explicit user permission"
+      ],
+      "requiredBehavior": [
+        "Always output complete implementations when project.avoidPlaceholders is true",
+        "If file too large, modularize before outputting",
+        "If scope unclear, ask for clarification",
+        "No speculative summarization",
+        "Full content required unless user explicitly allows partial output",
+        "Track any TODO items in Placeholders/todos.jsonl for later resolution"
+      ]
+    },
+    "fileModificationProtocol": {
+      "directive": "Handle file operations with proper validation and backup",
+      "preModificationChecks": [
+        "Verify file exists and is accessible",
+        "Check if file is shared across themes",
+        "Assess impact on related themes",
+        "Review README context for directory",
+        "Validate against line limits",
+        "Consider backup if destructive operation"
+      ],
+      "sharedFileHandling": [
+        "Identify all themes sharing the file",
+        "Read READMEs for affected themes",
+        "Assess cross-theme impact",
+        "Document modifications in noteworthy.json",
+        "Note potential impacts in noteworthy.json",
+        "Update theme READMEs if necessary"
+      ]
+    },
+    "globalDependenciesAccess": {
+      "directive": "Define always-accessible files regardless of theme context",
+      "alwaysAccessible": {
+        "projectRoot": [
+          "package.json", "requirements.txt", "Cargo.toml", "composer.json",
+          ".env", ".env.local", "config.json", "settings.json",
+          "Dockerfile", "docker-compose.yml", "Makefile", "*.config.js",
+          "README.md", "LICENSE", "CHANGELOG.md", ".gitignore", ".gitattributes"
+        ],
+        "sourceRoot": [
+          "index.js", "main.ts", "app.js", "App.tsx",
+          "config/", "constants/", "types/", "utils/", "router.js", "store.js"
+        ]
+      },
+      "accessProtocol": [
+        "Files available for assessment when contextually relevant",
+        "AI determines necessity using standard evaluation methods",
+        "No forced loading - access only when needed",
+        "Global files accessible from any theme context",
+        "No theme boundaries for global dependencies",
+        "Modification allowed when contextually appropriate"
+      ]
+    },
+    "jsonMinificationProtocol": {
+      "directive": "Control JSON file formatting based on configuration",
+      "rules": [
+        "Read minification setting from project.minifyJson in config.json",
+        "Apply minification rules when writing organizational JSON files",
+        "Preserve readability when minification is disabled"
+      ],
+      "minifiableFiles": [
+        "All organizational JSON files in projectManagement/ directory",
+        "Task files: Tasks/active/*.json, Tasks/sidequests/*.json",
+        "Theme files: Themes/*.json",
+        "Configuration files: UserSettings/config.json",
+        "Template files: reference/templates/*.json",
+        "Directive files: reference/directives/*.json"
+      ],
+      "nonMinifiableFiles": [
+        "Logs/noteworthy.json (session-specific items)",
+        "Log files: Logs/noteworthy.json",
+        "Archive files (maintain original format)",
+        "User-edited configuration files (preserve user formatting)"
+      ],
+      "minificationBehavior": {
+        "whenTrue": "Use JSON.stringify() with no spacing",
+        "whenFalse": "Use JSON.stringify() with 2-space indentation",
+        "always": "Validate JSON structure before writing",
+        "preserve": "All data content regardless of formatting"
+      },
+      "implementationExample": "const minifyJson = config.project.minifyJson || true; const jsonOutput = minifyJson ? JSON.stringify(data) : JSON.stringify(data, null, 2);",
+      "benefits": [
+        "Reduced file sizes for organizational data",
+        "Faster parsing and loading times",
+        "Configurable based on user preference",
+        "Maintains data integrity"
+      ]
+    }
+  },
+  "configSettings": {
+    "project.maxFileLineCount": {
+      "default": 900,
+      "type": "number",
+      "description": "Maximum number of lines allowed in a single code file"
+    },
+    "project.avoidPlaceholders": {
+      "default": true,
+      "type": "boolean",
+      "description": "Prevent placeholder text or truncated outputs"
+    },
+    "project.autoModularize": {
+      "default": true,
+      "type": "boolean",
+      "description": "Automatically modularize files exceeding line limits"
+    },
+    "project.backwardsCompatibility": {
+      "default": false,
+      "type": "boolean",
+      "description": "Maintain backwards compatibility during modifications"
+    },
+    "project.productionMode": {
+      "default": false,
+      "type": "boolean",
+      "description": "Enable production-ready file handling"
+    },
+    "project.minifyJson": {
+      "default": true,
+      "type": "boolean",
+      "description": "Minify JSON files to reduce file sizes and improve loading times"
+    }
+  },
+  "integrations": [
+    "04-theme-management",
+    "11-quality-assurance",
+    "05-context-loading"
+  ],
+  "dependencies": [
+    "Project files",
+    "README.md files",
+    "Theme validation"
+  ],
+  "keyOperations": [
+    "Line count checking",
+    "Modularization",
+    "Placeholder avoidance",
+    "README updates",
+    "JSON minification"
+  ],
+  "validation": {
+    "lineLimit": "All file modifications must respect line limits",
+    "placeholders": "No placeholder text unless explicitly approved by user",
+    "sharedFiles": "Shared files must be assessed for cross-theme impact",
+    "readme": "README files must be updated when directory structure changes",
+    "modularization": "All modularization must maintain functional integrity"
+  }
+}

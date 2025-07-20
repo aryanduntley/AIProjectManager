@@ -1,0 +1,432 @@
+{
+  "metadata": {
+    "id": "06-task-management",
+    "title": "Task Management Directives",
+    "priority": "high",
+    "frequency": "ongoing",
+    "version": "1.0.0",
+    "humanReadable": "docs/directives/06-task-management.md"
+  },
+  "triggers": [
+    "Task creation",
+    "Task status changes",
+    "Milestone progress",
+    "Sidequest creation",
+    "Completion path updates",
+    "TODO tracking",
+    "Parallel task coordination",
+    "Multi-flow task planning",
+    "Flow scope evaluation"
+  ],
+  "workflows": {
+    "taskCreation": {
+      "directive": "All tasks must integrate with themes, milestones, and multi-flow system",
+      "required": true,
+      "structure": {
+        "id": "TASK-YYYYMMDDTHHMMSS",
+        "milestoneRef": "Must reference valid milestone from completion-path.json",
+        "themeIntegration": "Primary theme and related themes for context loading",
+        "multiFlowIntegration": "Subtasks must reference specific flows with flowId, flowFile, and step IDs",
+        "contextMode": "theme-focused|theme-expanded|project-wide"
+      }
+    },
+    "taskLifecycle": {
+      "directive": "Follow proper task lifecycle and status management",
+      "statusTransitions": {
+        "pending": "in-progress",
+        "in-progress": ["completed", "blocked"],
+        "blocked": "in-progress",
+        "any": "pending"
+      },
+      "updateRequirements": [
+        "Update status immediately when changed",
+        "Document status change reasons",
+        "Maintain task history for retrospection",
+        "Archive completed tasks according to retention policy"
+      ]
+    },
+    "sidequestManagement": {
+      "directive": "Support multiple simultaneous sidequests for tangential work discovered during task execution, with configurable limits to prevent overwhelming complexity",
+      "multipleSidequestSupport": {
+        "configurationSettings": {
+          "allowMultipleSidequests": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable multiple simultaneous sidequests per task",
+            "options": {
+              "true": "Enable multiple simultaneous sidequests per task",
+              "false": "Restrict to single sidequest at a time (legacy behavior)"
+            }
+          },
+          "maxSimultaneousSidequests": {
+            "type": "integer", 
+            "default": 3,
+            "range": "1-10",
+            "description": "Maximum number of active sidequests allowed per task",
+            "note": "Higher values may cause complexity issues"
+          },
+          "warnWhenApproachingLimit": {
+            "type": "boolean",
+            "default": true,
+            "description": "Warn user when reaching 80% of sidequest limit",
+            "options": {
+              "true": "Warn user when reaching 80% of sidequest limit",
+              "false": "Only notify when limit is actually exceeded"
+            }
+          },
+          "limitExceededBehavior": {
+            "type": "string",
+            "default": "prompt_user_options",
+            "description": "How to handle when sidequest limit is exceeded",
+            "options": {
+              "prompt_user_options": "Present user with multiple resolution options",
+              "block_creation": "Simply refuse to create additional sidequests",
+              "auto_queue": "Queue new sidequests until existing ones complete"
+            }
+          }
+        },
+        "limitManagement": {
+          "checkBeforeCreation": [
+            "Query active sidequests for current task across all subtasks",
+            "Compare against maxSimultaneousSidequests setting",
+            "Present options if exceeded",
+            "Update subtask tracking when creating new sidequest"
+          ],
+          "limitExceededOptions": [
+            "Wait: Complete current sidequests before creating new ones",
+            "Modify Existing: Modify existing sidequest to include new requirement", 
+            "Replace: Complete and replace one of the current sidequests",
+            "Increase Limit: Temporarily increase sidequest limit for session"
+          ],
+          "approachingLimitWarning": "When at 80% of limit: warn user about current count and suggest completing some sidequests"
+        }
+      },
+      "subtaskSidequestTracking": {
+        "directive": "During subtask execution, AI must check for and coordinate with related sidequests",
+        "requirements": [
+          "Check for related sidequests in current subtask's relatedSidequests field",
+          "Update sidequest status and monitor progress",
+          "Coordinate dependencies between subtask and sidequest work",
+          "Add new sidequests to relatedSidequests array when created"
+        ],
+        "subtaskStructureAddition": {
+          "relatedSidequests": {
+            "description": "Array of sidequests related to this specific subtask",
+            "structure": {
+              "sidequestId": "Unique sidequest identifier",
+              "title": "Sidequest title for reference",
+              "status": "completed|in-progress|pending",
+              "impact": "minimal|moderate|significant", 
+              "createdDate": "ISO timestamp when sidequest created",
+              "completedDate": "ISO timestamp when sidequest completed (if applicable)"
+            }
+          }
+        }
+      },
+      "workflowMechanics": {
+        "contextPreservationPhase": {
+          "required": "Save complete current task state before creating sidequest",
+          "stateToSave": [
+            "Current subtask ID and progress percentage",
+            "Loaded themes and files in context",
+            "In-progress work or temporary state",
+            "Exact position in implementation flow"
+          ],
+          "documentation": ["Document reason for sidequest in reason field", "Assess impact on parent task"]
+        },
+        "sidequestActivationPhase": {
+          "process": [
+            "Create sidequest file using enhanced template structure",
+            "Pause parent task - mark as blocked with sidequest reference",
+            "Switch AI focus completely to sidequest",
+            "Load appropriate context for sidequest theme",
+            "Begin sidequest execution as independent work stream"
+          ]
+        },
+        "sidequestCompletionPhase": {
+          "process": [
+            "Complete all sidequest subtasks and acceptance criteria",
+            "Update parent task if needed - if sidequest changed needs or details of original task, update parent task file accordingly",
+            "Archive sidequest file to Tasks/archive/sidequests/",
+            "Restore parent task context - reload exact saved state",
+            "Resume parent task from exact pause point",
+            "Update parent task with integration needed from sidequest work"
+          ]
+        }
+      },
+      "contextSwitchingProtocol": {
+        "pauseMainTask": {
+          "communicationRequired": "AI Message: 'I'm creating a sidequest to handle [requirement]. Pausing current work on [subtask] at [progress]...'",
+          "actions": [
+            "Save current subtask state and loaded context",
+            "Mark parent task as blocked with sidequest reference",
+            "Set status message indicating sidequest in progress"
+          ]
+        },
+        "resumeMainTask": {
+          "communicationRequired": "AI Message: 'Sidequest [title] completed. Resuming [parent task] at [subtask] where we left off...'",
+          "actions": [
+            "Restore exact subtask state and progress",
+            "Reload previously loaded themes and files",
+            "Continue implementation from exact pause point"
+          ]
+        }
+      },
+      "aiBehaviorRequirements": {
+        "strictWorkflowAdherence": [
+          "NEVER continue parent task work while sidequest is active",
+          "ALWAYS preserve complete context when creating sidequest",
+          "MUST restore exact context when resuming parent task",
+          "REQUIRED to communicate workflow transitions clearly to user"
+        ]
+      },
+      "creationTriggers": [
+        "User notices missing functionality during task execution",
+        "AI discovers dependency gaps that need immediate resolution", 
+        "Technical debt or security issues identified that block progress",
+        "User requests exploration or implementation of related but non-core functionality"
+      ],
+      "validationRules": {
+        "beforeCreating": [
+          "Sidequest work must be genuinely independent from current subtask",
+          "Must have clear completion criteria",
+          "Should not create circular dependencies"
+        ],
+        "beforeResuming": [
+          "All sidequest acceptance criteria must be met",
+          "Parent task file updated if sidequest changed original task needs or requirements",
+          "Sidequest file must be archived",
+          "Integration points with parent task must be documented",
+          "No breaking changes introduced that affect parent task"
+        ]
+      },
+      "enhancedFileStructure": {
+        "requiredFields": [
+          "sidequestId",
+          "parentTask",
+          "title",
+          "description",
+          "scopeDescription",
+          "reason",
+          "urgency",
+          "impactOnParentTask",
+          "contextPreservation",
+          "completionTrigger"
+        ],
+        "contextPreservation": {
+          "pausedSubtaskId": "ID of subtask that was paused",
+          "pausedProgress": "Progress percentage when paused",
+          "loadedThemes": "Array of themes loaded in context",
+          "loadedFiles": "Array of files loaded in context",
+          "pauseTimestamp": "ISO timestamp when paused",
+          "notes": "Additional context notes"
+        }
+      },
+      "inheritance": "Inherits milestone from parent task, but may have different themes"
+    },
+    "completionPathIntegration": {
+      "directive": "All tasks must align with project completion path and milestones",
+      "requirements": [
+        "Every task must reference a milestone from completion-path.json",
+        "Task completion moves milestone progress forward",
+        "Milestone completion unlocks dependent milestones",
+        "Changes to completion path require user approval"
+      ],
+      "validationGates": [
+        "Flow completion check",
+        "Implementation plan validation",
+        "Deliverable verification",
+        "Quality gates and success metrics"
+      ]
+    },
+    "parallelTaskManagement": {
+      "directive": "Support multiple concurrent tasks with proper coordination",
+      "rules": [
+        "Only one task can be in-progress per session",
+        "Tasks can be pending or blocked concurrently",
+        "Sidequests can run parallel to main tasks",
+        "Coordinate shared file modifications",
+        "Prevent conflicting changes to same files"
+      ]
+    },
+    "flowStatusTracking": {
+      "directive": "Provide detailed progress tracking for user flows with step-level status management",
+      "flowLevelStatus": ["pending", "in-progress", "complete", "needs-review", "needs-analyze"],
+      "stepLevelStatus": ["pending", "in-progress", "complete", "needs-analyze", "blocked"],
+      "progressCalculation": "Completion percentage calculated from individual step completion status"
+    },
+    "todoTracking": {
+      "directive": "Systematically track and manage TODO items and placeholders",
+      "purpose": "Collect all placeholder tasks, TODO notes, and deferred scaffolding",
+      "mandatoryReview": "All TODO items must be reviewed before project completion",
+      "resolutionOptions": [
+        "Implemented as full features",
+        "Converted to proper implementations",
+        "Documented as future work (with user approval)",
+        "Removed if no longer relevant"
+      ]
+    },
+    "multiFlowTaskIntegration": {
+      "directive": "Tasks must properly integrate with the multi-flow system for efficient context loading and validation",
+      "flowReferencesStructure": {
+        "flowId": "Unique identifier for the flow within its flow file",
+        "flowFile": "Specific flow file containing the referenced flow",
+        "stepIds": "Specific step identifiers within the flow",
+        "crossFlowDependencies": "References to flows in other flow files"
+      },
+      "taskIntegrationRules": [
+        "Each subtask must specify flowId, flowFile, and specific step IDs",
+        "Tasks spanning multiple flows must reference all relevant flow files",
+        "Referenced flow files must exist in ProjectFlow/ directory",
+        "Referenced step IDs must exist within specified flow files",
+        "All flow files must be registered in flow-index.json"
+      ],
+      "flowScopeContextLoading": {
+        "initialContextLoading": [
+          "Flow Scope: Load only flow files referenced in task for initial context",
+          "Performance Optimization: Minimize initial memory usage with targeted flow loading",
+          "Automatic Expansion: AI expands to theme scope when flow scope insufficient",
+          "No Barriers: Expansion from flow scope to theme scope requires no approval"
+        ],
+        "contextEscalationLogic": [
+          "Flow Scope Insufficient: AI determines when flow context is inadequate",
+          "Theme Scope Authority: Theme scope is always available for complete context",
+          "Self-Managed: AI manages context expansion without user intervention",
+          "Resource Efficiency: Start minimal, expand as needed"
+        ]
+      },
+      "multiFlowValidation": [
+        "Flow File Existence: Validate all referenced flow files exist",
+        "Step ID Validation: Ensure all step IDs exist within referenced flows",
+        "Cross-Flow Dependencies: Validate dependencies declared in flow-index.json",
+        "Flow Index Consistency: Ensure flow-index.json is always up-to-date"
+      ]
+    }
+  },
+  "configSettings": {
+    "task.defaultPriority": {
+      "default": "medium",
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Default priority for new tasks"
+    },
+    "task.defaultContextMode": {
+      "default": "theme-focused",
+      "type": "string",
+      "enum": ["theme-focused", "theme-expanded", "project-wide"],
+      "description": "Default context mode for tasks"
+    },
+    "task.parallelLimit": {
+      "default": 1,
+      "type": "number",
+      "description": "Maximum number of tasks that can be in-progress simultaneously"
+    },
+    "completion.requireUserApproval": {
+      "default": true,
+      "type": "boolean",
+      "description": "Require user approval for completion path changes"
+    },
+    "todo.mandatoryReview": {
+      "default": true,
+      "type": "boolean",
+      "description": "Require TODO review before project completion"
+    }
+  },
+  "integrations": [
+    "04-theme-management",
+    "05-context-loading",
+    "07-implementation-plans",
+    "08-project-management",
+    "11-quality-assurance"
+  ],
+  "integrationDescriptions": {
+    "04-theme-management": "Tasks need theme context for scoped development",
+    "05-context-loading": "Tasks determine context loading scope and escalation",
+    "07-implementation-plans": "Tasks reference and execute implementation plan phases",
+    "08-project-management": "Tasks integrate with blueprint, flow-index, individual flow files, and project logic",
+    "11-quality-assurance": "Tasks require validation against milestones, themes, and flow requirements"
+  },
+  "dependencies": [
+    "projectManagement/Tasks/completion-path.json",
+    "projectManagement/Implementations/active/",
+    "projectManagement/ProjectFlow/",
+    "projectManagement/Themes/",
+    "projectManagement/Placeholders/todos.jsonl",
+    "reference/templates/task-active.json",
+    "reference/templates/sidequest.json"
+  ],
+  "dependencyDescriptions": {
+    "projectManagement/Tasks/completion-path.json": "Where milestones are defined for task integration",
+    "projectManagement/Implementations/active/": "Implementation plans that tasks reference and execute",
+    "projectManagement/ProjectFlow/": "Multi-file flow system with flow-index.json and individual flow files",
+    "projectManagement/Themes/": "Theme files for context scoping and development boundaries",
+    "projectManagement/Placeholders/todos.jsonl": "TODO tracking for systematic resolution",
+    "reference/templates/task-active.json": "Template structure for task files",
+    "reference/templates/sidequest.json": "Template structure for sidequest files"
+  },
+  "keyOperations": [
+    "Task lifecycle management",
+    "Milestone integration",
+    "Flow status tracking",
+    "TODO resolution",
+    "Parallel task coordination",
+    "Completion path validation"
+  ],
+  "fileStructure": {
+    "taskFile": {
+      "required": ["id", "title", "description", "status", "priority", "milestone", "primaryTheme", "createdDate", "lastModified"],
+      "optional": ["relatedThemes", "contextMode", "subtasks", "dependencies", "blockers", "notes", "completionCriteria"],
+      "statusOptions": ["pending", "in-progress", "completed", "blocked"],
+      "priorityOptions": ["high", "medium", "low"],
+      "contextModeOptions": ["theme-focused", "theme-expanded", "project-wide"]
+    },
+    "sidequestFile": {
+      "required": ["id", "parentTask", "title", "scopeDescription", "status", "theme", "contextMode", "dateTimeStarted", "completionCriteria"],
+      "optional": ["estimatedDuration", "subtasks", "notes"],
+      "idFormat": "SQ-PARENTTASK-SEQUENCE"
+    },
+    "completionPathFile": {
+      "required": ["completionObjective", "metadata", "milestones"],
+      "milestoneStructure": {
+        "required": ["id", "description", "status", "deliverables", "estimatedEffort"],
+        "optional": ["dependencies", "relatedTasks", "completedOn", "requiredFlows", "implementationPlans"],
+        "requiredFlowsStructure": {
+          "required": ["flowId", "requiredStatus", "currentStatus", "completionPercentage"]
+        }
+      }
+    },
+    "todoFile": {
+      "format": "JSONL",
+      "entryStructure": {
+        "required": ["timestamp", "file", "line", "reason"],
+        "optional": ["priority", "notes", "resolved"]
+      }
+    }
+  },
+  "validationRules": {
+    "taskIntegrity": [
+      "All tasks must reference valid milestones",
+      "All subtasks must reference specific user flows",
+      "Context mode determines theme loading scope",
+      "File lists enable targeted context loading"
+    ],
+    "milestoneValidation": [
+      "All required flows must reach specified status",
+      "All implementation plan phases must be complete",
+      "All deliverables must be validated",
+      "Quality gates and success metrics must be met"
+    ],
+    "todoValidation": [
+      "All TODO items must be reviewed before project completion",
+      "TODO review can be initiated at any time upon user request",
+      "Resolution must be documented with user approval where needed"
+    ]
+  },
+  "userApprovalRequired": [
+    "Changes to completion path",
+    "Milestone structure modifications",
+    "Flow requirement changes",
+    "Completion criteria modifications",
+    "TODO item documentation as future work"
+  ]
+}

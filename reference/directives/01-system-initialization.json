@@ -1,0 +1,227 @@
+{
+  "metadata": {
+    "id": "01-system-initialization",
+    "title": "System Initialization Directives",
+    "priority": "critical",
+    "frequency": "session-start",
+    "version": "1.0.0",
+    "humanReadable": "docs/directives/01-system-initialization.md"
+  },
+  "triggers": [
+    "MCP server startup",
+    "First connection",
+    "System boot",
+    "Session start"
+  ],
+  "workflows": {
+    "mcpServerConnection": {
+      "directive": "Always verify MCP server connectivity and tool availability before beginning any project work",
+      "steps": [
+        {
+          "action": "checkMcpServerStatus",
+          "description": "Check MCP server status",
+          "required": true
+        },
+        {
+          "action": "verifyRequiredTools",
+          "description": "Verify all required tools are available",
+          "required": true,
+          "tools": [
+            "project_initialize",
+            "project_get_blueprint", 
+            "project_update_blueprint",
+            "project_get_status",
+            "theme_discover",
+            "theme_create",
+            "theme_list",
+            "theme_get",
+            "theme_update",
+            "theme_delete",
+            "theme_get_context",
+            "theme_validate",
+            "get_config",
+            "read_file"
+          ]
+        },
+        {
+          "action": "loadServerConfiguration",
+          "description": "Load server configuration and validate settings",
+          "required": true
+        },
+        {
+          "action": "confirmProjectStructure",
+          "description": "Confirm project management structure exists or initialize if needed",
+          "required": true
+        }
+      ]
+    },
+    "projectDetection": {
+      "directive": "Always detect existing project management structures and handle compatibility issues",
+      "rules": [
+        "If projectManagement/ exists, check version compatibility",
+        "If compatible, integrate existing data",
+        "If incompatible, ask user for migration approach (upgrade, backup, or overwrite)",
+        "Never overwrite existing data without explicit user permission",
+        "Document any compatibility issues or migrations performed"
+      ],
+      "steps": [
+        {
+          "action": "checkProjectManagementExists",
+          "description": "Check if projectManagement/ directory exists",
+          "required": true
+        },
+        {
+          "action": "checkCompatibility",
+          "description": "Check version compatibility if structure exists",
+          "required": true,
+          "condition": "projectManagement exists"
+        },
+        {
+          "action": "handleCompatibility",
+          "description": "Handle compatibility based on check results",
+          "required": true,
+          "options": ["integrate", "migrate", "upgrade", "backup", "overwrite"]
+        }
+      ]
+    },
+    "configurationLoading": {
+      "directive": "Load configuration in priority order",
+      "priority": [
+        "projectManagement/UserSettings/config.json",
+        "config.json (current directory)",
+        "~/.ai-project-manager/config.json",
+        "/etc/ai-project-manager/config.json",
+        "Environment variables (AI_PM_*)",
+        "Built-in defaults"
+      ],
+      "steps": [
+        {
+          "action": "loadConfiguration",
+          "description": "Load configuration from priority sources",
+          "required": true
+        },
+        {
+          "action": "validateCriticalSettings",
+          "description": "Validate critical settings are present",
+          "required": true
+        }
+      ]
+    },
+    "compatibilityVerification": {
+      "directive": "Verify compatibility of existing projectManagement/ structures and handle version differences",
+      "requiredMetadataFields": [
+        "mcp.version",
+        "mcp.namespace", 
+        "mcp.created",
+        "mcp.compatibilityVersion"
+      ],
+      "fieldDescriptions": {
+        "mcp.version": "MCP system version used to create the structure",
+        "mcp.namespace": "Unique project identifier (project.management.organization.{userprojectname})",
+        "mcp.created": "ISO timestamp of initial structure creation",
+        "mcp.compatibilityVersion": "Version for backward compatibility checking"
+      },
+      "templateReference": "reference/templates/metadata.json includes all required MCP compatibility fields",
+      "steps": [
+        {
+          "action": "checkMetadataExists",
+          "description": "Check if projectManagement/ProjectBlueprint/metadata.json exists",
+          "required": true
+        },
+        {
+          "action": "readVersionInfo",
+          "description": "Read mcp.version and mcp.compatibilityVersion fields",
+          "required": true,
+          "condition": "metadata exists"
+        },
+        {
+          "action": "compareVersions",
+          "description": "Compare with current MCP version",
+          "required": true
+        },
+        {
+          "action": "handleVersionDifference",
+          "description": "Handle version differences - if version is lesser than current, ask user if they want to update existing structure",
+          "required": true,
+          "condition": "version lesser than current",
+          "note": "Files themselves should not need significant modification - updates should be backwards compatible"
+        },
+        {
+          "action": "handleUpdateDirectives",
+          "description": "With any updates, directives will be added on how to approach updating outdated versions",
+          "required": true,
+          "condition": "update needed"
+        },
+        {
+          "action": "offerCompleteEvaluation",
+          "description": "Ask user if they want to run an initial complete evaluation which will compare the current state of the entire project to the projectManagement state",
+          "required": false,
+          "userApprovalRequired": true
+        },
+        {
+          "action": "updateFiles",
+          "description": "Make updates to files according to analysis. Always assess existing files for each step of analyzing before making updates, if updates are needed",
+          "required": true,
+          "condition": "user approves evaluation"
+        },
+        {
+          "action": "continueNormalOperation",
+          "description": "Finally, continue with projectManagement as normal",
+          "required": true
+        }
+      ]
+    }
+  },
+  "configSettings": {
+    "max_file_lines": {
+      "default": 900,
+      "type": "number",
+      "description": "Maximum lines per file before modularization"
+    },
+    "auto_modularize": {
+      "default": true,
+      "type": "boolean",
+      "description": "Automatically modularize files exceeding line limits"
+    },
+    "theme_discovery": {
+      "default": true,
+      "type": "boolean",
+      "description": "Enable automatic theme discovery"
+    },
+    "log_retention": {
+      "type": "object",
+      "description": "Log retention policies"
+    },
+    "context_loading": {
+      "type": "object",
+      "description": "Context loading preferences"
+    }
+  },
+  "integrations": [
+    "02-project-initialization",
+    "13-metadata-management"
+  ],
+  "dependencies": [
+    "UserSettings/config.json",
+    "MCP server connectivity",
+    "ProjectBlueprint/metadata.json"
+  ],
+  "keyOperations": [
+    "Server validation",
+    "Compatibility checking",
+    "Configuration loading",
+    "Project structure initialization"
+  ],
+  "errorHandling": {
+    "mcpServerUnavailable": "Fail with clear error message",
+    "toolsMissing": "Report missing tools and fail gracefully",
+    "configurationInvalid": "Use defaults and warn user",
+    "compatibilityIssues": "Require user decision before proceeding"
+  },
+  "validation": {
+    "serverConnection": "Must verify MCP server is responsive",
+    "toolAvailability": "All required tools must be available",
+    "configurationValid": "Configuration must pass validation",
+    "structureIntegrity": "Project structure must be valid or initializable"
+  }
+}

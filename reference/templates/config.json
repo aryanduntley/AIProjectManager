@@ -1,0 +1,112 @@
+{
+  "project": {
+    "name": "Example Project",
+    "maxFileLineCount": 900,
+    "avoidPlaceholders": true,
+    "autoModularize": true,
+    "backwardsCompatibility": false,
+    "productionMode": false,
+    "minifyJson": true
+  },
+  "documentation": {
+    "readmeJsonFilename": "README",
+    "readmeMdFilename": "README", 
+    "autoUpdateReadme": true,
+    "includeFileChains": true,
+    "includeThemeReferences": true,
+    "trackLastAssessment": true,
+    "lastUpdatedBehavior": "overwrite"
+  },
+  "contextLoading": {
+    "defaultMode": "theme-focused",
+    "escalationEnabled": true,
+    "readmeFirst": true,
+    "maxFlowFiles": 3,
+    "contextModes": [
+      {
+        "mode": "theme-focused",
+        "description": "Load primary theme + directly related themes"
+      },
+      {
+        "mode": "theme-expanded", 
+        "description": "Load theme group when themes are interconnected"
+      },
+      {
+        "mode": "project-wide",
+        "description": "Full project context (rare, only for architectural changes)"
+      }
+    ]
+  },
+  "tasks": {
+    "autoTaskCreation": false,
+    "parallelTasksEnabled": true,
+    "maxActiveSidequests": 3,
+    "sidequestManagement": {
+      "allowMultipleSidequests": true,
+      "maxSimultaneousSidequests": 3,
+      "warnWhenApproachingLimit": true,
+      "limitExceededBehavior": "prompt_user_options"
+    },
+    "resumeTasksOnStart": false,
+    "statusMarkers": [
+      "pending",
+      "in-progress", 
+      "blocked",
+      "reviewing",
+      "completed",
+      "cancelled"
+    ]
+  },
+  "archiving": {
+    "projectlogicSizeLimit": "2MB",
+    "noteworthySizeLimit": "1MB",
+    "maxArchiveFiles": 100,
+    "deleteArchivesOlderThan": 90
+  },
+  "placeholders": {
+    "trackPlaceholders": true,
+    "customMarkers": ["HACK", "REVIEW", "SECURITY"],
+    "priorityMapping": {
+      "TODO": "medium",
+      "FIXME": "high",
+      "HACK": "high",
+      "OPTIMIZE": "low",
+      "REVIEW": "medium",
+      "SECURITY": "high"
+    }
+  },
+  "themes": {
+    "autoDiscovery": true,
+    "discoveryKeywords": [
+      "auth", "authentication", "login", "register",
+      "payment", "billing", "transaction", "stripe",
+      "user", "profile", "account", "admin",
+      "api", "endpoint", "controller", "service",
+      "database", "model", "schema", "migration",
+      "ui", "component", "page", "layout",
+      "test", "spec", "mock", "fixture",
+      "config", "environment", "settings"
+    ],
+    "updateOnFileChange": true,
+    "conflictResolution": "merge",
+    "sharedFileThreshold": 3
+  },
+  "validation": {
+    "enforceTaskMilestoneReference": true,
+    "enforceTaskThemeReference": true,
+    "flowReferenceValidation": "smart",
+    "crossFlowAwareness": true,
+    "contextEscalationAllowed": true,
+    "warnOnMissingReferences": true,
+    "validateFileExistence": true,
+    "requireApprovalForStructureChanges": true,
+    "validateJsonSchemas": true
+  },
+  "ai": {
+    "contextLoadingStrategy": "intelligent",
+    "maxContextFiles": 50,
+    "preferRecentFiles": true,
+    "includeRelatedThemes": true,
+    "loadFlowSteps": true
+  }
+}

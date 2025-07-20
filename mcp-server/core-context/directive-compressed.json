@@ -1,0 +1,167 @@
+{
+  "systemInitialization": {
+    "triggers": ["MCP server startup", "First connection", "System boot"],
+    "workflow": [
+      "Validate MCP server connection and compatibility",
+      "Load configuration from UserSettings/config.json",
+      "Check project directory structure existence",
+      "Initialize project detection and version checking"
+    ],
+    "criticalSettings": ["max_file_lines", "auto_modularize", "theme_discovery"],
+    "failureAction": "Report clear error messages, require user intervention for critical issues"
+  },
+  "projectInitialization": {
+    "triggers": ["New project creation", "Existing project analysis"],
+    "workflows": {
+      "newProject": [
+        "Create projectManagement/ structure from templates",
+        "Generate initial blueprint.md with user discussion",
+        "Create basic theme structure and flow index", 
+        "Initialize completion-path.json with project objectives"
+      ],
+      "existingProject": [
+        "Analyze current project structure and codebase",
+        "Auto-discover themes and generate theme files",
+        "Create project flows based on existing functionality",
+        "Generate blueprint and completion path from analysis"
+      ]
+    },
+    "approvalRequired": ["ProjectBlueprint", "Theme definitions", "ProjectFlow outline"]
+  },
+  "sessionManagement": {
+    "bootSequence": [
+      "Read ProjectBlueprint for project context",
+      "Read completion-path.json for milestone status",
+      "Check for active implementation plan",
+      "Load incomplete tasks with theme/flow context",
+      "Generate next phase tasks if no active tasks",
+      "Load appropriate theme context for execution"
+    ],
+    "contextRestoration": "Use projectlogic.jsonl for decision history and reasoning context",
+    "taskResumption": "Resume based on tasks.resumeTasksOnStart configuration"
+  },
+  "themeManagement": {
+    "autoDiscovery": {
+      "methods": ["keyword matching", "folder structure analysis", "import reference graphs"],
+      "categories": ["Functional Domains", "Technical Layers", "UI Components", "External Integrations", "Data Management", "Operational"],
+      "validation": "User approval required for all discovered themes"
+    },
+    "maintenance": {
+      "triggers": ["file creation", "file deletion", "file movement", "directory restructuring"],
+      "actions": ["Update theme file paths", "Validate linked themes", "Check shared file references"]
+    }
+  },
+  "contextLoading": {
+    "modes": {
+      "theme-focused": "Load primary theme only - default and most efficient",
+      "theme-expanded": "Load primary + linked themes for cross-theme tasks", 
+      "project-wide": "Full project context - only for architectural changes"
+    },
+    "readmeGuidedProcess": [
+      "Load theme structure from Themes/[theme].json",
+      "Read README.md files in relevant directories first",
+      "Assess specific files needed based on task requirements",
+      "Load only determined necessary files"
+    ],
+    "escalation": "AI can escalate context mode when insufficient, user can override to project-wide"
+  },
+  "taskManagement": {
+    "requiredIntegration": ["milestone from completion-path.json", "primary/related themes", "flow references with flowFile context"],
+    "lifecycle": ["creation with validation", "execution with context loading", "completion validation", "archival"],
+    "sidequests": {
+      "purpose": "Support multiple simultaneous sidequests for tangential work with configurable limits",
+      "multipleSidequestSupport": {
+        "limitManagement": "Check active count before creating, present options if exceeded",
+        "subtaskTracking": "Add relatedSidequests array to subtask structure for coordination",
+        "configSettings": ["allowMultipleSidequests", "maxSimultaneousSidequests", "warnWhenApproachingLimit", "limitExceededBehavior"]
+      },
+      "workflowPhases": [
+        "Check Active Count: Query current sidequests across all subtasks",
+        "Validate Limits: Compare against maxSimultaneousSidequests setting",
+        "Context Preservation: Save complete task state before creating sidequest",
+        "Sidequest Activation: Pause parent task, switch AI focus completely to sidequest", 
+        "Update Tracking: Add to current subtask's relatedSidequests array",
+        "Sidequest Completion: Update parent task if needed, archive sidequest, restore context, resume from exact pause point"
+      ],
+      "contextSwitching": {
+        "pause": "Save current subtask ID, progress, loaded themes/files, exact position in flow",
+        "resume": "Restore exact subtask state and context, continue from pause point"
+      },
+      "strictBehavior": [
+        "Check sidequest limit before creating new sidequests",
+        "Update subtask relatedSidequests array when creating/completing sidequests",
+        "NEVER continue parent task work while any sidequest is active",
+        "ALWAYS preserve complete context when creating sidequest",
+        "MUST restore exact context when resuming parent task",
+        "REQUIRED to communicate workflow transitions clearly to user"
+      ],
+      "creationTriggers": ["User notices missing functionality", "AI discovers dependency gaps", "Technical debt blocks progress"],
+      "limitExceededOptions": ["Wait for completion", "Modify existing sidequest", "Replace current sidequest", "Increase limit"],
+      "management": "Independent JSON files in sidequests/ directory with contextPreservation field",
+      "completion": "Archive to sidequests/archive/ when completed"
+    },
+    "todoReview": "Mandatory review of todos.jsonl before project completion"
+  },
+  "implementationPlans": {
+    "lifecycle": ["milestone selection", "analysis and strategy creation", "user approval", "phase execution", "archival"],
+    "naming": "M{milestone-id}-v{version}-{description}.md",
+    "integration": "Active implementation plans loaded during session boot for strategic continuity"
+  },
+  "projectManagement": {
+    "blueprintManagement": "User approval required for all changes",
+    "multiFlowDocumentation": {
+      "flowIndex": "Master flow index with cross-flow dependencies",
+      "individualFlows": "Domain-specific flow files (authentication-flow.json, payment-flow.json)",
+      "selectiveLoading": "AI loads only relevant flow files based on task context"
+    },
+    "logicTracking": "Record decisions and reasoning in projectlogic.jsonl"
+  },
+  "loggingDocumentation": {
+    "triggers": ["significant decisions", "user feedback", "context escalations", "shared file modifications"],
+    "archiving": {
+      "projectlogic": "Auto-archive when >= projectlogicSizeLimit (default: 2MB)",
+      "noteworthy": "Auto-archive when >= noteworthySizeLimit (default: 1MB)"
+    }
+  },
+  "fileOperations": {
+    "lineLimitEnforcement": {
+      "check": "After every file modification",
+      "limit": "project.maxFileLineCount (default: 900)",
+      "action": "Modularize into logical function groups, update imports, document in README"
+    },
+    "antiPlaceholder": {
+      "prohibited": ["...continued", "TODO: implement", "placeholder", "rest unchanged"],
+      "requirement": "Complete implementations only when project.avoidPlaceholders=true"
+    },
+    "readmeManagement": "Update directory README.md with every significant file change"
+  },
+  "qualityAssurance": {
+    "smartValidation": {
+      "purpose": "Prevent artificial restrictions that could cause AI to break connected functionality",
+      "approach": "Validate references exist but allow AI discretionary context escalation",
+      "taskMilestoneReference": "enforceTaskMilestoneReference - tasks must reference valid milestones",
+      "taskThemeReference": "enforceTaskThemeReference - tasks must specify valid themes",
+      "flowReferenceValidation": "smart mode (default) - validate flow references exist, allow cross-flow and context escalation",
+      "crossFlowAwareness": "sidequests can reference any flows needed to address discovered issues during development",
+      "contextEscalationAllowed": "AI can load related flows within theme scope without user approval",
+      "jsonSchemas": "validateJsonSchemas - all JSON files must conform to schemas"
+    },
+    "preventingBrokenCode": [
+      "AI can see full context to avoid breaking connected functionality",
+      "Flow scope is performance optimization, not artificial limitation", 
+      "Theme scope provides safety boundary for complete understanding",
+      "Context escalation ensures holistic solutions over isolated fixes"
+    ],
+    "dataIntegrity": "Cross-reference consistency, file existence validation, dependency checking"
+  },
+  "userInteraction": {
+    "approvalRequired": ["Project blueprint changes", "Theme modifications", "Completion path updates", "Implementation plan creation", "Structural project changes"],
+    "communication": "Clear presentation of changes with rationale, explicit approval requests",
+    "preferenceAdaptation": "Learn from user decisions and adapt future behavior"
+  },
+  "metadataManagement": {
+    "triggers": ["Project characteristic changes", "Theme discovery updates", "Blueprint modifications"],
+    "maintenance": "Dynamic updates to metadata.json with project evolution",
+    "integration": "Coordinate with theme discovery and project logic tracking"
+  }
+}

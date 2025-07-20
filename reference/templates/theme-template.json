@@ -1,0 +1,73 @@
+{
+  "theme": "theme-name",
+  "description": "Brief description of what this theme encompasses",
+  "keywords": ["keyword1", "keyword2", "keyword3"],
+  "status": "active",
+  "priority": "medium",
+  "owner": "team-name",
+  "relatedThemes": ["related-theme1", "related-theme2"],
+  "flows": [
+    "most-relevant-flow-id",
+    "second-most-relevant-flow-id",
+    "least-relevant-flow-id"
+  ],
+  "files": [
+    "src/components/theme-name/",
+    "src/services/theme-name/",
+    "src/utils/theme-name/",
+    "src/types/ThemeName.ts"
+  ],
+  "sharedFiles": {
+    "src/types/SharedType.ts": {
+      "sharedWith": ["other-theme"],
+      "description": "Description of shared file purpose"
+    },
+    "src/utils/SharedUtil.ts": {
+      "sharedWith": ["other-theme1", "other-theme2"],
+      "description": "Utility functions shared across themes"
+    }
+  },
+  "dependencies": [
+    {
+      "theme": "dependency-theme",
+      "type": "depends-on",
+      "reason": "Explanation of why this dependency exists"
+    }
+  ],
+  "exports": [
+    {
+      "type": "component",
+      "name": "MainComponent",
+      "file": "src/components/theme-name/MainComponent.tsx",
+      "description": "Primary component for this theme"
+    },
+    {
+      "type": "service",
+      "name": "ThemeService",
+      "file": "src/services/theme-name/ThemeService.ts",
+      "description": "Main service class for theme operations"
+    },
+    {
+      "type": "type",
+      "name": "ThemeType",
+      "file": "src/types/ThemeName.ts",
+      "description": "Core type definitions for this theme"
+    }
+  ],
+  "configuration": {
+    "contextMode": "theme-focused",
+    "testScope": "theme-components",
+    "documentationRequired": true
+  },
+  "testFiles": [
+    "src/tests/theme-name/",
+    "src/__tests__/theme-name.test.ts"
+  ],
+  "metadata": {
+    "created": "2025-07-16T00:00:00Z",
+    "lastModified": "2025-07-16T00:00:00Z",
+    "version": "1.0.0",
+    "fileCount": 0,
+    "linesOfCode": 0
+  }
+}

@@ -1,0 +1,475 @@
+{
+  "metadata": {
+    "id": "13-metadata-management",
+    "title": "Metadata Management Directives",
+    "priority": "high",
+    "frequency": "continuous",
+    "version": "1.0.0",
+    "humanReadable": "docs/directives/13-metadata-management.md"
+  },
+  "triggers": [
+    "ProjectBlueprint creation/update",
+    "ProjectLogic modifications",
+    "Theme discovery",
+    "Dependency installation",
+    "Architecture decisions",
+    "Integration additions",
+    "Deployment changes",
+    "Compliance requirements",
+    "Timeline adjustments"
+  ],
+  "workflows": {
+    "projectMetadataOverview": {
+      "directive": "Maintain dynamic project characteristics in ProjectBlueprint/metadata.json as factual documentation, not user preferences",
+      "purpose": [
+        "Document project facts and characteristics discovered during development",
+        "Store technical project data separate from user configuration",
+        "Track project evolution and technical decisions over time",
+        "Provide AI with project context for informed decision-making"
+      ],
+      "fileLocation": "ProjectBlueprint/metadata.json",
+      "steps": [
+        {
+          "action": "initializeMetadata",
+          "description": "Create initial metadata.json with basic project information",
+          "required": true,
+          "condition": "new project"
+        },
+        {
+          "action": "maintainMetadataAccuracy",
+          "description": "Keep metadata current with project reality",
+          "required": true
+        },
+        {
+          "action": "separateFromConfiguration",
+          "description": "Ensure metadata contains facts, not user preferences",
+          "required": true
+        }
+      ]
+    },
+    "metadataStructureAndContent": {
+      "directive": "Metadata.json is a dynamic, evolving file that captures project characteristics as they are discovered or changed",
+      "coreStructure": {
+        "project": {
+          "fields": ["name", "version", "description", "type", "status"],
+          "description": "Basic project information"
+        },
+        "mcp": {
+          "fields": ["version", "namespace", "created", "compatibilityVersion", "lastUpdated"],
+          "description": "MCP system metadata"
+        },
+        "technical": {
+          "fields": ["language", "frameworks", "databases", "testFramework", "buildTool", "packageManager", "linter", "typeChecker"],
+          "description": "Technical stack information"
+        },
+        "deployment": {
+          "fields": ["environment", "platform", "containerization", "cicd", "hosting"],
+          "description": "Deployment configuration"
+        },
+        "architecture": {
+          "fields": ["pattern", "api", "frontend", "authentication", "database"],
+          "description": "Architecture decisions"
+        },
+        "integrations": {
+          "fields": ["external", "apis", "services"],
+          "description": "External integrations"
+        },
+        "compliance": {
+          "fields": ["gdpr", "hipaa", "sox", "pci", "accessibility"],
+          "description": "Compliance requirements"
+        },
+        "team": {
+          "fields": ["size", "methodology", "codeStyle", "reviewProcess"],
+          "description": "Team characteristics"
+        },
+        "timeline": {
+          "fields": ["startDate", "estimatedCompletion", "milestones"],
+          "description": "Project timeline"
+        },
+        "custom": {
+          "fields": ["domain", "targetAudience", "scalability", "performance"],
+          "description": "Custom project characteristics"
+        }
+      },
+      "steps": [
+        {
+          "action": "validateMetadataStructure",
+          "description": "Ensure metadata follows defined structure",
+          "required": true
+        },
+        {
+          "action": "populateRequiredFields",
+          "description": "Fill in all required metadata fields",
+          "required": true
+        },
+        {
+          "action": "updateTimestamps",
+          "description": "Update lastUpdated timestamp on changes",
+          "required": true
+        }
+      ]
+    },
+    "metadataUpdateTriggers": {
+      "directive": "Update metadata.json whenever project characteristics change or are discovered",
+      "primaryUpdateTriggers": [
+        "ProjectBlueprint Creation/Update: Always update metadata when blueprint changes",
+        "ProjectLogic Modifications: Update metadata when logic changes reveal new project characteristics",
+        "Theme Discovery: Update frameworks, languages, and technical stack",
+        "Dependency Installation: Update package managers, build tools, frameworks",
+        "Architecture Decisions: Update patterns, API types, database choices",
+        "Integration Additions: Update external services, APIs, third-party tools",
+        "Deployment Changes: Update hosting, CI/CD, containerization",
+        "Compliance Requirements: Update regulatory compliance needs"
+      ],
+      "secondaryUpdateTriggers": [
+        "New team members or methodology changes",
+        "Performance or scalability requirement changes",
+        "Timeline adjustments",
+        "Custom domain or audience changes"
+      ],
+      "steps": [
+        {
+          "action": "detectTriggerEvent",
+          "description": "Identify events that require metadata updates",
+          "required": true
+        },
+        {
+          "action": "analyzeImpactOnMetadata",
+          "description": "Determine which metadata fields need updating",
+          "required": true
+        },
+        {
+          "action": "updateRelevantFields",
+          "description": "Update affected metadata fields",
+          "required": true
+        },
+        {
+          "action": "validateUpdatedMetadata",
+          "description": "Ensure updated metadata is valid and consistent",
+          "required": true
+        }
+      ]
+    },
+    "metadataVsConfigurationDistinction": {
+      "directive": "Clearly distinguish between metadata (project facts) and configuration (user preferences)",
+      "metadataContent": [
+        "Project Facts: What the project IS",
+        "Technical Stack: What tools/frameworks are USED",
+        "Architecture: How the project is BUILT",
+        "Deployment: Where the project RUNS",
+        "Compliance: What regulations APPLY",
+        "Timeline: When things HAPPEN"
+      ],
+      "configurationContent": [
+        "User Preferences: How AI should BEHAVE",
+        "Workflow Settings: How tasks should be MANAGED",
+        "Validation Rules: What validation should be ENFORCED",
+        "Context Loading: How context should be LOADED",
+        "Archiving: How data should be RETAINED"
+      ],
+      "steps": [
+        {
+          "action": "classifyInformation",
+          "description": "Determine if information is metadata or configuration",
+          "required": true
+        },
+        {
+          "action": "storeInCorrectLocation",
+          "description": "Store metadata in metadata.json, configuration in config.json",
+          "required": true
+        },
+        {
+          "action": "maintainSeparation",
+          "description": "Keep metadata and configuration separate",
+          "required": true
+        }
+      ]
+    },
+    "integrationWithProjectWorkflows": {
+      "directive": "Ensure metadata is consistently updated throughout project lifecycle",
+      "blueprintIntegration": {
+        "onCreate": [
+          "Initialize metadata.json with basic project information",
+          "Set MCP version and compatibility data",
+          "Document known technical characteristics",
+          "Establish baseline project facts"
+        ],
+        "onUpdate": [
+          "Review metadata for outdated information",
+          "Update project description, status, or type if changed",
+          "Adjust timeline if scope changes",
+          "Update custom domain or audience if requirements shift"
+        ]
+      },
+      "projectLogicIntegration": {
+        "onModify": [
+          "Check if logic changes reveal new technical characteristics",
+          "Update architecture patterns if structural decisions change",
+          "Update integrations if new services are added",
+          "Update technical stack if new frameworks are adopted",
+          "Update deployment if hosting decisions change"
+        ],
+        "examples": [
+          "Logic entry about switching from REST to GraphQL → Update architecture.api",
+          "Logic entry about adding authentication → Update architecture.authentication",
+          "Logic entry about new payment integration → Update integrations.external",
+          "Logic entry about performance requirements → Update custom.performance"
+        ]
+      },
+      "themeDiscoveryIntegration": {
+        "onDiscovery": [
+          "Analyze detected frameworks and update technical.frameworks",
+          "Identify database usage and update technical.databases",
+          "Detect testing patterns and update technical.testFramework",
+          "Discover build tools and update technical.buildTool",
+          "Identify external integrations and update integrations"
+        ]
+      },
+      "steps": [
+        {
+          "action": "integrateWithBlueprint",
+          "description": "Update metadata during blueprint operations",
+          "required": true
+        },
+        {
+          "action": "integrateWithProjectLogic",
+          "description": "Update metadata based on logic changes",
+          "required": true
+        },
+        {
+          "action": "integrateWithThemeDiscovery",
+          "description": "Update metadata during theme discovery",
+          "required": true
+        }
+      ]
+    },
+    "metadataMaintenanceProtocol": {
+      "directive": "Maintain metadata accuracy and relevance through regular review and updates",
+      "maintenanceActions": [
+        "Validation Check: Ensure all metadata entries are current and accurate",
+        "Consistency Review: Verify metadata aligns with actual project state",
+        "Obsolete Removal: Remove outdated or irrelevant metadata entries",
+        "Gap Analysis: Identify missing metadata that should be documented",
+        "Version Updates: Update MCP version compatibility when system changes"
+      ],
+      "maintenanceTriggers": [
+        "Major milestone completion",
+        "Significant architecture changes",
+        "Technology stack updates",
+        "Deployment environment changes",
+        "Team or methodology changes"
+      ],
+      "steps": [
+        {
+          "action": "performValidationCheck",
+          "description": "Validate metadata accuracy and currency",
+          "required": true
+        },
+        {
+          "action": "reviewConsistency",
+          "description": "Ensure metadata matches project reality",
+          "required": true
+        },
+        {
+          "action": "removeObsoleteEntries",
+          "description": "Clean up outdated metadata",
+          "required": true
+        },
+        {
+          "action": "identifyGaps",
+          "description": "Find missing metadata that should be documented",
+          "required": true
+        }
+      ]
+    },
+    "metadataAccessAndUsage": {
+      "directive": "Use metadata to inform AI decision-making and provide project context",
+      "aiUsageGuidelines": [
+        "Context Loading: Use metadata to understand project scope and complexity",
+        "Decision Making: Consider technical stack when suggesting solutions",
+        "Validation: Ensure suggestions align with project architecture and compliance",
+        "Integration: Consider existing integrations when proposing new features",
+        "Testing: Use testing framework information for appropriate test creation"
+      ],
+      "userBenefits": [
+        "Project Overview: Quick understanding of project characteristics",
+        "Onboarding: New team members can quickly understand project setup",
+        "Documentation: Comprehensive project documentation for stakeholders",
+        "Decision Support: Historical context for architectural and technical decisions"
+      ],
+      "steps": [
+        {
+          "action": "loadMetadataForContext",
+          "description": "Load metadata to understand project context",
+          "required": true
+        },
+        {
+          "action": "informDecisionMaking",
+          "description": "Use metadata to inform AI decisions",
+          "required": true
+        },
+        {
+          "action": "validateSuggestions",
+          "description": "Ensure suggestions align with project characteristics",
+          "required": true
+        }
+      ]
+    },
+    "metadataVersioningAndHistory": {
+      "directive": "Track metadata changes over time for project evolution understanding",
+      "versionManagement": [
+        "Update mcp.lastUpdated timestamp on every change",
+        "Maintain compatibility version for MCP system updates",
+        "Track major changes in projectlogic.jsonl with metadata references"
+      ],
+      "changeDocumentation": [
+        "Log significant metadata changes in projectlogic.jsonl",
+        "Reference metadata changes in task completion notes",
+        "Document reasoning for metadata updates",
+        "Maintain audit trail of project characteristic evolution"
+      ],
+      "steps": [
+        {
+          "action": "updateVersionInfo",
+          "description": "Update version and timestamp information",
+          "required": true
+        },
+        {
+          "action": "documentChanges",
+          "description": "Log metadata changes in projectlogic.jsonl",
+          "required": true
+        },
+        {
+          "action": "maintainAuditTrail",
+          "description": "Keep audit trail of metadata evolution",
+          "required": true
+        }
+      ]
+    },
+    "errorHandlingAndValidation": {
+      "directive": "Ensure metadata integrity through proper validation and error handling",
+      "validationRequirements": [
+        "All required fields must be present",
+        "Enum values must be from predefined lists",
+        "Dates must be valid ISO format",
+        "Arrays must contain valid entries",
+        "Custom fields must have clear descriptions"
+      ],
+      "errorHandling": [
+        "Validate metadata before saving",
+        "Provide clear error messages for invalid data",
+        "Offer correction suggestions for common errors",
+        "Maintain backup of previous valid metadata",
+        "Log validation errors for debugging"
+      ],
+      "recoveryProcedures": [
+        "Restore from backup if corruption detected",
+        "Reconstruct from project analysis if backup unavailable",
+        "Validate against project reality if inconsistencies found",
+        "Update MCP compatibility if version conflicts arise"
+      ],
+      "steps": [
+        {
+          "action": "validateMetadataBeforeSave",
+          "description": "Validate metadata structure and content",
+          "required": true
+        },
+        {
+          "action": "handleValidationErrors",
+          "description": "Provide clear error messages and corrections",
+          "required": true
+        },
+        {
+          "action": "maintainBackups",
+          "description": "Keep backup of valid metadata versions",
+          "required": true
+        },
+        {
+          "action": "implementRecovery",
+          "description": "Recover from metadata corruption or errors",
+          "required": true,
+          "condition": "corruption detected"
+        }
+      ]
+    }
+  },
+  "configSettings": {
+    "metadata.autoUpdate": {
+      "default": true,
+      "type": "boolean",
+      "description": "Automatically update metadata when project characteristics change"
+    },
+    "metadata.validateOnSave": {
+      "default": true,
+      "type": "boolean",
+      "description": "Validate metadata structure and content before saving"
+    },
+    "metadata.maintainBackups": {
+      "default": true,
+      "type": "boolean",
+      "description": "Keep backup copies of previous metadata versions"
+    },
+    "metadata.logChanges": {
+      "default": true,
+      "type": "boolean",
+      "description": "Log metadata changes in projectlogic.jsonl"
+    },
+    "metadata.separateFromConfig": {
+      "default": true,
+      "type": "boolean",
+      "description": "Maintain separation between metadata and configuration"
+    },
+    "metadata.updateOnThemeDiscovery": {
+      "default": true,
+      "type": "boolean",
+      "description": "Update metadata during theme discovery"
+    },
+    "metadata.updateOnBlueprintChange": {
+      "default": true,
+      "type": "boolean",
+      "description": "Update metadata when blueprint changes"
+    },
+    "metadata.updateOnLogicChange": {
+      "default": true,
+      "type": "boolean",
+      "description": "Update metadata when project logic changes"
+    }
+  },
+  "integrations": [
+    "01-system-initialization",
+    "02-project-initialization",
+    "04-theme-management",
+    "06-task-management",
+    "11-quality-assurance",
+    "12-user-interaction"
+  ],
+  "dependencies": [
+    "ProjectBlueprint/metadata.json",
+    "UserSettings/config.json",
+    "projectlogic.jsonl",
+    "Theme discovery system",
+    "MCP version compatibility"
+  ],
+  "keyOperations": [
+    "Metadata initialization and maintenance",
+    "Project characteristic tracking",
+    "Metadata vs configuration separation",
+    "Integration with project workflows",
+    "Metadata validation and error handling",
+    "Version management and history tracking"
+  ],
+  "errorHandling": {
+    "metadataCorruption": "Restore from backup and validate against project reality",
+    "validationFailure": "Provide clear error messages and correction suggestions",
+    "versionConflict": "Update MCP compatibility and resolve conflicts",
+    "structureInvalid": "Validate structure and fix invalid fields",
+    "backupFailure": "Log error and attempt alternative backup methods"
+  },
+  "validation": {
+    "metadataStructure": "Must conform to defined structure with required fields",
+    "metadataContent": "Must contain project facts, not user preferences",
+    "metadataUpdates": "Must be triggered by appropriate project changes",
+    "metadataIntegrity": "Must maintain consistency and accuracy",
+    "metadataVersioning": "Must track changes and maintain version history"
+  }
+}

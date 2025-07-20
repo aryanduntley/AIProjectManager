@@ -1,0 +1,392 @@
+{
+  "metadata": {
+    "id": "03-session-management",
+    "title": "Session Management Directives",
+    "priority": "high",
+    "frequency": "session-start",
+    "version": "1.0.0",
+    "humanReadable": "docs/directives/03-session-management.md"
+  },
+  "triggers": [
+    "Session start",
+    "Continue development",
+    "Task resumption",
+    "New session initialization"
+  ],
+  "workflows": {
+    "sessionBootProtocol": {
+      "directive": "Follow exact sequence when starting new sessions or 'continue development'",
+      "coreRequirements": [
+        "Load projectManagement/ProjectBlueprint/blueprint.md",
+        "Load projectManagement/ProjectFlow/flow-index.json and selective flow files",
+        "Load projectManagement/ProjectLogic/projectlogic.jsonl",
+        "Load projectManagement/Tasks/completion-path.json",
+        "Load projectManagement/Logs/noteworthy.json",
+        "Check projectManagement/Implementations/active/{activeImplementationPlan.md}",
+        "Check projectManagement/Tasks/active/{activeTask}.json",
+        "Load current implementation plan context and phase progress",
+        "Ensure proposed updates are confirmed by user before changing anything"
+      ],
+      "detailedBootSequence": [
+        "1. Read ProjectBlueprint for project understanding",
+        "2. Read ProjectFlow (flow-index.json) for interaction understanding",
+        "3. Read projectlogic.jsonl for reasoning history",
+        "4. Read projectManagement/Tasks/completion-path.json for current objectives",
+        "5. Review active tasks (Tasks/active/*.json)",
+        "6. If no active tasks, review last completed tasks",
+        "7. If needed, review archived task lists",
+        "8. Determine next steps with priority suggestions",
+        "9. Get user approval for direction",
+        "10. Determine context mode based on selected work",
+        "11. Generate task list for approved direction",
+        "12. Load theme context for selected tasks",
+        "13. Begin task execution"
+      ],
+      "taskManagementLogic": {
+        "autoTaskCreationTrue": {
+          "noIncompleteTasksAndCurrentImplementationPlan": [
+            "assess state and create next tasks",
+            "summarize tasks for user and create new task file"
+          ],
+          "noIncompleteTasksAndNoImplementationPlan": [
+            "review all statuses, review projectManagement/Tasks/completion-path.json",
+            "assess state, summarize to user state and indicate ready for next implementation plan",
+            "if approved, archive complete implementation plan if not already",
+            "generate new implementation plan, generate new task file",
+            "summarize tasks, ask user to start",
+            "if not approved, await further instructions"
+          ]
+        },
+        "autoTaskCreationFalse": {
+          "noIncompleteTasksAndCurrentImplementationPlan": [
+            "assess state and summarize tasks for user",
+            "await approval"
+          ],
+          "noIncompleteTasksAndNoImplementationPlan": [
+            "review all statuses, review projectManagement/Tasks/completion-path.json",
+            "assess state, summarize to user state and indicate ready for next implementation plan",
+            "if approved, archive complete implementation plan if not already",
+            "generate new implementation plan",
+            "assess state and next tasks, summarize tasks, ask user if ready to create next task file",
+            "if approved create new task file, ask user if ready to begin tasks",
+            "if not approved, await further instruction"
+          ]
+        }
+      },
+      "bootSequence": [
+        {
+          "step": 1,
+          "action": "readProjectBlueprint",
+          "file": "ProjectBlueprint/blueprint.md",
+          "purpose": "project understanding"
+        },
+        {
+          "step": 2,
+          "action": "readProjectFlow",
+          "file": "ProjectFlow/flow-index.json",
+          "purpose": "interaction understanding"
+        },
+        {
+          "step": 3,
+          "action": "readProjectLogic",
+          "file": "ProjectLogic/projectlogic.jsonl",
+          "purpose": "reasoning history"
+        },
+        {
+          "step": 4,
+          "action": "readCompletionPath",
+          "file": "Tasks/completion-path.json",
+          "purpose": "current objectives"
+        },
+        {
+          "step": 5,
+          "action": "checkImplementationPlan",
+          "directory": "Implementations/active/",
+          "purpose": "current implementation plan context"
+        },
+        {
+          "step": 6,
+          "action": "checkNoteworthyContext",
+          "file": "Logs/noteworthy.json",
+          "purpose": "latest noteworthy data"
+        },
+        {
+          "step": 7,
+          "action": "reviewActiveTasks",
+          "directory": "Tasks/active/",
+          "purpose": "incomplete tasks"
+        },
+        {
+          "step": 8,
+          "action": "reviewLastCompletedTasks",
+          "directory": "Tasks/archive/",
+          "condition": "no active tasks",
+          "purpose": "context for next steps"
+        },
+        {
+          "step": 9,
+          "action": "determineNextSteps",
+          "purpose": "priority suggestions"
+        },
+        {
+          "step": 10,
+          "action": "getUserApproval",
+          "purpose": "direction confirmation"
+        },
+        {
+          "step": 11,
+          "action": "determineContextMode",
+          "purpose": "based on selected work"
+        },
+        {
+          "step": 12,
+          "action": "generateTaskList",
+          "purpose": "approved direction"
+        },
+        {
+          "step": 13,
+          "action": "loadThemeContext",
+          "purpose": "selected tasks"
+        },
+        {
+          "step": 14,
+          "action": "beginTaskExecution",
+          "purpose": "start work"
+        }
+      ]
+    },
+    "taskManagementLogic": {
+      "directive": "Handle task resumption based on configuration",
+      "detailedProcess": [
+        "1. Check for active/incomplete tasks in Tasks/active/ directory",
+        "2. Load configuration setting: tasks.resumeTasksOnStart (default: false)",
+        "3. If active/incomplete tasks found:",
+        "   a. If resumeTasksOnStart = true: automatically resume active tasks, load appropriate context for task continuation, begin task execution with full context",
+        "   b. If resumeTasksOnStart = false: list all incomplete tasks with status and descriptions, present user with clear options, wait for user decision before proceeding",
+        "4. If no active tasks found: read last completed tasks from Tasks/archive/, compare last completed tasks to completion-path.json, identify next milestone or implementation plan phase, check for active implementation plan in Implementations/active/, if no implementation plan, analyze next milestone for plan creation"
+      ],
+      "userPromptFormat": "I found the following incomplete tasks:\n- TASK-ID: Description (status: in-progress)\n- TASK-ID: Description (status: pending)\n\nWould you like to resume these tasks or start with a new objective?",
+      "steps": [
+        {
+          "action": "checkActiveIncompleteTasks",
+          "directory": "Tasks/active/",
+          "required": true
+        },
+        {
+          "action": "loadConfiguration",
+          "setting": "tasks.resumeTasksOnStart",
+          "default": false,
+          "required": true
+        },
+        {
+          "action": "handleActiveTasksFound",
+          "condition": "active/incomplete tasks found",
+          "branches": {
+            "resumeTasksOnStartTrue": {
+              "actions": [
+                "automatically resume active tasks",
+                "load appropriate context for task continuation",
+                "begin task execution with full context"
+              ]
+            },
+            "resumeTasksOnStartFalse": {
+              "actions": [
+                "list all incomplete tasks with status and descriptions",
+                "present user with clear options",
+                "wait for user decision before proceeding"
+              ],
+              "userPromptFormat": "I found the following incomplete tasks:\n- TASK-ID: Description (status: in-progress)\n- TASK-ID: Description (status: pending)\n\nWould you like to resume these tasks or start with a new objective?"
+            }
+          }
+        },
+        {
+          "action": "handleNoActiveTasks",
+          "condition": "no active tasks found",
+          "steps": [
+            "read last completed tasks from Tasks/archive/",
+            "compare last completed tasks to completion-path.json",
+            "identify next milestone or implementation plan phase",
+            "check for active implementation plan in Implementations/active/",
+            "if no implementation plan, analyze next milestone for plan creation"
+          ]
+        }
+      ]
+    },
+    "implementationPlanIntegration": {
+      "directive": "Integrate implementation plans into session management",
+      "components": {
+        "activeImplementationPlan": "If exists, load current phase and progress",
+        "phaseContext": "Understanding of current implementation phase and objectives",
+        "taskGeneration": "Create tasks based on current implementation plan phase",
+        "strategicContinuity": "Maintain implementation strategy across sessions",
+        "noImplementationPlan": "If no active plan, analyze next milestone and create implementation plan"
+      }
+    },
+    "taskCompletionUpdates": {
+      "directive": "Follow systematic update process after task completion",
+      "detailedProcess": [
+        "1. Review completed task or sidequest file",
+        "2. If sidequest, review and update task file if needed",
+        "3. Review projectManagement/Tasks/completion-path.json update if needed",
+        "4. Review implementation plan update if needed, archive if needed",
+        "5. Review flow-index and flow files update if needed",
+        "6. Make any noteworthy notes to noteworthy.json (if needed, do not feel obligated to add things here)"
+      ],
+      "sidequestCompletion": [
+        "Archive sidequest file"
+      ],
+      "taskFileCompletion": [
+        "Ensure no fragmented sidequests",
+        "If fragments exist, review and complete sidequests",
+        "If issues arise, handle normally, involve user in decisions on how to proceed",
+        "Once complete review fragmented sidequest file",
+        "Review projectManagement/Tasks/completion-path.json update if needed",
+        "Review implementation plan update if needed, archive if needed",
+        "Review flow-index and flow files update if needed",
+        "Make any noteworthy notes to noteworthy.json (if needed, do not feel obligated to add things here)",
+        "Archive fragmented sidequest files",
+        "Archive task file"
+      ]
+    },
+    "userDiscussionAssessments": {
+      "directive": "Handle user discussions that may impact project organization",
+      "detailedTriggers": [
+        "Discussion about flow, logic, structure, dependencies, enhancements, refactoring, UI, coding practice, etc.",
+        "Things that could change the project blueprint",
+        "Things that could change the way the themes are defined or the files they may relate to",
+        "Things that could change the logic or understanding of the project as a whole",
+        "Things that could change the logic of a certain aspect of the project",
+        "Decision about the workings of any part of the project"
+      ],
+      "orderedUpdateProcess": [
+        "1. Review blueprint update if needed",
+        "2. Review metadata update if needed",
+        "3. Review projectlogic, update if needed",
+        "4. Review themes.json update if needed",
+        "5. Review theme files in Themes, update if needed according to themes.json, theme files must always match themes.json",
+        "6. Review projectManagement/Tasks/completion-path.json update if needed",
+        "7. Review implementation plan update if needed, archive if needed",
+        "8. Review flow-index and flow files update if needed",
+        "9. Make any noteworthy notes to noteworthy.json (if needed, do not feel obligated to add things here)"
+      ],
+      "approvalRequirement": "All changes to these files EXCEPT noteworthy and projectlogic, must be explicitly approved by the user. For projectlogic, since it's a historical record, make a generalized summary of changes made to projectlogic based on recent discussion.",
+      "updateProcess": [
+        {
+          "action": "reviewBlueprintUpdate",
+          "userApprovalRequired": true,
+          "condition": "if needed"
+        },
+        {
+          "action": "reviewMetadataUpdate",
+          "userApprovalRequired": true,
+          "condition": "if needed"
+        },
+        {
+          "action": "reviewProjectlogicUpdate",
+          "userApprovalRequired": false,
+          "condition": "if needed",
+          "note": "Make generalized summary of changes based on recent discussion"
+        },
+        {
+          "action": "reviewThemesJsonUpdate",
+          "userApprovalRequired": true,
+          "condition": "if needed"
+        },
+        {
+          "action": "reviewThemeFilesUpdate",
+          "userApprovalRequired": true,
+          "condition": "if needed",
+          "requirement": "theme files must always match themes.json"
+        },
+        {
+          "action": "reviewCompletionPathUpdate",
+          "userApprovalRequired": true,
+          "condition": "if needed"
+        },
+        {
+          "action": "reviewImplementationPlanUpdate",
+          "userApprovalRequired": true,
+          "condition": "if needed",
+          "note": "archive if needed"
+        },
+        {
+          "action": "reviewFlowIndexAndFlowFilesUpdate",
+          "userApprovalRequired": true,
+          "condition": "if needed"
+        },
+        {
+          "action": "makeNoteworthyNotes",
+          "userApprovalRequired": false,
+          "condition": "if needed",
+          "note": "do not feel obligated to add things here"
+        }
+      ]
+    }
+  },
+  "configSettings": {
+    "tasks.resumeTasksOnStart": {
+      "default": false,
+      "type": "boolean",
+      "description": "Automatically resume active tasks on session start"
+    },
+    "tasks.autoTaskCreation": {
+      "default": false,
+      "type": "boolean",
+      "description": "Automatically create tasks without user approval"
+    }
+  },
+  "integrations": [
+    "06-task-management",
+    "07-implementation-plans",
+    "08-project-management",
+    "12-user-interaction"
+  ],
+  "dependencies": [
+    "ProjectBlueprint/blueprint.md",
+    "ProjectFlow/flow-index.json",
+    "ProjectLogic/projectlogic.jsonl",
+    "Tasks/completion-path.json",
+    "Implementations/active/",
+    "Tasks/active/",
+    "Logs/noteworthy.json"
+  ],
+  "keyOperations": [
+    "Context loading",
+    "Task resumption",
+    "State preservation",
+    "Implementation plan integration",
+    "Organizational file updates"
+  ],
+  "sessionStateManagement": {
+    "directive": "Maintain session state through persistent project files",
+    "stateTracking": {
+      "activeTasks": "Tasks/active/ directory",
+      "projectProgress": "Tasks/completion-path.json",
+      "implementationPlans": "Implementations/active/",
+      "recentDecisions": "ProjectLogic/projectlogic.jsonl",
+      "noteworthyItems": "Logs/noteworthy.json"
+    },
+    "sessionContextRecovery": {
+      "bootSequence": "loads all relevant project files",
+      "activeTasks": "provide immediate context",
+      "projectLogic": "maintains reasoning history",
+      "implementationPlans": "track current objectives"
+    }
+  },
+  "sessionContinuityRequirements": {
+    "directive": "Ensure seamless transitions between sessions",
+    "statePreservation": [
+      "All work states saved in appropriate files",
+      "Context loading can recreate working environment",
+      "Task dependencies and relationships maintained",
+      "User preferences and decisions preserved",
+      "Project logic evolution tracked"
+    ],
+    "recoveryCapabilities": [
+      "Can resume from any interruption point",
+      "Previous session state fully recoverable",
+      "Context can be recreated from saved state",
+      "Task progress maintained across sessions"
+    ]
+  }
+}
