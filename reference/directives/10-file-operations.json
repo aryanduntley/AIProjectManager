@@ -184,5 +184,27 @@
     "sharedFiles": "Shared files must be assessed for cross-theme impact",
     "readme": "README files must be updated when directory structure changes",
     "modularization": "All modularization must maintain functional integrity"
+  },
+  "basicFileOperationIssues": {
+    "directive": "Handle common file operation issues with basic user communication and escalation awareness",
+    "commonIssues": {
+      "lineLimitExceeded": {
+        "basicResponse": "File [FILE] exceeds line limit ([N]/[LIMIT]). Modularizing into logical components: [COMPONENT_LIST]",
+        "escalationTrigger": "IF modularization complex or affects multiple files → ESCALATE to docs/directives/10-file-operations.md for advanced modularization strategies"
+      },
+      "sharedFileModification": {
+        "basicResponse": "Modifying shared file [FILE]. Impact assessment: affects themes [THEME_LIST]. Proceeding with cross-theme validation.",
+        "escalationTrigger": "IF shared file changes have complex implications → ESCALATE for comprehensive impact analysis procedures"
+      },
+      "placeholderDetected": {
+        "basicResponse": "Placeholder pattern detected: [PATTERN]. Converting to complete implementation as per project.avoidPlaceholders setting.",
+        "escalationTrigger": "IF placeholder replacement requires complex logic → ESCALATE for detailed implementation strategies"
+      },
+      "readmeUpdateRequired": {
+        "basicResponse": "Directory structure changed. Updating README.md to reflect: [CHANGES]",
+        "escalationTrigger": "IF README updates affect multiple directories or complex documentation → ESCALATE for comprehensive documentation protocols"
+      }
+    },
+    "escalationAwareness": "WHEN file operations encounter complexity beyond basic handling → ESCALATE to docs/directives/10-file-operations.md for comprehensive file management protocols"
   }
 }

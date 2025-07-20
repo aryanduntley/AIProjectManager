@@ -11,7 +11,8 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 from core.mcp_api import ToolDefinition
-from utils.theme_discovery import ThemeDiscovery
+from database.theme_flow_queries import ThemeFlowQueries
+from database.file_metadata_queries import FileMetadataQueries
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +20,9 @@ logger = logging.getLogger(__name__)
 class ThemeTools:
     """Tools for theme management and discovery."""
     
-    def __init__(self):
-        self.theme_discovery = ThemeDiscovery()
+    def __init__(self, theme_flow_queries: Optional[ThemeFlowQueries] = None, file_metadata_queries: Optional[FileMetadataQueries] = None):
+        self.theme_flow_queries = theme_flow_queries
+        self.file_metadata_queries = file_metadata_queries
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get all theme management tools."""
@@ -219,6 +221,44 @@ class ThemeTools:
                     "required": ["project_path"]
                 },
                 handler=self.validate_themes
+            ),
+            ToolDefinition(
+                name="theme_sync_flows",
+                description="Synchronize theme-flow relationships with database",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "project_path": {
+                            "type": "string",
+                            "description": "Path to the project directory"
+                        },
+                        "theme_name": {
+                            "type": "string",
+                            "description": "Specific theme to sync (optional)"
+                        }
+                    },
+                    "required": ["project_path"]
+                },
+                handler=self.sync_theme_flows
+            ),
+            ToolDefinition(
+                name="theme_get_flows",
+                description="Get flows associated with a theme",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "project_path": {
+                            "type": "string",
+                            "description": "Path to the project directory"
+                        },
+                        "theme_name": {
+                            "type": "string",
+                            "description": "Theme name"
+                        }
+                    },
+                    "required": ["project_path", "theme_name"]
+                },
+                handler=self.get_theme_flows
             )
         ]
     
@@ -238,21 +278,32 @@ class ThemeTools:
             if themes_file.exists() and not force_rediscovery:
                 return f"Themes already exist. Use force_rediscovery=true to rediscover."
             
-            # Discover themes
+            # Perform basic theme discovery (placeholder logic)
             logger.info(f"Discovering themes in {project_path}")
-            discovery_result = self.theme_discovery.discover_themes(project_path)
             
-            if not discovery_result.get('themes'):
+            # Basic theme discovery based on directory structure
+            discovered_themes = await self._discover_themes_basic(project_path)
+            
+            if not discovered_themes:
                 return "No themes discovered in the project."
             
             # Save discovered themes
-            await self._save_themes(themes_dir, discovery_result['themes'])
+            await self._save_themes(themes_dir, discovered_themes)
             
             # Update master themes index
-            await self._update_themes_index(themes_dir, discovery_result)
+            await self._update_themes_index(themes_dir, {"themes": discovered_themes})
             
-            theme_count = len(discovery_result['themes'])
-            theme_names = list(discovery_result['themes'].keys())
+            # Log theme discovery if database available
+            if self.file_metadata_queries:
+                self.file_metadata_queries.log_file_modification(
+                    file_path=str(themes_dir),
+                    file_type="theme",
+                    operation="create",
+                    details={"themes_discovered": list(discovered_themes.keys()), "count": len(discovered_themes)}
+                )
+            
+            theme_count = len(discovered_themes)
+            theme_names = list(discovered_themes.keys())
             
             return f"Successfully discovered {theme_count} themes: {', '.join(theme_names)}. Themes saved to {themes_dir}"
             
@@ -296,6 +347,15 @@ class ThemeTools:
             
             # Update themes index
             await self._add_to_themes_index(themes_dir, theme_name, description)
+            
+            # Log theme creation if database available
+            if self.file_metadata_queries:
+                self.file_metadata_queries.log_file_modification(
+                    file_path=str(theme_file),
+                    file_type="theme",
+                    operation="create",
+                    details={"theme_name": theme_name, "description": description}
+                )
             
             return f"Theme '{theme_name}' created successfully at {theme_file}"
             
@@ -387,6 +447,15 @@ class ThemeTools:
             # Save updated theme
             theme_file.write_text(json.dumps(theme_data, indent=2))
             
+            # Log theme update if database available
+            if self.file_metadata_queries:
+                self.file_metadata_queries.log_file_modification(
+                    file_path=str(theme_file),
+                    file_type="theme",
+                    operation="update",
+                    details={"theme_name": theme_name, "updates": list(updates.keys())}
+                )
+            
             return f"Theme '{theme_name}' updated successfully."
             
         except Exception as e:
@@ -414,6 +483,15 @@ class ThemeTools:
             
             # Update themes index
             await self._remove_from_themes_index(themes_dir, theme_name)
+            
+            # Log theme deletion if database available
+            if self.file_metadata_queries:
+                self.file_metadata_queries.log_file_modification(
+                    file_path=str(theme_file),
+                    file_type="theme",
+                    operation="delete",
+                    details={"theme_name": theme_name}
+                )
             
             return f"Theme '{theme_name}' deleted successfully."
             
@@ -609,3 +687,171 @@ class ThemeTools:
             if theme_name in index_data:
                 del index_data[theme_name]
                 themes_index.write_text(json.dumps(index_data, indent=2))
+    
+    async def _discover_themes_basic(self, project_path: Path) -> Dict[str, Any]:
+        """Basic theme discovery based on directory structure."""
+        themes = {}
+        
+        # Common source directories to check
+        source_dirs = [
+            "src", "lib", "app", "components", "services", 
+            "utils", "hooks", "pages", "views", "controllers"
+        ]
+        
+        for src_dir_name in source_dirs:
+            src_dir = project_path / src_dir_name
+            if src_dir.exists() and src_dir.is_dir():
+                # Look for subdirectories as potential themes
+                for subdir in src_dir.iterdir():
+                    if subdir.is_dir() and not subdir.name.startswith('.'):
+                        theme_name = subdir.name.lower()
+                        if theme_name not in themes:
+                            themes[theme_name] = {
+                                "theme": theme_name,
+                                "category": "discovered",
+                                "description": f"Auto-discovered theme from {src_dir_name}/{subdir.name}",
+                                "confidence": 0.7,
+                                "paths": [str(subdir.relative_to(project_path))],
+                                "files": self._get_files_in_directory(subdir, project_path),
+                                "linkedThemes": [],
+                                "sharedFiles": {},
+                                "frameworks": [],
+                                "keywords": [theme_name],
+                                "createdDate": datetime.now().isoformat(),
+                                "createdBy": "auto-discovery"
+                            }
+        
+        # If no themes discovered from subdirectories, create a default theme
+        if not themes:
+            themes["main"] = {
+                "theme": "main",
+                "category": "default",
+                "description": "Main application theme",
+                "confidence": 0.8,
+                "paths": ["src", "app", "lib"],
+                "files": self._get_files_in_directory(project_path, project_path, max_depth=2),
+                "linkedThemes": [],
+                "sharedFiles": {},
+                "frameworks": [],
+                "keywords": ["main", "app"],
+                "createdDate": datetime.now().isoformat(),
+                "createdBy": "auto-discovery"
+            }
+        
+        return themes
+    
+    def _get_files_in_directory(self, directory: Path, project_path: Path, max_depth: int = 3) -> List[str]:
+        """Get files in a directory with depth limit."""
+        files = []
+        try:
+            for item in directory.rglob('*'):
+                if item.is_file() and self._is_source_file(item):
+                    rel_path = item.relative_to(project_path)
+                    # Check depth
+                    if len(rel_path.parts) <= max_depth:
+                        files.append(str(rel_path))
+        except Exception as e:
+            logger.warning(f"Error scanning directory {directory}: {e}")
+        return files[:50]  # Limit to 50 files per theme
+    
+    def _is_source_file(self, file_path: Path) -> bool:
+        """Check if file is a source code file."""
+        source_extensions = {
+            '.py', '.js', '.ts', '.jsx', '.tsx', '.java', '.cpp', '.c', '.h',
+            '.cs', '.rb', '.php', '.go', '.rs', '.swift', '.kt', '.scala',
+            '.html', '.css', '.scss', '.less', '.vue', '.svelte'
+        }
+        return file_path.suffix.lower() in source_extensions
+    
+    async def sync_theme_flows(self, arguments: Dict[str, Any]) -> str:
+        """Synchronize theme-flow relationships with database."""
+        try:
+            project_path = Path(arguments["project_path"])
+            specific_theme = arguments.get("theme_name")
+            
+            if not self.theme_flow_queries:
+                return "Database not available. Theme-flow synchronization requires database connection."
+            
+            themes_dir = project_path / "projectManagement" / "Themes"
+            flow_dir = project_path / "projectManagement" / "ProjectFlow"
+            
+            if not themes_dir.exists():
+                return "No themes directory found. Initialize project first."
+            
+            # Load flow index
+            flow_index_path = flow_dir / "flow-index.json"
+            if not flow_index_path.exists():
+                return "No flow index found. Initialize flows first."
+            
+            flow_index_data = json.loads(flow_index_path.read_text())
+            
+            # Load theme files
+            theme_files_data = {}
+            themes_to_sync = [specific_theme] if specific_theme else []
+            
+            if not themes_to_sync:
+                # Load all themes
+                for theme_file in themes_dir.glob("*.json"):
+                    if theme_file.name != "themes.json":
+                        theme_name = theme_file.stem
+                        try:
+                            theme_data = json.loads(theme_file.read_text())
+                            if "flows" in theme_data:
+                                theme_files_data[theme_name] = theme_data
+                        except json.JSONDecodeError:
+                            logger.warning(f"Invalid JSON in theme file: {theme_file}")
+            else:
+                # Load specific theme
+                theme_file = themes_dir / f"{specific_theme}.json"
+                if theme_file.exists():
+                    theme_data = json.loads(theme_file.read_text())
+                    if "flows" in theme_data:
+                        theme_files_data[specific_theme] = theme_data
+            
+            if not theme_files_data:
+                return "No themes with flow data found to synchronize."
+            
+            # Synchronize with database
+            sync_results = await self.theme_flow_queries.sync_theme_flows_from_files(
+                theme_files_data, flow_index_data
+            )
+            
+            return f"Theme-flow synchronization completed:\n{json.dumps(sync_results, indent=2)}"
+            
+        except Exception as e:
+            logger.error(f"Error synchronizing theme flows: {e}")
+            return f"Error synchronizing theme flows: {str(e)}"
+    
+    async def get_theme_flows(self, arguments: Dict[str, Any]) -> str:
+        """Get flows associated with a theme."""
+        try:
+            project_path = Path(arguments["project_path"])
+            theme_name = arguments["theme_name"]
+            
+            if not self.theme_flow_queries:
+                return "Database not available. Theme-flow queries require database connection."
+            
+            # Get flows from database
+            flows = await self.theme_flow_queries.get_flows_for_theme(theme_name)
+            
+            if not flows:
+                return f"No flows found for theme '{theme_name}'."
+            
+            # Get flow status if available
+            flows_with_status = []
+            for flow in flows:
+                flow_status = await self.theme_flow_queries.get_flow_status(flow["flow_id"])
+                flow_info = {
+                    "flow_id": flow["flow_id"],
+                    "flow_file": flow["flow_file"],
+                    "relevance_order": flow["relevance_order"],
+                    "status": flow_status["status"] if flow_status else "unknown",
+                    "completion_percentage": flow_status["completion_percentage"] if flow_status else 0
+                }
+                flows_with_status.append(flow_info)
+            
+            return f"Flows for theme '{theme_name}':\n{json.dumps(flows_with_status, indent=2)}"
+            
+        except Exception as e:
+            logger.error(f"Error getting theme flows: {e}")
+            return f"Error getting theme flows: {str(e)}"

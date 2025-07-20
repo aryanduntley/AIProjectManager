@@ -17,12 +17,13 @@
     "TODO review mandatory before project completion"
   ],
   "sessionBootSequence": [
+    "Initialize database connection and restore session context from project.db",
     "Read ProjectBlueprint for project understanding",
     "Read completion-path.json for current milestone status", 
     "Check for active implementation plan in Implementations/active/",
-    "Load active tasks with milestone/theme/flow context",
-    "Resume incomplete tasks or generate next phase tasks",
-    "Load appropriate theme context based on task scope"
+    "Load active tasks with milestone/theme/flow context from database status",
+    "Resume incomplete tasks or generate next phase tasks with preserved context",
+    "Load appropriate theme context based on database theme-flow relationships"
   ],
   "decisionHierarchy": [
     "User safety and data integrity",

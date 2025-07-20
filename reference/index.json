@@ -1,9 +1,10 @@
 {
   "metadata": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "created": "2025-01-17T12:00:00Z",
+    "lastUpdated": "2025-01-20T12:00:00Z",
     "description": "Flow-based index of AI Project Manager directives for MCP workflow navigation",
-    "totalDirectives": 13,
+    "totalDirectives": 14,
     "flowPhases": 6,
     "humanReadableDocs": "docs/directives/",
     "organizationReference": "reference/organization.json"
@@ -28,6 +29,13 @@
           "triggers": ["New project creation", "Existing project analysis"],
           "keyWorkflows": ["newProject", "existingProject"],
           "criticalSettings": ["autoTaskCreation", "lastUpdatedBehavior"]
+        },
+        "database-integration": {
+          "file": "reference/directives/database-integration.json",
+          "purpose": "Database integration protocols for hybrid file-database architecture",
+          "triggers": ["Project initialization", "Database setup", "State synchronization"],
+          "keyWorkflows": ["hybridArchitecture", "realTimeStateSynchronization", "sessionPersistence"],
+          "criticalSettings": ["database.enabled", "synchronization.atomicOperations"]
         }
       },
       "keyDecisionPoints": [
@@ -46,9 +54,9 @@
       "directives": {
         "03-session-management": {
           "file": "reference/directives/03-session-management.json",
-          "purpose": "Handle session continuity and boot sequences",
+          "purpose": "Handle database-enhanced session continuity and boot sequences",
           "triggers": ["Session start", "Continue development", "Task resumption"],
-          "keyWorkflows": ["sessionBootProtocol", "taskManagementLogic", "implementationPlanIntegration"],
+          "keyWorkflows": ["databaseSessionBootProtocol", "sessionContextRestoration", "implementationPlanIntegration"],
           "criticalSettings": ["tasks.resumeTasksOnStart", "tasks.autoTaskCreation"]
         },
         "12-user-interaction": {
@@ -57,6 +65,13 @@
           "triggers": ["User approval needed", "Communication requirements"],
           "keyWorkflows": ["userApprovalRequirements", "communicationProtocol", "preferenceAdaptation"],
           "criticalSettings": ["project.backwardsCompatibility"]
+        },
+        "database-integration": {
+          "file": "reference/directives/database-integration.json",
+          "purpose": "Database-enhanced session continuity and state preservation",
+          "triggers": ["Session boot", "Context restoration", "State synchronization"],
+          "keyWorkflows": ["sessionPersistence", "contextSnapshots", "taskStatusTracking"],
+          "criticalSettings": ["sessions.contextSnapshots", "synchronization.realTimeUpdates"]
         }
       },
       "keyDecisionPoints": [
@@ -82,9 +97,9 @@
         },
         "05-context-loading": {
           "file": "reference/directives/05-context-loading.json",
-          "purpose": "Efficient context loading strategies with multi-flow support",
+          "purpose": "Database-enhanced context loading strategies with multi-flow support",
           "triggers": ["Task execution", "Context escalation", "Memory optimization", "Multi-flow loading"],
-          "keyWorkflows": ["contextModeSelection", "readmeGuidedLoading", "contextEscalation", "selectiveFlowLoading"],
+          "keyWorkflows": ["contextModeSelection", "databaseEnhancedLoading", "contextEscalation", "selectiveFlowLoading"],
           "criticalSettings": ["contextLoading.defaultMode", "contextLoading.readmeFirst", "contextLoading.maxFlowFiles"]
         },
         "13-metadata-management": {
@@ -93,6 +108,13 @@
           "triggers": ["Metadata updates", "Project characteristic changes"],
           "keyWorkflows": ["metadataInitialization", "updateTriggers", "workflowIntegration"],
           "criticalSettings": []
+        },
+        "context-escalation-system": {
+          "file": "reference/directives/context-escalation-system.json",
+          "purpose": "Directive context escalation for complex scenarios and user communication",
+          "triggers": ["Directive ambiguity", "User communication needed", "Complex workflow execution", "Edge case handling"],
+          "keyWorkflows": ["escalationChain", "userApprovalProcess", "contextPreservation"],
+          "criticalSettings": ["escalation.automaticJSON", "escalation.requireMDApproval"]
         }
       },
       "keyDecisionPoints": [
@@ -268,6 +290,11 @@
   "quickReference": {
     "systemStart": "phase1.01-system-initialization",
     "sessionBoot": "phase2.03-session-management",
+    "databaseIntegration": "phase1.database-integration + phase2.database-integration",
+    "stateSynchronization": "phase1.database-integration + phase2.database-integration",
+    "sessionPersistence": "phase2.database-integration",
+    "directiveEscalation": "phase3.context-escalation-system",
+    "contextEscalation": "phase3.05-context-loading + phase3.context-escalation-system",
     "themeDiscovery": "phase3.04-theme-management",
     "contextLoading": "phase3.05-context-loading",
     "multiFlowResourceOptimization": "phase3.05-context-loading",

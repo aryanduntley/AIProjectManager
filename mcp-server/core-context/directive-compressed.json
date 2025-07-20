@@ -14,10 +14,12 @@
     "triggers": ["New project creation", "Existing project analysis"],
     "workflows": {
       "newProject": [
+        "Initialize database: Create project.db from mcp-server/database/schema.sql",
         "Create projectManagement/ structure from templates",
         "Generate initial blueprint.md with user discussion",
         "Create basic theme structure and flow index", 
-        "Initialize completion-path.json with project objectives"
+        "Initialize completion-path.json with project objectives",
+        "Initialize database with default session and project metadata"
       ],
       "existingProject": [
         "Analyze current project structure and codebase",
@@ -30,21 +32,24 @@
   },
   "sessionManagement": {
     "bootSequence": [
+      "Initialize database connection and restore session context from project.db",
       "Read ProjectBlueprint for project context",
-      "Read completion-path.json for milestone status",
-      "Check for active implementation plan",
-      "Load incomplete tasks with theme/flow context",
-      "Generate next phase tasks if no active tasks",
-      "Load appropriate theme context for execution"
+      "Read completion-path.json + implementation plan status from database",
+      "Restore active themes, tasks, sidequests from session database context",
+      "Load recent noteworthy events from database",
+      "Assess current state using database task/sidequest status queries",
+      "Load appropriate theme context using database theme-flow relationships"
     ],
-    "contextRestoration": "Use projectlogic.jsonl for decision history and reasoning context",
-    "taskResumption": "Resume based on tasks.resumeTasksOnStart configuration"
+    "contextRestoration": "Database session snapshots + projectlogic.jsonl for complete context restoration",
+    "taskResumption": "Database-driven task resumption with preserved session state",
+    "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/03-session-management.json for session continuity protocols, boot sequence details, and user communication templates"
   },
   "themeManagement": {
     "autoDiscovery": {
       "methods": ["keyword matching", "folder structure analysis", "import reference graphs"],
       "categories": ["Functional Domains", "Technical Layers", "UI Components", "External Integrations", "Data Management", "Operational"],
-      "validation": "User approval required for all discovered themes"
+      "validation": "User approval required for all discovered themes",
+    "detailedImplementation": "LOAD reference/directives/04-theme-management.json for complete theme discovery workflows, conflict resolution, and user communication protocols"
     },
     "maintenance": {
       "triggers": ["file creation", "file deletion", "file movement", "directory restructuring"],
@@ -57,17 +62,26 @@
       "theme-expanded": "Load primary + linked themes for cross-theme tasks", 
       "project-wide": "Full project context - only for architectural changes"
     },
-    "readmeGuidedProcess": [
+    "databaseEnhancedProcess": [
       "Load theme structure from Themes/[theme].json",
-      "Read README.md files in relevant directories first",
-      "Assess specific files needed based on task requirements",
-      "Load only determined necessary files"
+      "Query database for intelligent directory metadata and file relationships",
+      "Read README.md files in relevant directories for human-readable context",
+      "Combine database insights with README context to assess task requirements",
+      "Load only files determined necessary through database analytics"
     ],
-    "escalation": "AI can escalate context mode when insufficient, user can override to project-wide"
+    "escalation": "AI can escalate context mode when insufficient, user can override to project-wide",
+    "implementationRequired": "LOAD reference/directives/05-context-loading.json for complete context loading protocols, memory optimization, and escalation procedures"
   },
   "taskManagement": {
+    "realTimeStatePreservation": {
+      "mandatoryRequirement": "After EVERY subtask completion, step completion, or any work unit completion, ALL organizational files and database records MUST be immediately updated",
+      "purpose": "Ensure seamless session restoration and prevent work loss from premature session termination",
+      "updateRequirements": ["Database status/progress/timestamps", "Task files synchronization", "Session context snapshots", "Event logging", "Theme relationship updates"],
+      "atomicOperation": "All updates must succeed or entire completion step fails and must be retried",
+      "sessionRestorationGoal": "AI must resume exactly where work left off with minimal review and zero lost progress"
+    },
     "requiredIntegration": ["milestone from completion-path.json", "primary/related themes", "flow references with flowFile context"],
-    "lifecycle": ["creation with validation", "execution with context loading", "completion validation", "archival"],
+    "lifecycle": ["creation with validation", "execution with context loading", "completion validation with state preservation", "archival"],
     "sidequests": {
       "purpose": "Support multiple simultaneous sidequests for tangential work with configurable limits",
       "multipleSidequestSupport": {
@@ -83,6 +97,7 @@
         "Update Tracking: Add to current subtask's relatedSidequests array",
         "Sidequest Completion: Update parent task if needed, archive sidequest, restore context, resume from exact pause point"
       ],
+      "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/06-task-management.json for user communication protocols, limit management, and complete workflow specifications",
       "contextSwitching": {
         "pause": "Save current subtask ID, progress, loaded themes/files, exact position in flow",
         "resume": "Restore exact subtask state and context, continue from pause point"
@@ -114,13 +129,54 @@
       "individualFlows": "Domain-specific flow files (authentication-flow.json, payment-flow.json)",
       "selectiveLoading": "AI loads only relevant flow files based on task context"
     },
-    "logicTracking": "Record decisions and reasoning in projectlogic.jsonl"
+    "logicTracking": "Record decisions and reasoning in projectlogic.jsonl",
+    "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/08-project-management.json for blueprint management protocols, flow documentation procedures, and approval workflows"
+  },
+  "databaseIntegration": {
+    "realTimeStateSynchronization": {
+      "mandatoryRequirement": "ALL organizational files MUST be synchronized with database records in real-time",
+      "syncTriggers": ["Task status changes", "Subtask completion", "Sidequest creation/completion", "Session updates", "Theme modifications"],
+      "atomicOperations": "File updates and database updates must succeed together or fail together",
+      "sessionRestoration": "Database context snapshots enable complete session restoration from any interruption point"
+    },
+    "databaseOperations": {
+      "sessionPersistence": {
+        "tables": ["sessions", "session_context"],
+        "operations": ["start_session()", "save_context_snapshot()", "restore_session_context()", "track_session_activity()"],
+        "contextSnapshots": "Save complete AI state including loaded themes, active tasks, current subtask position, flow context"
+      },
+      "taskStatusTracking": {
+        "tables": ["task_status", "subtask_status", "sidequest_status", "task_queue"],
+        "operations": ["update_task_status()", "track_progress()", "manage_sidequests()", "coordinate_queue()"],
+        "realTimeUpdates": "Immediate database updates after every work completion unit"
+      },
+      "themeFlowIntelligence": {
+        "tables": ["theme_flows", "flow_status", "flow_step_status"],
+        "operations": ["get_themes_for_flow()", "get_flows_for_theme()", "sync_theme_flows()", "track_flow_progress()"],
+        "contextOptimization": "Database queries enable fast theme-based context loading"
+      },
+      "eventAnalytics": {
+        "tables": ["noteworthy_events", "event_relationships"],
+        "operations": ["log_event()", "track_decision_patterns()", "analyze_context_escalations()", "get_recent_events()"],
+        "realTimeLogging": "Current events in database for fast queries, archived to files when size limits reached"
+      }
+    },
+    "hybridArchitecture": {
+      "filesPreserved": ["blueprint.md", "projectlogic.jsonl", "flow-index.json", "individual flow files", "task definitions", "theme definitions"],
+      "databaseEnhanced": ["Status tracking", "Session persistence", "Relationship management", "Analytics", "Performance optimization"],
+      "synchronizationProtocol": "Files remain source of truth for definitions, database provides operational intelligence"
+    }
   },
   "loggingDocumentation": {
-    "triggers": ["significant decisions", "user feedback", "context escalations", "shared file modifications"],
+    "hybridApproach": {
+      "projectlogic": "Major logic shifts in projectlogic.jsonl (file-based)",
+      "noteworthyEvents": "Real-time technical decisions in database (noteworthy_events table)",
+      "archiveFiles": "Auto-created when database events exceed size limits"
+    },
+    "triggers": ["significant decisions", "user feedback", "context escalations", "shared file modifications", "session events", "decision patterns"],
     "archiving": {
       "projectlogic": "Auto-archive when >= projectlogicSizeLimit (default: 2MB)",
-      "noteworthy": "Auto-archive when >= noteworthySizeLimit (default: 1MB)"
+      "databaseEvents": "Auto-archive to noteworthy.json when >= noteworthySizeLimit (default: 1MB)"
     }
   },
   "fileOperations": {
@@ -133,7 +189,8 @@
       "prohibited": ["...continued", "TODO: implement", "placeholder", "rest unchanged"],
       "requirement": "Complete implementations only when project.avoidPlaceholders=true"
     },
-    "readmeManagement": "Update directory README.md with every significant file change"
+    "readmeManagement": "Update directory README.md with every significant file change",
+    "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/10-file-operations.json for file modification protocols, line limit procedures, and modularization strategies"
   },
   "qualityAssurance": {
     "smartValidation": {
@@ -154,14 +211,39 @@
     ],
     "dataIntegrity": "Cross-reference consistency, file existence validation, dependency checking"
   },
+  "directiveContextEscalation": {
+    "escalationChain": "directive-compressed.json \u2192 reference/directives/*.json \u2192 docs/directives/*.md",
+    "escalationTriggers": [
+      "Ambiguity in directive interpretation",
+      "First-time complex workflow execution", 
+      "User communication protocol needed",
+      "Edge case or error scenario",
+      "Configuration impact uncertainty",
+      "Validation failure requiring detailed context"
+    ],
+    "escalationProtocol": {
+      "level1Compressed": "Always start with directive-compressed.json for basic workflow understanding",
+      "level2JSON": "Escalate to reference/directives/{directive}.json for detailed implementation specifications when compressed context insufficient",
+      "level3MD": "Escalate to docs/directives/{directive}.md for comprehensive context, examples, user communication protocols, and edge case handling",
+      "automaticEscalation": "AI can escalate to JSON level without user approval when facing ambiguity",
+      "userApprovalRequired": "AI should request permission before escalating to MD level for complex analysis"
+    },
+    "whenToEscalate": {
+      "toJSON": ["Implementation details needed", "Configuration validation required", "Workflow step clarification needed"],
+      "toMD": ["First-time sidequest creation", "User communication needed", "Configuration limit handling", "Complex validation scenarios", "Error recovery procedures", "Workflow transition messaging"]
+    },
+    "contextPreservation": "Maintain findings from each escalation level to avoid re-reading same files"
+  },
   "userInteraction": {
     "approvalRequired": ["Project blueprint changes", "Theme modifications", "Completion path updates", "Implementation plan creation", "Structural project changes"],
     "communication": "Clear presentation of changes with rationale, explicit approval requests",
-    "preferenceAdaptation": "Learn from user decisions and adapt future behavior"
+    "preferenceAdaptation": "Learn from user decisions and adapt future behavior",
+    "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/12-user-interaction.json for communication protocols, approval procedures, and user preference management"
   },
   "metadataManagement": {
     "triggers": ["Project characteristic changes", "Theme discovery updates", "Blueprint modifications"],
     "maintenance": "Dynamic updates to metadata.json with project evolution",
-    "integration": "Coordinate with theme discovery and project logic tracking"
+    "integration": "Coordinate with theme discovery and project logic tracking",
+    "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/13-metadata-management.json for metadata update protocols, trigger conditions, and integration procedures"
   }
 }

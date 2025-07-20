@@ -66,6 +66,22 @@
         "Request clarification when requirements unclear",
         "Confirm understanding before proceeding"
       ],
+      "basicMessageTemplates": {
+        "statusUpdate": "Status: [ACTION] - [PROGRESS] ([PERCENTAGE]% complete)",
+        "errorEncountered": "Issue encountered: [ERROR_TYPE]. [BASIC_EXPLANATION]. Options: [OPTIONS]",
+        "approvalRequest": "Approval needed for [ACTION]. Impact: [IMPACT]. Proceed? (yes/no)",
+        "limitReached": "[RESOURCE] limit reached ([N]/[MAX]). Available options: [OPTION_LIST]",
+        "escalationNotice": "This requires detailed analysis. May I access comprehensive documentation to provide better guidance?"
+      },
+      "communicationEscalationTriggers": [
+        "User expresses confusion about AI actions",
+        "Multiple clarification requests from user", 
+        "Complex approval scenarios with multiple impacts",
+        "Error scenarios requiring detailed explanation",
+        "Configuration changes with complex consequences",
+        "First-time complex workflow execution"
+      ],
+      "escalationProtocol": "WHEN communication unclear or user confused → ESCALATE to docs/directives/12-user-interaction.md for comprehensive communication protocols",
       "steps": [
         {
           "action": "assessCommunicationNeeds",

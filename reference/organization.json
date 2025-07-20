@@ -127,24 +127,24 @@
         "directories": ["database/"],
         "purposes": {
           "project.db": "SQLite database for persistent theme-flow relationships, session tracking, and project analytics",
-          "database/": "Database management files including schema and migrations"
+          "database/": "Database management files for backup storage"
         },
         "databaseDirectory": {
-          "files": ["schema.sql"],
-          "directories": ["migrations/"],
+          "directories": ["backups/"],
           "purposes": {
-            "schema.sql": "Database schema definition and initial structure",
-            "migrations/": "Schema migration files for database updates"
+            "backups/": "Periodic database backups for recovery (schema.sql maintained in MCP server for security)"
           }
         },
         "approvalRequired": false,
         "format": "sqlite",
         "features": {
-          "themeFlowRelationships": "Many-to-many relationships between themes and flows",
-          "sessionTracking": "Session start times, duration, and context",
-          "fileModifications": "Track file changes and operations",
-          "taskMetrics": "Task completion metrics and velocity tracking",
-          "userPreferences": "Learn and store user preferences over time"
+          "sessionPersistence": "Complete session state preservation across disconnections with context snapshots",
+          "taskLifecycleManagement": "Real-time task/subtask/sidequest status tracking with multiple sidequest support",
+          "themeFlowIntelligence": "Many-to-many theme-flow relationships with relevance ordering and fast lookups",
+          "fileOperations": "Intelligent file discovery and impact analysis replacing README.json approach",
+          "userLearning": "Preference tracking and adaptive AI behavior based on usage patterns",
+          "eventAnalytics": "Real-time event tracking and pattern recognition for decision analysis",
+          "projectIntelligence": "Comprehensive analytics and predictive insights for optimization"
         }
       }
     }

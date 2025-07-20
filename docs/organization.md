@@ -70,8 +70,7 @@ The structure is designed to:
     │   └── config.json
     ├── project.db                 # SQLite database for persistent theme-flow relationships, session tracking, and project analytics
     └── database/
-        ├── schema.sql             # Database schema definition
-        └── migrations/            # Schema migration files
+        └── backups/               # Database backups for recovery (recommended periodic backups)
 ```
 
 > **Note**: This structure is created inside `/projectRoot/projectManagement/` by the MCP server. It represents the project’s managed state and persists throughout development.
@@ -431,41 +430,59 @@ This implementation plans system provides the strategic planning layer that brid
 
 ### 7.2 Database Schema
 
-**Schema Location**: `projectManagement/database/schema.sql`
-**Template Location**: `reference/templates/database/schema.sql`
+**Schema Location**: `mcp-server/database/schema.sql` (422-line comprehensive schema, source of truth)
+**Security**: Schema never copied to project directories to prevent accidental corruption
 
-**Primary Tables**:
-- `theme_flows` - Many-to-many theme-flow relationships with relevance ordering
-- `sessions` - Session tracking with start time, context, active themes, and tasks
-- `file_modifications` - Track file changes with session context
-- `task_metrics` - Task completion metrics and performance data
-- `user_preferences` - Learn user preferences and decision patterns
-- `theme_evolution` - Track theme changes and evolution
+**Core Tables**:
+- `sessions` + `session_context` - Session persistence and context snapshots  
+- `task_status` + `sidequest_status` + `subtask_status` - Complete task lifecycle management
+- `task_queue` - Multi-task coordination with context preservation
+- `task_sidequest_limits` - Multiple sidequest support with automatic enforcement
+- `theme_flows` + `flow_status` + `flow_step_status` - Theme-flow intelligence with status tracking
+- `file_modifications` + `directory_metadata` + `file_metadata` - Intelligent file operations
+- `user_preferences` - AI learning and adaptation
+- `task_metrics` + `theme_evolution` - Analytics and insights
+- `noteworthy_events` + `event_relationships` - Real-time event analytics
 
-### 7.3 Database Directory Structure
+**Advanced Features**:
+- Multiple sidequest support with configurable limits and relationship tracking
+- Views and triggers for automated updates and complex query optimization  
+- Performance indexes optimized for large-project scalability
+- Subtask-sidequest relationship coordination for complex workflow management
 
-**Database Directory**: `projectManagement/database/`
-- `schema.sql` - Database schema definition and initial structure
-- `migrations/` - Schema migration files for database updates
+### 7.3 Database Architecture
 
-**MCP Server Database Code**: `mcp-server/database/`
-- `DatabaseManager` - Connection management and schema initialization
-- `ThemeFlowQueries` - Theme-flow relationship operations
-- `SessionQueries` - Session tracking and analytics
+**Project Database Instance**: `projectManagement/project.db` (SQLite database file)
+**Database Backups**: `projectManagement/database/backups/` - Periodic database backups for recovery
 
-### 7.4 Database Helper Functions
+**MCP Server Database Infrastructure**: `mcp-server/database/`
+- `schema.sql` - Master schema definition (source of truth, never copied)
+- `db_manager.py` - Enhanced connection management with thread safety and transactions
+- `session_queries.py` (490 lines) - Session persistence, context snapshots, boot optimization
+- `task_status_queries.py` (771 lines) - Task/subtask/sidequest lifecycle with multiple sidequest support
+- `theme_flow_queries.py` (831 lines) - Theme-flow intelligence, fast context loading, flow status tracking
+- `file_metadata_queries.py` (561 lines) - Intelligent file discovery, impact analysis
+- `user_preference_queries.py` (561 lines) - User learning and AI adaptation system
+- `event_queries.py` (500+ lines) - Real-time event analytics and pattern recognition
 
-**Components**:
-- `DatabaseManager` - Connection management and schema initialization
-- `ThemeFlowQueries` - Theme-flow relationship operations
-- `SessionQueries` - Session tracking and analytics
+### 7.4 Database Operations
 
-**Common Operations**:
-- `get_themes_for_flow(flow_id)` - Fast lookup of themes using a flow
-- `get_flows_for_theme(theme_name)` - Fast lookup of flows in a theme
-- `update_theme_flows(theme_name, flow_ids)` - Update theme flow relationships
-- `start_session(context)` - Start session tracking
-- `log_file_modification()` - Track file changes
+**Core Database Components**:
+- `DatabaseManager` - Enhanced connection management with transactions and optimization
+- `SessionQueries` - Complete session lifecycle with context preservation
+- `TaskStatusQueries` - Full task/sidequest/subtask management with analytics
+- `ThemeFlowQueries` - Theme-flow intelligence with fast lookup capabilities
+- `FileMetadataQueries` - Intelligent file operations and impact analysis
+- `UserPreferenceQueries` - User learning and AI adaptation
+- `EventQueries` - Real-time event tracking and analytics
+
+**Key Operations**:
+- **Session Management**: `start_session()`, `get_session_context()`, `save_context_snapshot()`
+- **Task Operations**: `create_task()`, `update_task_status()`, `manage_sidequests()`
+- **Theme-Flow Intelligence**: `get_themes_for_flow()`, `get_flows_for_theme()`, `sync_theme_flows()`
+- **File Operations**: `log_file_modification()`, `get_file_impact()`, `discover_file_relationships()`
+- **User Learning**: `learn_preference()`, `get_user_patterns()`, `adapt_behavior()`
+- **Analytics**: `get_project_health()`, `analyze_performance()`, `predict_context_needs()`
 
 ### 7.5 Theme-Flow Relationship Management
 
@@ -481,24 +498,28 @@ This implementation plans system provides the strategic planning layer that brid
 ```
 
 **Database Integration**:
-- Themes reference flows by ID only (single source of truth)
-- MCP uses flow-index.json to resolve flow IDs to flow files
-- Database maintains fast lookup tables for theme-flow relationships
-- Supports many-to-many relationships (one theme → multiple flows, one flow → multiple themes)
+- Themes reference flows by ID only (single source of truth in theme files)
+- Database maintains fast lookup tables in `theme_flows` table with relevance ordering
+- MCP uses flow-index.json + database queries for optimal context loading
+- Supports complex many-to-many relationships with automatic sync capabilities
+- Real-time updates via database triggers maintain consistency between files and database
+- Context optimization through database queries enables efficient large-project handling
 
 ### 7.6 Session Tracking
 
-**Session Management**:
-- Track session start time (no session end detection needed)
-- Maintain session context and active themes/tasks
-- Record session duration and activity patterns
-- Support session analytics and reporting
+**Enhanced Session Management**:
+- Complete session state preserved across disconnections
+- Context snapshots save/restore complete AI context for seamless continuity  
+- Multi-session support handles multiple concurrent AI sessions
+- Activity tracking monitors session duration, themes accessed, tasks worked on
+- Boot optimization enables quick session restoration from database context
+- Session analytics provide productivity patterns and performance insights
 
-**Benefits**:
-- Persistent project state across sessions
-- Session history for debugging and analysis
-- Project analytics and usage patterns
-- Performance metrics and optimization insights
+**Advanced Capabilities**:
+- Uninterrupted workflow with task switching and complete context preservation
+- Sidequest coordination via context snapshots for seamless task-sidequest transitions
+- Performance analytics deliver session productivity metrics and optimization recommendations
+- User adaptation learns optimal session patterns for improved efficiency
 
 ### 7.7 Cross-Platform Compatibility
 

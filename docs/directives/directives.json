@@ -58,13 +58,13 @@
     "03-session-management": {
       "filename": "03-session-management.md",
       "title": "Session Management Directives",
-      "purpose": "Handle session boot, state management, and continuity",
+      "purpose": "Handle database-enhanced session boot, state management, and continuity",
       "priority": "high",
       "triggers": ["Session start", "Continue development", "Task resumption"],
       "sections": [
-        "Session Boot Protocol",
-        "Session Summary Management",
-        "Session Continuity Requirements"
+        "Database-Enhanced Session Boot Protocol",
+        "Session Context Snapshots and Restoration",
+        "Database Session Persistence Requirements"
       ],
       "configSettings": [
         "tasks.resumeTasksOnStart",
@@ -109,12 +109,12 @@
     "05-context-loading": {
       "filename": "05-context-loading.md",
       "title": "Context Loading Directives",
-      "purpose": "Manage efficient context loading strategies and memory optimization",
+      "purpose": "Manage database-enhanced context loading strategies and memory optimization",
       "priority": "high",
       "triggers": ["Task execution", "Context escalation", "Memory optimization"],
       "sections": [
         "Context Mode Selection Protocol",
-        "README-Guided Context Loading",
+        "Database-Enhanced Context Loading",
         "Global File Access Protocol",
         "Context Escalation Protocol",
         "Memory Optimization Requirements"
@@ -212,13 +212,13 @@
     "09-logging-documentation": {
       "filename": "09-logging-documentation.md",
       "title": "Logging & Documentation Directives",
-      "purpose": "Manage logging protocols, documentation updates, and audit trails",
+      "purpose": "Manage hybrid file-database logging protocols, documentation updates, and audit trails",
       "priority": "medium",
       "triggers": ["Significant decisions", "Documentation updates", "Audit requirements"],
       "sections": [
-        "Simplified Logging Protocol",
+        "Hybrid Logging Protocol",
+        "Database Event Management",
         "Automatic Archiving Protocol",
-        "Logging Triggers",
         "Documentation Update Requirements"
       ],
       "configSettings": [

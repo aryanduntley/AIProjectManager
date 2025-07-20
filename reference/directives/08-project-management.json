@@ -14,16 +14,37 @@
     "Logic updates"
   ],
   "workflows": {
+    "organizationalFileSynchronization": {
+      "directive": "MANDATORY: All organizational files and their corresponding database records MUST be kept in perfect synchronization at all times",
+      "triggers": [
+        "After every subtask completion",
+        "After every significant step in any work unit",
+        "Before session termination (automatic)",
+        "After any structural changes to project organization",
+        "After any user-approved modifications"
+      ],
+      "filesSynchronized": [
+        "ProjectBlueprint/blueprint.md ↔ Project metadata in database",
+        "ProjectFlow/*.json ↔ flow_status and flow_step_status tables",
+        "ProjectLogic/projectlogic.jsonl ↔ noteworthy_events table",
+        "Tasks/active/*.json ↔ task_status, subtask_status, sidequest_status tables",
+        "Implementations/active/*.md ↔ Implementation progress in database",
+        "Themes/*.json ↔ theme_flows table"
+      ],
+      "sessionRestorationGuarantee": "Upon restart, AI must be able to continue exactly where previous session ended, with complete understanding of project state, current work context, and next steps"
+    },
     "projectInitialization": {
       "directive": "Follow exact sequence when initializing projects",
       "sequence": [
         "Validate project path exists and is accessible",
         "Check for existing projectManagement/ structure",
         "If exists, run compatibility check",
+        "Initialize database: Create project.db from mcp-server/database/schema.sql",
         "Create complete directory structure",
         "Initialize all required files with proper templates",
+        "Initialize database with default session and project metadata",
         "Set appropriate metadata (creation date, version, etc.)",
-        "Confirm successful initialization"
+        "Confirm successful initialization and database connectivity"
       ],
       "directoryStructure": [
         "ProjectBlueprint/",

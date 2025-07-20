@@ -1,0 +1,68 @@
+{
+  "flowId": "payment-flow",
+  "flowName": "Payment Processing System",
+  "version": "1.0.0",
+  "description": "Complete payment flow including cart, checkout, payment processing, and order management",
+  "primaryTheme": "payment",
+  "relatedThemes": ["security", "user-experience", "order-management"],
+  "dependencies": ["authentication-flow", "security-flow"],
+  "crossFlowDependencies": {
+    "authentication-flow": ["user-sessions", "user-verification"],
+    "database-flow": ["order-schema", "payment-records"],
+    "api-flow": ["payment-endpoints", "webhook-handling"]
+  },
+  "status": "pending",
+  "priority": "high",
+  "steps": [
+    {
+      "stepId": "pay-001",
+      "title": "Shopping Cart System",
+      "description": "Implement cart functionality with persistence",
+      "status": "pending",
+      "subtasks": [
+        {"id": "pay-001-01", "title": "Cart data structure", "status": "pending"},
+        {"id": "pay-001-02", "title": "Add/remove items", "status": "pending"},
+        {"id": "pay-001-03", "title": "Cart persistence", "status": "pending"}
+      ]
+    },
+    {
+      "stepId": "pay-002",
+      "title": "Checkout Process",
+      "description": "Multi-step checkout with validation",
+      "status": "pending",
+      "subtasks": [
+        {"id": "pay-002-01", "title": "Shipping information", "status": "pending"},
+        {"id": "pay-002-02", "title": "Payment method selection", "status": "pending"},
+        {"id": "pay-002-03", "title": "Order review and confirmation", "status": "pending"}
+      ]
+    },
+    {
+      "stepId": "pay-003",
+      "title": "Payment Processing",
+      "description": "Secure payment processing with multiple providers",
+      "status": "pending",
+      "subtasks": [
+        {"id": "pay-003-01", "title": "Stripe integration", "status": "pending"},
+        {"id": "pay-003-02", "title": "PayPal integration", "status": "pending"},
+        {"id": "pay-003-03", "title": "Payment validation and security", "status": "pending"}
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "milestoneId": "pay-mvp",
+      "title": "Payment MVP",
+      "description": "Basic cart and checkout working",
+      "targetDate": "2024-02-01",
+      "status": "not-started",
+      "requiredSteps": ["pay-001", "pay-002", "pay-003"]
+    }
+  ],
+  "metadata": {
+    "createdAt": "2024-01-10T14:00:00Z",
+    "lastUpdated": "2024-01-10T14:00:00Z",
+    "estimatedHours": 60,
+    "complexity": "high",
+    "riskLevel": "high"
+  }
+}

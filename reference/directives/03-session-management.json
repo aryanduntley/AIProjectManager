@@ -17,31 +17,45 @@
     "sessionBootProtocol": {
       "directive": "Follow exact sequence when starting new sessions or 'continue development'",
       "coreRequirements": [
+        "Initialize database connection and restore session context from project.db",
         "Load projectManagement/ProjectBlueprint/blueprint.md",
         "Load projectManagement/ProjectFlow/flow-index.json and selective flow files",
-        "Load projectManagement/ProjectLogic/projectlogic.jsonl",
-        "Load projectManagement/Tasks/completion-path.json",
-        "Load projectManagement/Logs/noteworthy.json",
+        "Load projectManagement/ProjectLogic/projectlogic.jsonl", 
+        "Load projectManagement/Tasks/completion-path.json + implementation plan status from database",
+        "Load recent noteworthy events from database (instead of file scanning)",
+        "Restore active themes, tasks, sidequests from session database context",
         "Check projectManagement/Implementations/active/{activeImplementationPlan.md}",
-        "Check projectManagement/Tasks/active/{activeTask}.json",
-        "Load current implementation plan context and phase progress",
+        "Query database for current task/sidequest status and analytics",
+        "Load current implementation plan context and phase progress from database",
         "Ensure proposed updates are confirmed by user before changing anything"
       ],
       "detailedBootSequence": [
-        "1. Read ProjectBlueprint for project understanding",
-        "2. Read ProjectFlow (flow-index.json) for interaction understanding",
-        "3. Read projectlogic.jsonl for reasoning history",
-        "4. Read projectManagement/Tasks/completion-path.json for current objectives",
-        "5. Review active tasks (Tasks/active/*.json)",
-        "6. If no active tasks, review last completed tasks",
-        "7. If needed, review archived task lists",
-        "8. Determine next steps with priority suggestions",
-        "9. Get user approval for direction",
-        "10. Determine context mode based on selected work",
-        "11. Generate task list for approved direction",
-        "12. Load theme context for selected tasks",
-        "13. Begin task execution"
+        "1. Initialize database connection and restore session context from project.db",
+        "2. Read ProjectBlueprint for project understanding",  
+        "3. Read ProjectFlow (flow-index.json) for interaction understanding",
+        "4. Read projectlogic.jsonl for reasoning history",
+        "5. Load completion-path.json + implementation plan status from database",
+        "6. Restore active themes, tasks, sidequests from session database context",
+        "7. Load recent noteworthy events from database (instead of file scanning)",
+        "8. Assess current state using database task/sidequest status queries",
+        "9. Determine next steps with priority suggestions based on database analytics",
+        "10. Get user approval for direction",
+        "11. Determine/restore context mode from session database",
+        "12. Generate/restore task context using database theme-flow relationships",
+        "13. Begin task execution with preserved session state"
       ],
+      "statePreservationProtocol": {
+        "directive": "MANDATORY FOR SESSION CONTINUITY: Database-enhanced boot sequence requires STRICT adherence to real-time state updates",
+        "everyWorkUnitCompletion": [
+          "1. Immediate Database Update: Task/subtask status, progress, completion timestamps",
+          "2. File Synchronization: Update corresponding task files with current state",
+          "3. Context Snapshot: Save current AI context to session database",
+          "4. Event Logging: Record completion for analytics and session restoration",
+          "5. Atomic Operation: All updates must succeed or entire completion fails"
+        ],
+        "sessionBootRestorationGuarantee": "AI must be able to resume from ANY point where work was interrupted, with complete context restoration and zero work loss",
+        "implementationRequirement": "Every MCP tool that modifies project state must implement this update protocol before considering any work unit complete"
+      },
       "taskManagementLogic": {
         "autoTaskCreationTrue": {
           "noIncompleteTasksAndCurrentImplementationPlan": [
@@ -388,5 +402,27 @@
       "Context can be recreated from saved state",
       "Task progress maintained across sessions"
     ]
+  },
+  "basicEdgeCaseHandling": {
+    "directive": "Handle common session management edge cases with basic recovery procedures",
+    "commonEdgeCases": {
+      "corruptedFiles": {
+        "basicResponse": "Notify user: 'Project file [FILE] appears corrupted. Options: [1] Restore from backup [2] Rebuild from database [3] Request manual repair'",
+        "escalationTrigger": "IF corruption complex or affects multiple files → ESCALATE to docs/directives/03-session-management.md for comprehensive recovery procedures"
+      },
+      "databaseConnectionFailed": {
+        "basicResponse": "Inform user: 'Database unavailable. Running in file-only mode with limited session persistence.'",
+        "escalationTrigger": "IF database issues persist or affect critical workflows → ESCALATE for detailed database troubleshooting procedures"
+      },
+      "sessionRestorationFailed": {
+        "basicResponse": "Alert user: 'Unable to restore previous session fully. Options: [1] Start fresh [2] Partial recovery [3] Manual context reconstruction'",
+        "escalationTrigger": "IF restoration failure affects active work → ESCALATE for comprehensive session recovery protocols"
+      },
+      "conflictingTaskStates": {
+        "basicResponse": "Warning: 'Inconsistent task states detected. Options: [1] Use database version [2] Use file version [3] Manual resolution'",
+        "escalationTrigger": "IF conflicts affect multiple tasks or critical workflows → ESCALATE for detailed conflict resolution procedures"
+      }
+    },
+    "generalEscalationTrigger": "WHEN edge case handling unclear or insufficient → ESCALATE to docs/directives/03-session-management.md for comprehensive edge case protocols"
   }
 }

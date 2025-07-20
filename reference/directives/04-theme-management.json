@@ -244,5 +244,23 @@
       "getExplicitApproval": "Get explicit approval before updating theme files",
       "documentRationale": "Document all changes with rationale"
     }
+  },
+  "basicThemeIssues": {
+    "directive": "Handle common theme management issues with basic user communication and escalation awareness",
+    "commonIssues": {
+      "themeConflicts": {
+        "basicResponse": "Theme overlap detected between [THEME1] and [THEME2]. Shared files: [FILE_LIST]. Proceeding with conflict resolution.",
+        "escalationTrigger": "IF theme conflicts complex or affect multiple workflows → ESCALATE to docs/directives/04-theme-management.md for advanced conflict resolution"
+      },
+      "autoDiscoveryUncertain": {
+        "basicResponse": "Theme auto-discovery found [N] potential themes. Requires user review before proceeding.",
+        "escalationTrigger": "IF theme discovery yields complex or unclear results → ESCALATE for comprehensive theme analysis procedures"
+      },
+      "sharedFileThreshold": {
+        "basicResponse": "File [FILE] shared across [N] themes (threshold: [LIMIT]). Flagged for shared file management.",
+        "escalationTrigger": "IF shared file management affects multiple workflows → ESCALATE for detailed shared file strategies"
+      }
+    },
+    "escalationAwareness": "WHEN theme management encounters complexity beyond basic handling → ESCALATE to docs/directives/04-theme-management.md for comprehensive theme management protocols"
   }
 }

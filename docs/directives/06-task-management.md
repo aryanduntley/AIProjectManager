@@ -2,7 +2,27 @@
 
 ## 6.1 Task File Structure Requirements
 
-**Directive**: All task files must integrate with themes, milestones, and multi-flow system.
+**Directive**: All task files integrate with themes, milestones, and multi-flow system through hybrid file-database approach.
+
+**Database Integration**: Task status, progress, and relationships tracked in real-time via database while task definitions remain in files for user visibility and modification.
+
+## 🚨 **CRITICAL: Real-Time State Preservation Directive**
+
+**MANDATORY REQUIREMENT**: After EVERY subtask completion, step completion, or any work unit of any sort, ALL organizational files and database records that relate MUST be immediately updated before proceeding.
+
+**Purpose**: Ensure seamless session restoration and prevent loss of work in case of premature session termination.
+
+**Update Requirements**:
+- **Database**: Update task/subtask status, progress percentages, completion timestamps
+- **Task Files**: Update subtask status, progress, completion criteria  
+- **Session Database**: Save current context snapshot
+- **Implementation Plans**: Update phase progress if applicable
+- **Related Themes**: Update any affected theme relationships
+- **Event Logging**: Log completion event for analytics and recovery
+
+**Session Restoration Goal**: Upon any restart, MCP/AI must be able to resume exactly where work left off with minimal review and zero lost progress.
+
+**Implementation**: This requirement is built into every tool and must be executed atomically - if any update fails, the entire completion step fails and must be retried.
 
 **Required Task File Structure**:
 ```json

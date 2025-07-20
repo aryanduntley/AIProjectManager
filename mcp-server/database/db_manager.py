@@ -1,6 +1,7 @@
 """
-Database Manager for AI Project Manager
-Handles SQLite database connections, initialization, and schema management.
+Enhanced Database Manager for AI Project Manager
+Handles SQLite database connections, initialization, schema management, and transaction handling.
+Supports session persistence, theme-flow relationships, task tracking, and analytics.
 """
 
 import sqlite3
@@ -8,11 +9,22 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, Dict, List, Any, Tuple
+from typing import Optional, Dict, List, Any, Tuple, Union
+from contextlib import contextmanager
 import logging
+import threading
 
 class DatabaseManager:
-    """Manages the SQLite database for the AI Project Manager."""
+    """
+    Enhanced database manager for AI Project Manager.
+    
+    Provides comprehensive database operations including:
+    - Connection management with pooling
+    - Transaction handling with rollback support
+    - Schema initialization and migration
+    - Performance optimization with indexes
+    - Analytics and metrics collection
+    """
     
     def __init__(self, project_path: str):
         """
@@ -24,29 +36,47 @@ class DatabaseManager:
         self.project_path = Path(project_path)
         self.project_mgmt_path = self.project_path / "projectManagement"
         self.db_path = self.project_mgmt_path / "project.db"
-        self.schema_path = Path(__file__).parent.parent.parent / "reference" / "templates" / "database" / "schema.sql"
+        self.schema_path = Path(__file__).parent / "schema.sql"
         self.connection: Optional[sqlite3.Connection] = None
         self.logger = logging.getLogger(__name__)
+        self._lock = threading.RLock()  # For thread safety
+        
+        # Configuration
+        self.enable_foreign_keys = True
+        self.journal_mode = "WAL"  # Write-Ahead Logging for better concurrency
+        self.synchronous = "NORMAL"  # Balance between safety and performance
         
     def connect(self) -> sqlite3.Connection:
         """
-        Create or connect to the SQLite database.
+        Create or connect to the SQLite database with enhanced configuration.
         
         Returns:
             SQLite connection object
         """
-        if self.connection is None:
-            # Ensure the projectManagement directory exists
-            self.project_mgmt_path.mkdir(parents=True, exist_ok=True)
-            
-            # Connect to database
-            self.connection = sqlite3.connect(str(self.db_path))
-            self.connection.row_factory = sqlite3.Row  # Enable dict-like access
-            
-            # Initialize schema if needed
-            self._initialize_schema()
-            
-        return self.connection
+        with self._lock:
+            if self.connection is None:
+                # Ensure the projectManagement directory exists
+                self.project_mgmt_path.mkdir(parents=True, exist_ok=True)
+                
+                # Connect to database with timeout and check_same_thread=False for threading
+                self.connection = sqlite3.connect(
+                    str(self.db_path), 
+                    timeout=30.0,
+                    check_same_thread=False
+                )
+                
+                # Configure connection
+                self.connection.row_factory = sqlite3.Row  # Enable dict-like access
+                self.connection.execute(f"PRAGMA journal_mode = {self.journal_mode}")
+                self.connection.execute(f"PRAGMA synchronous = {self.synchronous}")
+                
+                if self.enable_foreign_keys:
+                    self.connection.execute("PRAGMA foreign_keys = ON")
+                
+                # Initialize schema if needed
+                self._initialize_schema()
+                
+            return self.connection
     
     def _initialize_schema(self):
         """Initialize the database schema from the schema.sql file."""
@@ -65,9 +95,43 @@ class DatabaseManager:
     
     def close(self):
         """Close the database connection."""
-        if self.connection:
-            self.connection.close()
-            self.connection = None
+        with self._lock:
+            if self.connection:
+                self.connection.close()
+                self.connection = None
+                self.logger.info("Database connection closed")
+    
+    async def initialize_database(self):
+        """
+        Explicit database initialization for when you want control over the lifecycle.
+        
+        This provides explicit initialization for AI sessions, tests, and tools that need
+        predictable database setup timing and clear error handling at startup.
+        
+        Returns:
+            self for method chaining
+        """
+        self.connect()  # Reuse existing lazy initialization logic
+        self.logger.info("Database explicitly initialized")
+        return self
+    
+    def execute(self, query: str, params: Tuple = ()) -> List[Dict[str, Any]]:
+        """
+        Execute a query and return results as dictionaries (for test compatibility).
+        
+        Args:
+            query: SQL query string
+            params: Query parameters
+            
+        Returns:
+            List of query results as dictionaries
+        """
+        connection = self.connect()
+        cursor = connection.cursor()
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        # Convert sqlite3.Row objects to dictionaries
+        return [dict(row) for row in rows]
     
     def execute_query(self, query: str, params: Tuple = ()) -> List[sqlite3.Row]:
         """
@@ -167,6 +231,128 @@ class DatabaseManager:
             stats["tables"][table_name] = count
         
         return stats
+    
+    @contextmanager
+    def transaction(self):
+        """
+        Context manager for database transactions with automatic rollback on failure.
+        
+        Usage:
+            with db_manager.transaction():
+                db_manager.execute_update("INSERT INTO ...", params)
+                db_manager.execute_update("UPDATE ...", params)
+        """
+        connection = self.connect()
+        try:
+            yield connection
+            connection.commit()
+        except Exception as e:
+            connection.rollback()
+            self.logger.error(f"Transaction failed, rolled back: {e}")
+            raise
+    
+    def execute_many(self, query: str, params_list: List[Tuple]) -> int:
+        """
+        Execute a query multiple times with different parameters.
+        
+        Args:
+            query: SQL query string
+            params_list: List of parameter tuples
+            
+        Returns:
+            Total number of affected rows
+        """
+        connection = self.connect()
+        cursor = connection.cursor()
+        cursor.executemany(query, params_list)
+        connection.commit()
+        return cursor.rowcount
+    
+    def get_last_insert_id(self) -> Optional[int]:
+        """
+        Get the ID of the last inserted row.
+        
+        Returns:
+            Last insert row ID or None
+        """
+        if self.connection:
+            return self.connection.lastrowid
+        return None
+    
+    def optimize_database(self):
+        """
+        Optimize the database by running VACUUM and ANALYZE commands.
+        This helps maintain performance for large datasets.
+        """
+        connection = self.connect()
+        cursor = connection.cursor()
+        
+        # Analyze tables to update query planner statistics
+        cursor.execute("ANALYZE")
+        
+        # Vacuum to reclaim space and defragment
+        cursor.execute("VACUUM")
+        
+        connection.commit()
+        self.logger.info("Database optimization completed")
+    
+    def check_integrity(self) -> bool:
+        """
+        Check database integrity.
+        
+        Returns:
+            True if database integrity is ok, False otherwise
+        """
+        connection = self.connect()
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA integrity_check")
+        result = cursor.fetchone()
+        
+        integrity_ok = result and result[0] == "ok"
+        if integrity_ok:
+            self.logger.info("Database integrity check passed")
+        else:
+            self.logger.error(f"Database integrity check failed: {result}")
+        
+        return integrity_ok
+    
+    def get_schema_version(self) -> Optional[str]:
+        """
+        Get the current schema version from user_version pragma.
+        
+        Returns:
+            Schema version string or None
+        """
+        connection = self.connect()
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA user_version")
+        result = cursor.fetchone()
+        return str(result[0]) if result else None
+    
+    def set_schema_version(self, version: str):
+        """
+        Set the schema version.
+        
+        Args:
+            version: Version string to set
+        """
+        connection = self.connect()
+        cursor = connection.cursor()
+        cursor.execute(f"PRAGMA user_version = {version}")
+        connection.commit()
+        self.logger.info(f"Schema version set to: {version}")
+    
+    def execute_script(self, script: str):
+        """
+        Execute a SQL script with multiple statements.
+        
+        Args:
+            script: SQL script to execute
+        """
+        connection = self.connect()
+        cursor = connection.cursor()
+        cursor.executescript(script)
+        connection.commit()
     
     def __enter__(self):
         """Context manager entry."""

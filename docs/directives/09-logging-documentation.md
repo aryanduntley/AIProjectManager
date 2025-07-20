@@ -1,12 +1,13 @@
 # Logging & Documentation Directives
 
-## 9.1 Simplified Logging Protocol
+## 9.1 Hybrid Logging Protocol
 
-**Directive**: Use simplified dual-file approach for project tracking.
+**Directive**: Use hybrid file-database approach for comprehensive project tracking.
 
-**Primary Files**:
-- `ProjectLogic/projectlogic.jsonl` - Major logic shifts and direction changes
-- `Logs/noteworthy.json` - Technical decisions and notable events
+**Primary Logging**:
+- `ProjectLogic/projectlogic.jsonl` - Major logic shifts and direction changes (file-based)
+- Database: `noteworthy_events` table - Real-time technical decisions and notable events
+- `Logs/noteworthy.json` - Archive file created automatically when database events exceed size limits
 
 **What Gets Logged in projectlogic.jsonl**:
 - Architecture pivots with direction changes
@@ -14,11 +15,13 @@
 - Technical discoveries that change project approach
 - User-driven direction changes with reasoning
 
-**What Gets Logged in noteworthy.json**:
+**What Gets Logged in Database (noteworthy_events)**:
 - Context escalations (theme-focused → theme-expanded → project-wide)
 - User corrections to AI understanding
 - Shared file modifications affecting multiple themes
 - Notable technical discussions impacting implementation
+- Session events, task status changes, and decision patterns
+- Real-time analytics for pattern recognition and learning
 
 **What Does NOT Get Logged**:
 - Normal task progress (tracked in task files)

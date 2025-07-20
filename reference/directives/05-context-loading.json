@@ -44,17 +44,18 @@
         "Use project-wide only for architectural changes"
       ]
     },
-    "readmeGuidedLoading": {
-      "directive": "Always prioritize README files for quick context understanding",
-      "configKey": "contextLoading.readmeFirst",
+    "databaseEnhancedLoading": {
+      "directive": "Use database intelligence combined with README files for optimal context understanding",
+      "configKey": "contextLoading.readmeFirst", 
       "default": true,
       "protocol": [
         "Load theme structure from JSON files",
-        "Discretionary Flow Loading: AI loads only relevant flow files from ProjectFlow/ directory based on task requirements",
-        "Read README.md files in relevant directories (limit 2KB each)",
-        "Minimal File Loading: AI assesses and loads only specific files actually needed for the task (theme scope is discretionary high limit)",
-        "Use README context to avoid unnecessary code analysis",
-        "Load specific code files only when determined essential"
+        "Query database for intelligent directory metadata and file relationship insights",
+        "Database-Optimized Flow Loading: AI queries database for optimal flow file selection based on theme-flow relationships",
+        "Read README.md files in relevant directories (limit 2KB each) for human-readable context",
+        "Combine database insights with README context to assess task requirements",
+        "Intelligent File Loading: AI uses database insights to load only specific files needed for the task",
+        "Use database analytics to determine optimal file selection and avoid unnecessary code analysis"
       ],
       "priorityOrder": [
         "Project root README.md",
@@ -227,5 +228,27 @@
     "flowScope": "AI discretionarily loads only relevant flow files from ProjectFlow/ directory based on task requirements",
     "contextPrinciple": "Load minimal context needed for task completion, escalate only when insufficient",
     "escalationPath": "theme-focused → theme-expanded (user approval) → project-wide (user approval)"
+  },
+  "basicContextEdgeCases": {
+    "directive": "Handle common context loading edge cases with basic fallback procedures",
+    "commonEdgeCases": {
+      "themeNotFound": {
+        "basicResponse": "Warning: 'Theme [THEME] not found. Options: [1] Use project-wide context [2] Create missing theme [3] Select alternative theme'",
+        "escalationTrigger": "IF theme issues affect multiple tasks → ESCALATE to docs/directives/05-context-loading.md for theme resolution procedures"
+      },
+      "insufficientContext": {
+        "basicResponse": "Context insufficient for task. Options: [1] Escalate to theme-expanded [2] Request specific files [3] Switch to project-wide context'",
+        "escalationTrigger": "IF context problems persist after escalation → ESCALATE for advanced context resolution strategies"
+      },
+      "memoryLimitReached": {
+        "basicResponse": "Memory limit reached. Options: [1] Reduce context scope [2] Process task in smaller chunks [3] Request memory increase'",
+        "escalationTrigger": "IF memory issues affect task completion → ESCALATE for memory optimization procedures"
+      },
+      "conflictingThemes": {
+        "basicResponse": "Conflicting theme requirements detected. Options: [1] Use primary theme only [2] Merge theme contexts [3] Request user priority'",
+        "escalationTrigger": "IF theme conflicts complex or affect workflow → ESCALATE for conflict resolution protocols"
+      }
+    },
+    "generalEscalationTrigger": "WHEN context loading unclear or problematic → ESCALATE to docs/directives/05-context-loading.md for comprehensive context management protocols"
   }
 }

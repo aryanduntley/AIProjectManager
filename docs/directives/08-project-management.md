@@ -8,19 +8,43 @@
 1. Validate project path exists and is accessible
 2. Check for existing projectManagement/ structure
 3. If exists, run compatibility check (see system initialization)
-4. Create complete directory structure:
+4. Initialize database: Create project.db from mcp-server/database/schema.sql
+5. Create complete directory structure:
    - ProjectBlueprint/
    - ProjectFlow/
    - ProjectLogic/
    - Themes/
    - Tasks/{active,sidequests,archive/{tasks,sidequests}}
    - Implementations/{active,completed}
-   - Logs/{current,archived,compressed}
+   - Logs/{archived} (noteworthy events in database)
    - Placeholders/
    - UserSettings/
-5. Initialize all required files with proper templates
-6. Set appropriate metadata (creation date, version, etc.)
-7. Confirm successful initialization
+   - database/{backups}
+6. Initialize all required files with proper templates
+7. Initialize database with default session and project metadata
+8. Set appropriate metadata (creation date, version, etc.)
+9. Confirm successful initialization and database connectivity
+
+## 🚨 **CRITICAL: Organizational File Synchronization Protocol**
+
+**MANDATORY REQUIREMENT**: All organizational files (blueprint, flows, logic, themes, completion path, implementation plans) and their corresponding database records MUST be kept in perfect synchronization at all times.
+
+**Triggers for Synchronization**:
+- After every subtask completion
+- After every significant step in any work unit
+- Before session termination (automatic)
+- After any structural changes to project organization
+- After any user-approved modifications
+
+**Files That Must Be Synchronized**:
+- **ProjectBlueprint/blueprint.md** ↔ Project metadata in database
+- **ProjectFlow/*.json** ↔ `flow_status` and `flow_step_status` tables
+- **ProjectLogic/projectlogic.jsonl** ↔ `noteworthy_events` table
+- **Tasks/active/*.json** ↔ `task_status`, `subtask_status`, `sidequest_status` tables
+- **Implementations/active/*.md** ↔ Implementation progress in database
+- **Themes/*.json** ↔ `theme_flows` table
+
+**Session Restoration Guarantee**: Upon restart, AI must be able to continue exactly where previous session ended, with complete understanding of project state, current work context, and next steps.
 ```
 
 ## 8.2 Project Blueprint Management

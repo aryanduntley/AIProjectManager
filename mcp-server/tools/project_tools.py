@@ -9,8 +9,14 @@ import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+import shutil
 
 from core.mcp_api import ToolDefinition
+from database.db_manager import DatabaseManager
+from database.session_queries import SessionQueries
+from database.task_status_queries import TaskStatusQueries
+from database.theme_flow_queries import ThemeFlowQueries
+from database.file_metadata_queries import FileMetadataQueries
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +24,13 @@ logger = logging.getLogger(__name__)
 class ProjectTools:
     """Tools for project management operations."""
     
-    def __init__(self):
+    def __init__(self, db_manager: Optional[DatabaseManager] = None):
         self.tools = []
+        self.db_manager = db_manager
+        self.session_queries = SessionQueries(db_manager) if db_manager else None
+        self.task_queries = TaskStatusQueries(db_manager) if db_manager else None
+        self.theme_flow_queries = ThemeFlowQueries(db_manager) if db_manager else None
+        self.file_metadata_queries = FileMetadataQueries(db_manager) if db_manager else None
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get all project management tools."""
@@ -96,6 +107,21 @@ class ProjectTools:
                     "required": ["project_path"]
                 },
                 handler=self.get_project_status
+            ),
+            ToolDefinition(
+                name="project_init_database",
+                description="Initialize database for an existing project",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "project_path": {
+                            "type": "string",
+                            "description": "Path to the project directory"
+                        }
+                    },
+                    "required": ["project_path"]
+                },
+                handler=self.initialize_database
             )
         ]
     
@@ -138,11 +164,10 @@ class ProjectTools:
             "Tasks/sidequests",
             "Tasks/archive/tasks",
             "Tasks/archive/sidequests",
-            "Logs/current",
             "Logs/archived",
-            "Logs/compressed",
             "Placeholders",
-            "UserSettings"
+            "UserSettings",
+            "database"
         ]
         
         for dir_path in directories:
@@ -176,20 +201,7 @@ class ProjectTools:
                     "estimatedCompletion": ""
                 }
             }, indent=2),
-            "Logs/current/ai-decisions.jsonl": "",
-            "Logs/current/user-feedback.jsonl": "",
-            "Logs/index.json": json.dumps({
-                "archivedLogs": [],
-                "compressedLogs": [],
-                "lastRotation": datetime.now().isoformat()
-            }, indent=2),
-            "Logs/manifest.json": json.dumps({
-                "compressionSettings": {
-                    "algorithm": "gzip",
-                    "level": 6
-                },
-                "files": []
-            }, indent=2),
+            "Logs/noteworthy.json": json.dumps([], indent=2),
             "Placeholders/todos.jsonl": "",
             "UserSettings/config.json": json.dumps({
                 "project": {
@@ -198,22 +210,10 @@ class ProjectTools:
                     "theme_discovery": True,
                     "backup_enabled": True
                 },
-                "logging": {
-                    "automaticManagement": {
-                        "enabled": True,
-                        "retentionPolicy": {
-                            "archived": {
-                                "retentionDays": 30,
-                                "maxFiles": 100,
-                                "maxTotalSize": "50MB"
-                            },
-                            "compressed": {
-                                "retentionDays": 180,
-                                "maxFiles": 200,
-                                "maxTotalSize": "100MB"
-                            }
-                        }
-                    }
+                "archiving": {
+                    "projectlogicSizeLimit": "2MB",
+                    "noteworthySizeLimit": "1MB",
+                    "deleteArchivesOlderThan": "90 days"
                 }
             }, indent=2)
         }
@@ -222,6 +222,9 @@ class ProjectTools:
             full_path = project_mgmt_dir / file_path
             if not full_path.exists() or full_path.stat().st_size == 0:
                 full_path.write_text(content, encoding='utf-8')
+        
+        # Initialize database
+        await self._initialize_database(project_path)
     
     def _create_initial_blueprint(self, project_name: str) -> str:
         """Create initial project blueprint content."""
@@ -342,7 +345,9 @@ This is the high-level blueprint for the {project_name} project. This document s
                 "logic": project_mgmt_dir / "ProjectLogic" / "projectlogic.jsonl",
                 "themes": project_mgmt_dir / "Themes" / "themes.json",
                 "completionPath": project_mgmt_dir / "Tasks" / "completion-path.json",
-                "config": project_mgmt_dir / "UserSettings" / "config.json"
+                "config": project_mgmt_dir / "UserSettings" / "config.json",
+                "database": project_mgmt_dir / "project.db",
+                "schema": project_mgmt_dir / "database" / "schema.sql"
             }
             
             for name, path in components.items():
@@ -359,6 +364,13 @@ This is the high-level blueprint for the {project_name} project. This document s
             status["tasks"] = {
                 "active": len(active_tasks),
                 "sidequests": len(sidequests)
+            }
+            
+            # Check database status
+            db_path = project_mgmt_dir / "project.db"
+            status["database"] = {
+                "exists": db_path.exists(),
+                "size": db_path.stat().st_size if db_path.exists() else 0
             }
             
             # Check themes
@@ -378,3 +390,66 @@ This is the high-level blueprint for the {project_name} project. This document s
         except Exception as e:
             logger.error(f"Error getting project status: {e}")
             return f"Error getting project status: {str(e)}"
+    
+    async def _initialize_database(self, project_path: Path):
+        """Initialize database for the project."""
+        try:
+            db_path = project_path / "projectManagement" / "project.db"
+            schema_path = project_path / "projectManagement" / "database" / "schema.sql"
+            
+            # Copy foundational schema if it doesn't exist
+            if not schema_path.exists():
+                # Get schema from foundational mcp-server location
+                foundational_schema_path = Path(__file__).parent.parent / "database" / "schema.sql"
+                if foundational_schema_path.exists():
+                    shutil.copy2(foundational_schema_path, schema_path)
+                    logger.info(f"Copied foundational database schema to {schema_path}")
+                else:
+                    logger.warning(f"Foundational database schema not found at {foundational_schema_path}")
+                    return
+            
+            # Initialize database manager
+            db_manager = DatabaseManager(str(project_path))
+            db_manager.connect()
+            
+            # Initialize query classes
+            session_queries = SessionQueries(db_manager)
+            task_queries = TaskStatusQueries(db_manager)
+            theme_flow_queries = ThemeFlowQueries(db_manager)
+            file_metadata_queries = FileMetadataQueries(db_manager)
+            
+            # Create initial session for project setup
+            session_id = session_queries.start_session(str(project_path))
+            logger.info(f"Database initialized at {db_path} with session {session_id}")
+            
+            # Log initial project creation
+            file_metadata_queries.log_file_modification(
+                file_path="projectManagement/",
+                file_type="project",
+                operation="create",
+                session_id=session_id,
+                details={"action": "project_initialization", "structure_created": True}
+            )
+            
+        except Exception as e:
+            logger.error(f"Error initializing database: {e}")
+            raise
+    
+    async def initialize_database(self, arguments: Dict[str, Any]) -> str:
+        """Initialize database for an existing project."""
+        try:
+            project_path = Path(arguments["project_path"])
+            
+            if not project_path.exists():
+                return f"Project directory does not exist: {project_path}"
+            
+            project_mgmt_dir = project_path / "projectManagement"
+            if not project_mgmt_dir.exists():
+                return f"Project management structure not found. Initialize project first."
+            
+            await self._initialize_database(project_path)
+            return f"Database initialized successfully for project at {project_path}"
+            
+        except Exception as e:
+            logger.error(f"Error in initialize_database: {e}")
+            return f"Error initializing database: {str(e)}"

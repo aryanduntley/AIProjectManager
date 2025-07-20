@@ -15,11 +15,12 @@
     "Documentation updates"
   ],
   "workflows": {
-    "simplifiedLogging": {
-      "directive": "Use simplified dual-file approach for project tracking",
-      "primaryFiles": {
-        "projectlogic.jsonl": "Major logic shifts and direction changes",
-        "noteworthy.json": "Technical decisions and notable events"
+    "hybridLogging": {
+      "directive": "Use hybrid file-database approach for comprehensive project tracking",
+      "primaryLogging": {
+        "projectlogic.jsonl": "Major logic shifts and direction changes (file-based)",
+        "noteworthy_events_table": "Real-time technical decisions and notable events (database)",
+        "noteworthy.json": "Archive file created automatically when database events exceed size limits"
       },
       "projectlogicContent": [
         "Architecture pivots with direction changes",
@@ -27,11 +28,13 @@
         "Technical discoveries that change project approach",
         "User-driven direction changes with reasoning"
       ],
-      "noteworthyContent": [
+      "databaseEventContent": [
         "Context escalations (theme-focused → theme-expanded → project-wide)",
         "User corrections to AI understanding",
         "Shared file modifications affecting multiple themes",
-        "Notable technical discussions impacting implementation"
+        "Notable technical discussions impacting implementation",
+        "Session events, task status changes, and decision patterns",
+        "Real-time analytics for pattern recognition and learning"
       ],
       "excludedContent": [
         "Normal task progress (tracked in task files)",

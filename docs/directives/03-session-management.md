@@ -7,27 +7,44 @@
 ### Enhanced Session Boot Sequence with Implementation Plan Integration
 
 **Core Requirements:**
-- Defines the steps AI must follow at the beginning of each session
-- Requires loading of `projectManagement/ProjectBlueprint/blueprint.md`, `projectManagement/ProjectFlow/flow-index.json`, `projectManagement/ProjectLogic/projectlogic.jsonl`, `projectManagement/Tasks/completion-path.json`, `projectManagement/Logs/noteworthy.json`, `projectManagement/Implementations/active/{activeImplementationPlan.md}` if exists, `projectManagement/Tasks/active/{activeTask}.json` if exists
-- **NEW**: Check for active implementation plan in `Implementations/active/`
-- **NEW**: Load current implementation plan context and phase progress
+- Defines the steps AI must follow at the beginning of each session with database-enhanced boot sequence
+- **Database Integration**: Session context preserved in `project.db` for instant restoration
+- **Context Snapshots**: Previous session state automatically restored from database
+- File loading optimized: Core files (`blueprint.md`, `flow-index.json`, `projectlogic.jsonl`) + database context
+- **Session Persistence**: Active themes, tasks, sidequests, and context mode restored from database
+- **Implementation Plan Integration**: Current implementation plan status loaded from database
 - Ensures proposed updates are confirmed by user before changing anything
 
-**Boot Sequence:**
+## 🚨 **CRITICAL: State Preservation Protocol**
+
+**MANDATORY FOR SESSION CONTINUITY**: The database-enhanced boot sequence is designed to restore AI to the exact state where previous work ended. This requires STRICT adherence to real-time state updates:
+
+**Every Work Unit Completion Triggers**:
+1. **Immediate Database Update**: Task/subtask status, progress, completion timestamps
+2. **File Synchronization**: Update corresponding task files with current state  
+3. **Context Snapshot**: Save current AI context to session database
+4. **Event Logging**: Record completion for analytics and session restoration
+5. **Atomic Operation**: All updates must succeed or entire completion fails
+
+**Session Boot Restoration Guarantee**: AI must be able to resume from ANY point where work was interrupted, with complete context restoration and zero work loss.
+
+**Implementation Requirement**: Every MCP tool that modifies project state must implement this update protocol before considering any work unit "complete".
+
+**Database-Enhanced Boot Sequence:**
 ```
-1. Read ProjectBlueprint for project understanding
-2. Read ProjectFlow (flow-index.json) for interaction understanding
-3. Read projectlogic.jsonl for reasoning history
-4. Read projectManagement/Tasks/completion-path.json for current objectives
-5. Review active tasks (Tasks/active/*.json)
-6. If no active tasks, review last completed tasks
-7. If needed, review archived task lists
-8. Determine next steps with priority suggestions
-9. Get user approval for direction
-10. Determine context mode based on selected work
-11. Generate task list for approved direction
-12. Load theme context for selected tasks
-13. Begin task execution
+1. Initialize database connection and restore session context from project.db
+2. Read ProjectBlueprint for project understanding  
+3. Read ProjectFlow (flow-index.json) for interaction understanding
+4. Read projectlogic.jsonl for reasoning history
+5. Load completion-path.json + implementation plan status from database
+6. Restore active themes, tasks, sidequests from session database context
+7. Load recent noteworthy events from database (instead of file scanning)
+8. Assess current state using database task/sidequest status queries
+9. Determine next steps with priority suggestions based on database analytics
+10. Get user approval for direction
+11. Determine/restore context mode from session database
+12. Generate/restore task context using database theme-flow relationships
+13. Begin task execution with preserved session state
 ```
 
 **Session Boot Sequence:**

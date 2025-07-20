@@ -27,37 +27,41 @@
 - **theme-expanded**: Load theme group when themes are interconnected  
 - **project-wide**: Full project context (rare, only for architectural changes)
 
-#### README-Guided Context Assessment
+#### Database-Enhanced Context Assessment
 1. **Theme Structure Loading**: AI reads theme JSON files to understand project areas
-2. **Directory README Assessment**: AI reads README.md and README.json files in relevant directories for context
-3. **File Selection**: AI determines specific code files needed based on task requirements
-4. **Minimal Code Analysis**: AI avoids unnecessary code evaluation unless determined essential
+2. **Database Metadata Query**: AI queries database for intelligent directory context and file relationships
+3. **README.md Assessment**: AI reads README.md files in relevant directories for human-readable context
+4. **File Selection**: AI determines specific code files needed based on task requirements and database insights
+5. **Minimal Code Analysis**: AI avoids unnecessary code evaluation unless determined essential
 
 #### Context Loading Process
 1. Load primary theme files structure from `Themes/[theme].json`
-2. **Discretionary Flow Loading**: AI loads only relevant flow files from ProjectFlow/ directory based on task requirements
-3. Read README.md and README.json files in relevant directories for quick context
-4. **Minimal File Loading**: AI assesses and loads only specific files actually needed for the task (theme scope is discretionary high limit)
-5. AI can request theme-expanded if insufficient context (requires user approval)
-6. User can override to project-wide if architectural changes needed (requires user approval)
+2. **Database-Optimized Flow Loading**: AI queries database for optimal flow file selection based on theme-flow relationships
+3. Query database for directory metadata and file relationships (replacing README.json approach)
+4. Read README.md files in relevant directories for quick human-readable context
+5. **Intelligent File Loading**: AI uses database insights to load only specific files needed for the task
+6. AI can request theme-expanded if insufficient context (requires user approval)
+7. User can override to project-wide if architectural changes needed (requires user approval)
 
 #### Benefits
-- **Efficient Memory Usage**: READMEs provide context without code analysis
-- **Intelligent Assessment**: AI determines necessity rather than rigid rules
+- **Database Intelligence**: Fast queries provide optimal file selection and relationship insights
+- **Efficient Memory Usage**: Database metadata + README.md files provide context without excessive code analysis
+- **Intelligent Assessment**: AI uses database analytics to determine file necessity
 - **Flexible Escalation**: Natural expansion when more context needed
-- **Directory-Level Context**: README.md and README.json files provide folder-level understanding
+- **Smart Directory Context**: Database metadata provides intelligent folder-level understanding
 
-## 5.2 README-Guided Context Loading
+## 5.2 Database-Enhanced Context Loading
 
-**Directive**: Always prioritize README files for quick context understanding.
+**Directive**: Use database intelligence combined with README files for optimal context understanding.
 
 **Configuration**: `contextLoading.readmeFirst` (default: true)
 
 **Protocol**:
 1. Load theme structure from JSON files
-2. When `contextLoading.readmeFirst` is true: Read README.md files in relevant directories (limit 2KB each)
-3. Assess task requirements to determine needed files
-4. Use README context to avoid unnecessary code analysis
+2. Query database for intelligent directory metadata and file relationship insights
+3. When `contextLoading.readmeFirst` is true: Read README.md files in relevant directories (limit 2KB each)
+4. Combine database insights with README context to assess task requirements
+5. Use database analytics to determine optimal file selection and avoid unnecessary code analysis
 5. Load specific code files only when determined essential
 6. Maintain flexibility to access additional files when needed
 

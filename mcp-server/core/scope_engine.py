@@ -2,7 +2,7 @@
 Scope and context loading engine for the AI Project Manager MCP Server.
 
 Handles intelligent context loading based on themes, README guidance, context modes,
-and compressed context management for optimal AI session continuity.
+compressed context management, and database-driven optimization for optimal AI session continuity.
 """
 
 import json
@@ -12,6 +12,11 @@ from typing import Dict, List, Set, Optional, Tuple, Any
 from dataclasses import dataclass
 from enum import Enum
 import os
+
+# Database integration
+from database.theme_flow_queries import ThemeFlowQueries
+from database.session_queries import SessionQueries
+from database.file_metadata_queries import FileMetadataQueries
 
 logger = logging.getLogger(__name__)
 
@@ -225,9 +230,12 @@ class CompressedContextManager:
 
 
 class ScopeEngine:
-    """Engine for determining and loading project context based on themes."""
+    """Engine for determining and loading project context based on themes with database optimization."""
     
-    def __init__(self, mcp_server_path: Optional[Path] = None):
+    def __init__(self, mcp_server_path: Optional[Path] = None, 
+                 theme_flow_queries: Optional[ThemeFlowQueries] = None,
+                 session_queries: Optional[SessionQueries] = None,
+                 file_metadata_queries: Optional[FileMetadataQueries] = None):
         self.max_memory_mb = 100  # Maximum context memory in MB
         self.readme_priority_files = [
             'README.md', 'readme.md', 'Readme.md',
@@ -237,6 +245,11 @@ class ScopeEngine:
         # Initialize compressed context manager
         self.context_manager = CompressedContextManager(mcp_server_path)
         self._core_context_loaded = False
+        
+        # Database components for optimized context loading
+        self.theme_flow_queries = theme_flow_queries
+        self.session_queries = session_queries
+        self.file_metadata_queries = file_metadata_queries
     
     async def ensure_core_context_loaded(self):
         """Ensure compressed core context is loaded."""
@@ -436,22 +449,36 @@ class ScopeEngine:
         return global_paths
     
     async def _load_readmes(self, project_path: Path, paths: List[str]) -> Dict[str, str]:
-        """Load README files from relevant paths for quick context."""
+        """Load README files and database metadata for quick context."""
         readmes = {}
         
-        # Add project root README
+        # First, try to load from database metadata if available
+        if self.file_metadata_queries:
+            try:
+                db_metadata = await self._load_database_metadata(project_path, paths)
+                readmes.update(db_metadata)
+            except Exception as e:
+                logger.debug(f"Error loading database metadata: {e}")
+        
+        # Add project root README (fallback or supplement)
         for readme_name in self.readme_priority_files:
             root_readme = project_path / readme_name
             if root_readme.exists():
                 try:
                     content = root_readme.read_text(encoding='utf-8')
-                    readmes[str(Path('.'))] = content[:2000]  # Limit to 2KB
+                    # If not already in database metadata, add it
+                    root_key = str(Path('.'))
+                    if root_key not in readmes:
+                        readmes[root_key] = content[:2000]  # Limit to 2KB
                     break
                 except Exception as e:
                     logger.debug(f"Error reading {root_readme}: {e}")
         
-        # Load READMEs from theme paths
+        # Load READMEs from theme paths (fallback for paths not in database)
         for path in paths:
+            if path in readmes:  # Skip if already loaded from database
+                continue
+                
             path_obj = project_path / path
             if path_obj.is_dir():
                 for readme_name in self.readme_priority_files:
@@ -465,6 +492,79 @@ class ScopeEngine:
                             logger.debug(f"Error reading {readme_file}: {e}")
         
         return readmes
+    
+    async def _load_database_metadata(self, project_path: Path, paths: List[str]) -> Dict[str, str]:
+        """Load file metadata from database to replace README.json files."""
+        metadata_content = {}
+        
+        try:
+            # Get directory metadata for each path
+            for path in paths:
+                full_path = str(project_path / path)
+                
+                # Get directory metadata from database
+                dir_metadata = self.file_metadata_queries.get_directory_metadata(full_path)
+                
+                if dir_metadata:
+                    # Format metadata as README-like content
+                    content_parts = []
+                    
+                    if dir_metadata.get('description'):
+                        content_parts.append(f"# {path}\n\n{dir_metadata['description']}")
+                    
+                    if dir_metadata.get('purpose'):
+                        content_parts.append(f"**Purpose**: {dir_metadata['purpose']}")
+                    
+                    # File relationships
+                    file_relationships = self.file_metadata_queries.get_file_relationships(full_path)
+                    if file_relationships:
+                        content_parts.append("\n**File Relationships**:")
+                        for rel in file_relationships[:5]:  # Limit to top 5
+                            content_parts.append(f"- {rel.get('file_path', 'Unknown')}: {rel.get('relationship_type', 'related')}")
+                    
+                    # Key files in directory
+                    key_files = dir_metadata.get('key_files', [])
+                    if key_files:
+                        content_parts.append("\n**Key Files**:")
+                        for file in key_files[:5]:  # Limit to top 5
+                            if isinstance(file, dict):
+                                content_parts.append(f"- {file.get('name', 'Unknown')}: {file.get('purpose', 'No description')}")
+                            else:
+                                content_parts.append(f"- {file}")
+                    
+                    # Combine content
+                    if content_parts:
+                        full_content = "\n".join(content_parts)
+                        metadata_content[path] = full_content[:2000]  # Limit to 2KB
+                        
+                        # Log that we're using database metadata
+                        logger.debug(f"Using database metadata for {path} instead of README.json")
+            
+            # Also try to get project root metadata
+            root_metadata = self.file_metadata_queries.get_directory_metadata(str(project_path))
+            if root_metadata and '.' not in metadata_content:
+                content_parts = []
+                
+                if root_metadata.get('description'):
+                    content_parts.append(f"# Project Overview\n\n{root_metadata['description']}")
+                
+                if root_metadata.get('purpose'):
+                    content_parts.append(f"**Purpose**: {root_metadata['purpose']}")
+                
+                # Project structure overview
+                structure = root_metadata.get('structure_overview')
+                if structure:
+                    content_parts.append(f"\n**Structure**: {structure}")
+                
+                if content_parts:
+                    metadata_content['.'] = "\n".join(content_parts)[:2000]
+            
+        except Exception as e:
+            logger.warning(f"Error loading database metadata: {e}")
+            # Return empty dict to fall back to file-based README loading
+            return {}
+        
+        return metadata_content
     
     async def _estimate_memory_usage(self, context: ContextResult) -> int:
         """Estimate memory usage in MB for the loaded context."""
@@ -677,3 +777,708 @@ class ScopeEngine:
         """Get compressed directive information."""
         await self.ensure_core_context_loaded()
         return self.context_manager.get_directive_summary(directive_key)
+    
+    # Database-Enhanced Context Loading Methods
+    
+    async def load_context_with_database_optimization(self, project_path: Path, primary_theme: str,
+                                                    context_mode: ContextMode = ContextMode.THEME_FOCUSED,
+                                                    task_id: Optional[str] = None,
+                                                    session_id: Optional[str] = None) -> ContextResult:
+        """Load context with database optimization for theme-flow relationships and session tracking."""
+        try:
+            # Load context using existing method first
+            context = await self.load_context(project_path, primary_theme, context_mode)
+            
+            # Enhance with database information if available
+            if self.theme_flow_queries:
+                await self._enhance_context_with_flows(context, primary_theme)
+            
+            if self.session_queries and session_id:
+                await self._track_context_usage(session_id, context, task_id)
+            
+            if self.file_metadata_queries:
+                await self._enhance_context_with_file_intelligence(project_path, context)
+            
+            return context
+            
+        except Exception as e:
+            logger.error(f"Error loading context with database optimization: {e}")
+            # Fallback to regular context loading
+            return await self.load_context(project_path, primary_theme, context_mode)
+    
+    async def _enhance_context_with_flows(self, context: ContextResult, primary_theme: str):
+        """Enhance context with flow information from database."""
+        try:
+            # Get flows associated with this theme
+            theme_flows = await self.theme_flow_queries.get_flows_for_theme(primary_theme)
+            
+            if theme_flows:
+                # Add flow information to recommendations
+                flow_count = len(theme_flows)
+                context.recommendations.append(
+                    f"Theme has {flow_count} associated flows: {', '.join([f['flow_id'] for f in theme_flows])}"
+                )
+                
+                # Load flow status for better context
+                for flow_info in theme_flows:
+                    flow_status = await self.theme_flow_queries.get_flow_status(flow_info['flow_id'])
+                    if flow_status:
+                        status_info = f"Flow {flow_info['flow_id']}: {flow_status['status']} ({flow_status['completion_percentage']}%)"
+                        context.recommendations.append(status_info)
+        
+        except Exception as e:
+            logger.debug(f"Error enhancing context with flows: {e}")
+    
+    async def _track_context_usage(self, session_id: str, context: ContextResult, task_id: Optional[str]):
+        """Track context usage for analytics and learning."""
+        try:
+            # Update session context tracking
+            context_data = {
+                "loaded_themes": context.loaded_themes,
+                "context_mode": context.mode.value,
+                "memory_estimate": context.memory_estimate,
+                "files_count": len(context.files),
+                "paths_count": len(context.paths),
+                "readmes_count": len(context.readmes)
+            }
+            
+            await self.session_queries.update_session_context(session_id, context_data)
+            
+            if task_id:
+                # Log context escalation if mode was changed
+                await self.session_queries.log_context_escalation(
+                    session_id=session_id,
+                    from_mode=context.mode.value,
+                    to_mode=context.mode.value,  # Same for now, would differ if escalated
+                    reason=f"Context loaded for task {task_id}",
+                    task_id=task_id
+                )
+        
+        except Exception as e:
+            logger.debug(f"Error tracking context usage: {e}")
+    
+    async def _enhance_context_with_file_intelligence(self, project_path: Path, context: ContextResult):
+        """Enhance context with file metadata and relationships."""
+        try:
+            # Get file modification history for relevant files
+            recent_files = []
+            for file_path in context.files[:10]:  # Check recent activity for first 10 files
+                file_info = await self.file_metadata_queries.get_file_modification_history(file_path, limit=1)
+                if file_info:
+                    recent_files.append((file_path, file_info[0]))
+            
+            if recent_files:
+                # Sort by most recently modified
+                recent_files.sort(key=lambda x: x[1]['timestamp'], reverse=True)
+                most_recent = recent_files[0]
+                
+                context.recommendations.append(
+                    f"Most recently modified file: {most_recent[0]} "
+                    f"({most_recent[1]['timestamp']})"
+                )
+        
+        except Exception as e:
+            logger.debug(f"Error enhancing context with file intelligence: {e}")
+    
+    async def get_optimized_flow_context(self, project_path: Path, flow_ids: List[str],
+                                       session_id: Optional[str] = None) -> Dict[str, Any]:
+        """Get optimized context for specific flows using database relationships."""
+        if not self.theme_flow_queries:
+            return {"error": "Theme-flow queries not available"}
+        
+        try:
+            context_data = {
+                "flows": {},
+                "related_themes": set(),
+                "cross_flow_dependencies": [],
+                "recommended_context_mode": ContextMode.THEME_FOCUSED.value
+            }
+            
+            # Load flow information and related themes
+            for flow_id in flow_ids:
+                # Get flow details
+                flow_info = await self.theme_flow_queries.get_flow_details(flow_id)
+                if flow_info:
+                    context_data["flows"][flow_id] = flow_info
+                    
+                    # Get themes associated with this flow
+                    flow_themes = await self.theme_flow_queries.get_themes_for_flow(flow_id)
+                    for theme_info in flow_themes:
+                        context_data["related_themes"].add(theme_info['theme_name'])
+                
+                # Get cross-flow dependencies
+                dependencies = await self.theme_flow_queries.get_cross_flow_dependencies(flow_id)
+                context_data["cross_flow_dependencies"].extend(dependencies)
+            
+            # Convert set to list for JSON serialization
+            context_data["related_themes"] = list(context_data["related_themes"])
+            
+            # Determine recommended context mode based on complexity
+            theme_count = len(context_data["related_themes"])
+            dependency_count = len(context_data["cross_flow_dependencies"])
+            
+            if theme_count > 3 or dependency_count > 5:
+                context_data["recommended_context_mode"] = ContextMode.PROJECT_WIDE.value
+            elif theme_count > 1 or dependency_count > 0:
+                context_data["recommended_context_mode"] = ContextMode.THEME_EXPANDED.value
+            
+            # Track usage if session provided
+            if session_id and self.session_queries:
+                await self.session_queries.log_flow_context_usage(
+                    session_id=session_id,
+                    flow_ids=flow_ids,
+                    themes_loaded=context_data["related_themes"],
+                    context_mode=context_data["recommended_context_mode"]
+                )
+            
+            return context_data
+            
+        except Exception as e:
+            logger.error(f"Error getting optimized flow context: {e}")
+            return {"error": str(e)}
+    
+    async def get_intelligent_context_recommendations(self, project_path: Path, 
+                                                    current_context: ContextResult,
+                                                    task_description: str,
+                                                    session_id: Optional[str] = None) -> Dict[str, Any]:
+        """Get intelligent context recommendations based on task and historical data."""
+        recommendations = {
+            "current_assessment": {},
+            "escalation_recommendations": [],
+            "flow_suggestions": [],
+            "theme_suggestions": [],
+            "memory_optimization": []
+        }
+        
+        try:
+            # Assess current context
+            recommendations["current_assessment"] = {
+                "mode": current_context.mode.value,
+                "themes_loaded": len(current_context.loaded_themes),
+                "files_available": len(current_context.files),
+                "memory_usage": current_context.memory_estimate,
+                "coverage_score": await self._calculate_coverage_score(current_context)
+            }
+            
+            # Use database analytics if available
+            if self.session_queries and session_id:
+                # Get similar tasks and their successful context patterns
+                similar_patterns = await self.session_queries.get_successful_context_patterns(
+                    task_keywords=task_description.lower().split()[:5]
+                )
+                
+                if similar_patterns:
+                    recommendations["escalation_recommendations"].append({
+                        "reason": "Based on similar successful tasks",
+                        "suggested_mode": similar_patterns.get('most_successful_mode'),
+                        "confidence": similar_patterns.get('confidence_score', 0.5)
+                    })
+            
+            # Flow-based recommendations if database available
+            if self.theme_flow_queries:
+                primary_theme = current_context.primary_theme
+                relevant_flows = await self.theme_flow_queries.get_flows_for_theme(primary_theme)
+                
+                incomplete_flows = [
+                    f for f in relevant_flows 
+                    if f.get('completion_percentage', 0) < 100
+                ]
+                
+                if incomplete_flows:
+                    recommendations["flow_suggestions"] = [
+                        {
+                            "flow_id": f['flow_id'],
+                            "status": f['status'],
+                            "completion": f.get('completion_percentage', 0),
+                            "suggestion": f"Consider flow {f['flow_id']} for task context"
+                        }
+                        for f in incomplete_flows
+                    ]
+            
+            # Memory optimization suggestions
+            if current_context.memory_estimate > self.max_memory_mb * 0.8:
+                recommendations["memory_optimization"].append({
+                    "issue": "High memory usage detected",
+                    "current_usage": current_context.memory_estimate,
+                    "suggestions": [
+                        "Consider more focused context mode",
+                        "Use file relevance filtering",
+                        "Limit README file loading"
+                    ]
+                })
+            
+        except Exception as e:
+            logger.error(f"Error generating intelligent context recommendations: {e}")
+            recommendations["error"] = str(e)
+        
+        return recommendations
+    
+    async def _calculate_coverage_score(self, context: ContextResult) -> float:
+        """Calculate a coverage score for the current context."""
+        try:
+            # Base score from theme coverage
+            theme_score = min(len(context.loaded_themes) / 5.0, 1.0)
+            
+            # README coverage score
+            readme_score = min(len(context.readmes) / len(context.paths) if context.paths else 0, 1.0)
+            
+            # File coverage score (balanced - not too many, not too few)
+            ideal_file_count = 15
+            file_score = 1.0 - abs(len(context.files) - ideal_file_count) / ideal_file_count
+            file_score = max(0.0, min(file_score, 1.0))
+            
+            # Weighted average
+            coverage_score = (theme_score * 0.3 + readme_score * 0.3 + file_score * 0.4)
+            
+            return round(coverage_score, 2)
+            
+        except Exception as e:
+            logger.debug(f"Error calculating coverage score: {e}")
+            return 0.5
+    
+    # Multi-Flow System Integration Methods
+    
+    async def load_selective_flows_for_context(self, project_path: Path, 
+                                             task_themes: List[str],
+                                             task_description: str = "",
+                                             max_flows: int = 5,
+                                             session_id: Optional[str] = None) -> Dict[str, Any]:
+        """Load flows selectively based on task requirements using multi-flow system."""
+        if not self.theme_flow_queries:
+            return {"error": "Multi-flow system requires database integration"}
+        
+        try:
+            # Use database optimization for flow selection
+            selected_flows = await self._select_flows_with_database_intelligence(
+                task_themes, task_description, max_flows, session_id
+            )
+            
+            # Load actual flow data
+            flow_dir = project_path / "projectManagement" / "ProjectFlow"
+            loaded_flows = {}
+            flow_context = {
+                "selected_flows": [],
+                "cross_flow_dependencies": [],
+                "recommended_context_mode": "theme-focused",
+                "performance_metrics": {
+                    "selection_time_ms": 0,
+                    "loading_time_ms": 0,
+                    "memory_estimate_kb": 0
+                }
+            }
+            
+            start_time = datetime.utcnow()
+            
+            for flow_info in selected_flows:
+                flow_id = flow_info["flow_id"]
+                flow_file = flow_info.get("flow_file", f"{flow_info.get('domain', 'general')}-flow.json")
+                flow_path = flow_dir / flow_file
+                
+                if flow_path.exists():
+                    try:
+                        flow_data = json.loads(flow_path.read_text())
+                        loaded_flows[flow_id] = flow_data
+                        
+                        flow_summary = {
+                            "flow_id": flow_id,
+                            "name": flow_data.get("metadata", {}).get("name", "Unknown"),
+                            "domain": flow_data.get("metadata", {}).get("domain", "general"),
+                            "status": flow_data.get("status", {}).get("overall_status", "unknown"),
+                            "completion_percentage": flow_data.get("status", {}).get("completion_percentage", 0),
+                            "themes": flow_data.get("themes", {}),
+                            "flows_count": len(flow_data.get("flows", {})),
+                            "relevance_score": flow_info.get("relevance_score", 0)
+                        }
+                        flow_context["selected_flows"].append(flow_summary)
+                        
+                    except json.JSONDecodeError:
+                        logger.warning(f"Invalid JSON in flow file: {flow_file}")
+            
+            loading_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+            flow_context["performance_metrics"]["loading_time_ms"] = loading_time
+            
+            # Analyze cross-flow dependencies
+            if len(loaded_flows) > 1:
+                dependencies = await self._analyze_cross_flow_dependencies_for_context(
+                    list(loaded_flows.keys())
+                )
+                flow_context["cross_flow_dependencies"] = dependencies
+            
+            # Determine recommended context mode based on flow complexity
+            total_flows_count = sum(len(data.get("flows", {})) for data in loaded_flows.values())
+            total_themes = set()
+            for flow_data in loaded_flows.values():
+                themes = flow_data.get("themes", {})
+                total_themes.update(themes.get("primary", []))
+                total_themes.update(themes.get("secondary", []))
+            
+            if len(total_themes) > 3 or total_flows_count > 10:
+                flow_context["recommended_context_mode"] = "project-wide"
+            elif len(total_themes) > 1 or len(flow_context["cross_flow_dependencies"]) > 0:
+                flow_context["recommended_context_mode"] = "theme-expanded"
+            
+            # Estimate memory usage
+            flow_context["performance_metrics"]["memory_estimate_kb"] = len(loaded_flows) * 100  # ~100KB per flow
+            
+            # Track usage if session provided
+            if session_id and self.session_queries:
+                await self.session_queries.log_selective_flow_loading(
+                    session_id=session_id,
+                    task_themes=task_themes,
+                    loaded_flows=list(loaded_flows.keys()),
+                    performance_metrics=flow_context["performance_metrics"]
+                )
+            
+            flow_context["loaded_flows_data"] = loaded_flows
+            return flow_context
+            
+        except Exception as e:
+            logger.error(f"Error in selective flow loading: {e}")
+            return {"error": str(e)}
+    
+    async def get_context_with_selective_flows(self, project_path: Path, 
+                                             primary_theme: str,
+                                             task_description: str = "",
+                                             context_mode: ContextMode = ContextMode.THEME_FOCUSED,
+                                             max_flows: int = 5,
+                                             session_id: Optional[str] = None) -> ContextResult:
+        """Load context enhanced with selectively loaded flows."""
+        try:
+            # Load base context
+            base_context = await self.load_context_with_database_optimization(
+                project_path=project_path,
+                primary_theme=primary_theme,
+                context_mode=context_mode,
+                session_id=session_id
+            )
+            
+            # Get related themes from context
+            task_themes = base_context.loaded_themes
+            
+            # Load selective flows
+            flow_context = await self.load_selective_flows_for_context(
+                project_path=project_path,
+                task_themes=task_themes,
+                task_description=task_description,
+                max_flows=max_flows,
+                session_id=session_id
+            )
+            
+            if "error" not in flow_context:
+                # Enhance context with flow information
+                flow_recommendations = []
+                
+                # Add flow-specific recommendations
+                selected_flows = flow_context.get("selected_flows", [])
+                if selected_flows:
+                    flow_recommendations.append(
+                        f"Loaded {len(selected_flows)} relevant flows for task context"
+                    )
+                    
+                    incomplete_flows = [f for f in selected_flows if f["completion_percentage"] < 100]
+                    if incomplete_flows:
+                        flow_recommendations.append(
+                            f"{len(incomplete_flows)} flows incomplete - consider prioritizing completion"
+                        )
+                
+                # Cross-flow dependency recommendations
+                dependencies = flow_context.get("cross_flow_dependencies", [])
+                if dependencies:
+                    flow_recommendations.append(
+                        f"Found {len(dependencies)} cross-flow dependencies - consider loading order"
+                    )
+                
+                # Context mode recommendations based on flows
+                recommended_mode = flow_context.get("recommended_context_mode")
+                if recommended_mode and recommended_mode != context_mode.value:
+                    flow_recommendations.append(
+                        f"Multi-flow analysis suggests {recommended_mode} context mode"
+                    )
+                
+                # Performance recommendations
+                perf_metrics = flow_context.get("performance_metrics", {})
+                memory_kb = perf_metrics.get("memory_estimate_kb", 0)
+                if memory_kb > 1000:  # > 1MB
+                    flow_recommendations.append(
+                        f"Flow memory usage: {memory_kb}KB - consider selective loading"
+                    )
+                
+                # Add flow recommendations to base context
+                base_context.recommendations.extend(flow_recommendations)
+                
+                # Update memory estimate with flow data
+                base_context.memory_estimate += int(memory_kb / 1024)  # Convert to MB
+            
+            return base_context
+            
+        except Exception as e:
+            logger.error(f"Error loading context with selective flows: {e}")
+            # Fallback to regular context loading
+            return await self.load_context_with_database_optimization(
+                project_path=project_path,
+                primary_theme=primary_theme,
+                context_mode=context_mode,
+                session_id=session_id
+            )
+    
+    async def _select_flows_with_database_intelligence(self, task_themes: List[str],
+                                                     task_description: str,
+                                                     max_flows: int,
+                                                     session_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Select flows using database intelligence and historical patterns."""
+        selected_flows = []
+        
+        try:
+            # Get flows for each theme
+            theme_flows = []
+            for theme in task_themes:
+                flows = await self.theme_flow_queries.get_flows_for_theme(theme)
+                theme_flows.extend(flows)
+            
+            # Remove duplicates and score by relevance
+            flows_by_id = {}
+            for flow in theme_flows:
+                flow_id = flow["flow_id"]
+                if flow_id not in flows_by_id:
+                    flows_by_id[flow_id] = flow
+                    flows_by_id[flow_id]["relevance_score"] = 0
+                
+                # Base relevance score from theme relationship
+                relevance_order = flow.get("relevance_order", 1)
+                flows_by_id[flow_id]["relevance_score"] += 1.0 / relevance_order
+            
+            # Enhanced scoring with task description
+            if task_description:
+                task_keywords = set(word.lower() for word in task_description.split() if len(word) > 2)
+                
+                for flow_id, flow_info in flows_by_id.items():
+                    # Check flow file name
+                    flow_file = flow_info.get("flow_file", "").lower()
+                    file_keywords = set(flow_file.replace("-flow.json", "").replace("-", " ").split())
+                    
+                    keyword_matches = len(task_keywords.intersection(file_keywords))
+                    flows_by_id[flow_id]["relevance_score"] += keyword_matches * 0.5
+            
+            # Historical success pattern scoring if session available
+            if session_id and self.session_queries:
+                try:
+                    success_patterns = await self.session_queries.get_flow_success_patterns(
+                        session_id=session_id,
+                        task_themes=task_themes,
+                        task_keywords=task_description.lower().split()[:5]
+                    )
+                    
+                    if success_patterns:
+                        for flow_id in flows_by_id:
+                            if flow_id in success_patterns.get("successful_flows", []):
+                                flows_by_id[flow_id]["relevance_score"] += 1.0
+                                
+                except Exception as e:
+                    logger.debug(f"Could not get historical success patterns: {e}")
+            
+            # Flow status boost (prioritize in-progress flows)
+            for flow_id in flows_by_id:
+                try:
+                    flow_status = await self.theme_flow_queries.get_flow_status(flow_id)
+                    if flow_status:
+                        status = flow_status.get("status", "")
+                        if status == "in-progress":
+                            flows_by_id[flow_id]["relevance_score"] += 0.8
+                        elif status == "needs-review":
+                            flows_by_id[flow_id]["relevance_score"] += 0.5
+                        
+                        # Completion percentage factor
+                        completion = flow_status.get("completion_percentage", 0)
+                        if 20 <= completion < 80:  # Partially complete flows are more relevant
+                            flows_by_id[flow_id]["relevance_score"] += 0.3
+                            
+                except Exception as e:
+                    logger.debug(f"Could not get flow status for {flow_id}: {e}")
+            
+            # Sort by relevance score and select top flows
+            sorted_flows = sorted(flows_by_id.values(), key=lambda x: x["relevance_score"], reverse=True)
+            selected_flows = sorted_flows[:max_flows]
+            
+        except Exception as e:
+            logger.error(f"Error in database-intelligent flow selection: {e}")
+        
+        return selected_flows
+    
+    async def _analyze_cross_flow_dependencies_for_context(self, flow_ids: List[str]) -> List[Dict[str, Any]]:
+        """Analyze cross-flow dependencies for context loading optimization."""
+        dependencies = []
+        
+        try:
+            if self.theme_flow_queries:
+                for flow_id in flow_ids:
+                    flow_dependencies = await self.theme_flow_queries.get_cross_flow_dependencies(flow_id)
+                    
+                    for dep in flow_dependencies:
+                        if dep.get("to_flow") in flow_ids:  # Dependency within our loaded set
+                            dependencies.append({
+                                "from_flow": flow_id,
+                                "to_flow": dep["to_flow"],
+                                "dependency_type": dep.get("dependency_type", "requires"),
+                                "description": dep.get("description", ""),
+                                "impact": "context_loading"
+                            })
+        
+        except Exception as e:
+            logger.debug(f"Error analyzing cross-flow dependencies: {e}")
+        
+        return dependencies
+    
+    async def optimize_multi_flow_context_loading(self, project_path: Path,
+                                                task_data: Dict[str, Any],
+                                                session_id: Optional[str] = None) -> Dict[str, Any]:
+        """Optimize context loading strategy for multi-flow scenarios."""
+        optimization_result = {
+            "strategy": "adaptive",
+            "recommended_flows": [],
+            "context_mode": "theme-focused",
+            "loading_order": [],
+            "performance_estimate": {},
+            "recommendations": []
+        }
+        
+        try:
+            # Extract task information
+            primary_theme = task_data.get("primaryTheme", "general")
+            task_description = task_data.get("description", "")
+            subtasks = task_data.get("subtasks", [])
+            
+            # Determine complexity level
+            complexity_score = 0
+            if len(subtasks) > 3:
+                complexity_score += 2
+            if len(task_description.split()) > 20:
+                complexity_score += 1
+            if any(keyword in task_description.lower() for keyword in 
+                   ["integration", "system", "architecture", "database", "api"]):
+                complexity_score += 2
+            
+            # Adjust strategy based on complexity
+            if complexity_score >= 4:
+                optimization_result["strategy"] = "comprehensive"
+                optimization_result["context_mode"] = "project-wide"
+                max_flows = 8
+            elif complexity_score >= 2:
+                optimization_result["strategy"] = "expanded"
+                optimization_result["context_mode"] = "theme-expanded"
+                max_flows = 5
+            else:
+                optimization_result["strategy"] = "focused"
+                optimization_result["context_mode"] = "theme-focused"
+                max_flows = 3
+            
+            # Get all relevant themes
+            all_themes = {primary_theme}
+            for subtask in subtasks:
+                flow_refs = subtask.get("flowReferences", [])
+                for flow_ref in flow_refs:
+                    # Extract theme from flow reference if available
+                    if self.theme_flow_queries:
+                        flow_themes = await self.theme_flow_queries.get_themes_for_flow(
+                            flow_ref.get("flowId", "")
+                        )
+                        for theme_info in flow_themes:
+                            all_themes.add(theme_info["theme_name"])
+            
+            # Select flows with database intelligence
+            selected_flows = await self._select_flows_with_database_intelligence(
+                list(all_themes), task_description, max_flows, session_id
+            )
+            
+            optimization_result["recommended_flows"] = selected_flows
+            
+            # Analyze dependencies and determine loading order
+            if len(selected_flows) > 1:
+                flow_ids = [f["flow_id"] for f in selected_flows]
+                dependencies = await self._analyze_cross_flow_dependencies_for_context(flow_ids)
+                
+                if dependencies:
+                    # Generate optimal loading order
+                    loading_order = await self._generate_dependency_aware_loading_order(
+                        flow_ids, dependencies
+                    )
+                    optimization_result["loading_order"] = loading_order
+                    optimization_result["recommendations"].append(
+                        f"Dependency-aware loading order recommended: {' → '.join(loading_order)}"
+                    )
+            
+            # Performance estimation
+            total_estimated_memory = len(selected_flows) * 100  # KB per flow
+            estimated_loading_time = len(selected_flows) * 50  # ms per flow
+            
+            optimization_result["performance_estimate"] = {
+                "memory_kb": total_estimated_memory,
+                "loading_time_ms": estimated_loading_time,
+                "context_switch_cost": "low" if len(selected_flows) <= 3 else "moderate"
+            }
+            
+            # Generate optimization recommendations
+            if total_estimated_memory > 800:  # > 800KB
+                optimization_result["recommendations"].append(
+                    "Consider reducing flow count for memory optimization"
+                )
+            
+            if len(all_themes) > len(selected_flows):
+                missing_theme_count = len(all_themes) - len(set(
+                    theme for flow in selected_flows
+                    for theme in flow.get("primary_themes", [])
+                ))
+                if missing_theme_count > 0:
+                    optimization_result["recommendations"].append(
+                        f"Consider additional flows to cover {missing_theme_count} themes"
+                    )
+            
+            # Historical success pattern recommendations
+            if session_id and self.session_queries:
+                try:
+                    similar_optimizations = await self.session_queries.get_similar_optimization_patterns(
+                        session_id=session_id,
+                        complexity_score=complexity_score,
+                        theme_count=len(all_themes)
+                    )
+                    
+                    if similar_optimizations:
+                        optimization_result["recommendations"].append(
+                            f"Based on similar tasks: {similar_optimizations.get('recommendation', 'N/A')}"
+                        )
+                        
+                except Exception as e:
+                    logger.debug(f"Could not get historical optimization patterns: {e}")
+            
+        except Exception as e:
+            logger.error(f"Error optimizing multi-flow context loading: {e}")
+            optimization_result["error"] = str(e)
+        
+        return optimization_result
+    
+    async def _generate_dependency_aware_loading_order(self, flow_ids: List[str],
+                                                     dependencies: List[Dict[str, Any]]) -> List[str]:
+        """Generate loading order that respects cross-flow dependencies."""
+        # Simple topological sort for dependency resolution
+        in_degree = {flow_id: 0 for flow_id in flow_ids}
+        
+        # Calculate in-degrees
+        for dep in dependencies:
+            if dep["to_flow"] in in_degree:
+                in_degree[dep["to_flow"]] += 1
+        
+        # Topological sort
+        queue = [flow_id for flow_id, degree in in_degree.items() if degree == 0]
+        loading_order = []
+        
+        while queue:
+            flow_id = queue.pop(0)
+            loading_order.append(flow_id)
+            
+            # Update in-degrees
+            for dep in dependencies:
+                if dep["from_flow"] == flow_id and dep["to_flow"] in in_degree:
+                    in_degree[dep["to_flow"]] -= 1
+                    if in_degree[dep["to_flow"]] == 0:
+                        queue.append(dep["to_flow"])
+        
+        return loading_order

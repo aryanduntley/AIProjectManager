@@ -9,7 +9,9 @@
   },
   "triggers": [
     "Task creation",
-    "Task status changes",
+    "Task status changes", 
+    "Subtask completion",
+    "Any work unit completion",
     "Milestone progress",
     "Sidequest creation",
     "Completion path updates",
@@ -19,6 +21,21 @@
     "Flow scope evaluation"
   ],
   "workflows": {
+    "realTimeStatePreservation": {
+      "directive": "MANDATORY: After EVERY subtask completion, step completion, or any work unit completion, ALL organizational files and database records that relate MUST be immediately updated",
+      "purpose": "Ensure seamless session restoration and prevent loss of work in case of premature session termination",
+      "required": true,
+      "updateRequirements": [
+        "Database: Update task/subtask status, progress percentages, completion timestamps",
+        "Task Files: Update subtask status, progress, completion criteria",
+        "Session Database: Save current context snapshot",
+        "Implementation Plans: Update phase progress if applicable",
+        "Related Themes: Update any affected theme relationships",
+        "Event Logging: Log completion event for analytics and recovery"
+      ],
+      "sessionRestorationGoal": "Upon any restart, MCP/AI must be able to resume exactly where work left off with minimal review and zero lost progress",
+      "atomicOperation": "If any update fails, the entire completion step fails and must be retried"
+    },
     "taskCreation": {
       "directive": "All tasks must integrate with themes, milestones, and multi-flow system",
       "required": true,
@@ -98,7 +115,14 @@
             "Replace: Complete and replace one of the current sidequests",
             "Increase Limit: Temporarily increase sidequest limit for session"
           ],
-          "approachingLimitWarning": "When at 80% of limit: warn user about current count and suggest completing some sidequests"
+          "approachingLimitWarning": "When at 80% of limit: warn user about current count and suggest completing some sidequests",
+          "basicUserCommunication": {
+            "sidequestCreation": "AI MUST inform user: 'Creating sidequest [N/MAX]: [TITLE] - [BRIEF_DESCRIPTION]'",
+            "sidequestCompletion": "AI MUST inform user: 'Sidequest completed: [TITLE]. Returning to main task [PARENT_TITLE]'",
+            "limitExceededMessage": "AI MUST present: 'Sidequest limit reached ([N]/[MAX]). Available options:' followed by option list",
+            "contextSwitching": "AI MUST announce: 'Switching to sidequest: [TITLE]. Main task context preserved.'",
+            "escalationTrigger": "IF user communication unclear or insufficient → ESCALATE to docs/directives/06-task-management.md for detailed communication protocols"
+          }
         }
       },
       "subtaskSidequestTracking": {
