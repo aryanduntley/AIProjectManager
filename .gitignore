@@ -1,0 +1,29 @@
+# Ignore operating system files
+.DS_Store
+Thumbs.db
+
+# Node.js dependencies
+node_modules/
+
+# Python virtual environment
+venv/
+env/
+
+# IDE and Editor settings
+.vscode/
+.idea/
+
+# Log files
+*.log
+
+# Exclude files/folders related to .claude
+.claude/
+
+# Ignore build directories and generated files
+dist/
+build/
+
+# Ignore other files that are typically not tracked
+*.bak
+*.swp
+*.tmp
