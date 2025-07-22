@@ -8,6 +8,12 @@ import logging
 from typing import Dict, Any, List, Optional, Callable
 from pathlib import Path
 import asyncio
+import sys
+
+# Add deps directory to Python path for project-specific dependencies
+deps_path = Path(__file__).parent.parent / "deps"
+if deps_path.exists():
+    sys.path.insert(0, str(deps_path))
 
 from mcp.server import Server
 from mcp.types import Tool, TextContent, CallToolRequest

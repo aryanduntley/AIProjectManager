@@ -13,6 +13,11 @@ import logging
 from pathlib import Path
 from typing import Dict, Any
 
+# Add deps directory to Python path for project-specific dependencies
+deps_path = Path(__file__).parent / "deps"
+if deps_path.exists():
+    sys.path.insert(0, str(deps_path))
+
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import Tool

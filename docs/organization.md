@@ -28,6 +28,9 @@ The structure is designed to:
 ```
 /projectRoot
 └── projectManagement/
+    ├── .git/                      # Git repository for organizational state management
+    ├── .gitignore                 # Ignore user-specific session data and temporary files  
+    ├── .mcp-git-config.json       # Git integration configuration and settings
     ├── ProjectBlueprint/
     │   ├── blueprint.md           # High-level summary of the project (user-approved)
     │   └── metadata.json          # Metadata, tags, author, project date, etc.
@@ -67,7 +70,7 @@ The structure is designed to:
     ├── Placeholders/
     │   └── todos.jsonl            # Captures all deferred implementation notes and scaffolding TODOs
     ├── UserSettings/
-    │   └── config.json
+    │   └── config.json            # User-specific configuration (not tracked in Git)
     ├── project.db                 # SQLite database for persistent theme-flow relationships, session tracking, and project analytics
     └── database/
         └── backups/               # Database backups for recovery (recommended periodic backups)
