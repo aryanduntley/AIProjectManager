@@ -1,0 +1,15 @@
+# AI Project Manager - Added automatically
+# MCP Instance Management - Track Structure, Not Content
+.mcp-instances/active/*/projectManagement/UserSettings/
+.mcp-instances/active/*/projectManagement/database/backups/
+.mcp-instances/*/logs/
+.mcp-instances/*/temp/
+
+# Project Management - Track Organizational State, Not User-Specific Data
+projectManagement/UserSettings/
+projectManagement/database/backups/
+projectManagement/.mcp-session-*
+
+# Temporary files
+*.tmp
+.ai-pm-temp/

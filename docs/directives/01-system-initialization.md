@@ -1,5 +1,11 @@
 # System Initialization Directives
 
+## Overview
+
+This directive ensures proper system initialization with Git integration, instance management, and database setup. The initialization process establishes the foundation for Git-like instance management while maintaining backward compatibility with existing projects.
+
+**Key Triggers**: MCP server startup, first connection, system boot, session start, instance initialization, Git repository setup needed
+
 ## 1.1 MCP Server Connection Protocol
 
 **Directive**: Always verify MCP server connectivity and tool availability before beginning any project work.
@@ -10,10 +16,16 @@
 2. Verify all required tools are available:
    - project_initialize, project_get_blueprint, project_update_blueprint, project_get_status
    - theme_discover, theme_create, theme_list, theme_get, theme_update, theme_delete, theme_get_context, theme_validate
+   - instance_create, instance_list, instance_status, instance_merge, instance_archive
+   - detect_conflicts, resolve_conflicts
    - get_config, read_file
 3. Load server configuration and validate settings
 4. Confirm project management structure exists or initialize if needed
 ```
+
+**Critical New Tools**:
+- **Instance Management Tools**: Required for Git-like workflow support
+- **Conflict Resolution Tools**: Essential for instance merge operations
 
 ## 1.2 Project Detection and Compatibility
 
@@ -68,3 +80,186 @@
 3. Ask user if they want to run an initial complete evaluation which will compare the current state of the entire project to the projectManagement state
 4. If yes, make updates to files according to analysis. Always assess existing files for each step of analyzing before making updates, if updates are needed
 5. Finally, continue with projectManagement as normal
+
+## 1.5 Git Repository Setup
+
+**Directive**: Initialize and configure Git repository for project code and organizational state tracking.
+
+**Git Repository Detection**:
+1. Check if project root has existing Git repository (.git/ directory)
+2. Verify Git repository integrity if found
+3. Check Git configuration compatibility with MCP instance management
+
+**Git Repository Initialization** (if needed and `git.auto_init_repo=true`):
+1. Run `git init` in project root
+2. Set up initial .gitignore for MCP instance management
+3. Create initial commit with project structure
+
+**Git Configuration for MCP**:
+Update .gitignore with MCP-specific rules:
+```gitignore
+# MCP Instance Management - Track Structure, Not Content
+.mcp-instances/active/*/projectManagement/UserSettings/
+.mcp-instances/active/*/projectManagement/database/backups/
+.mcp-instances/*/logs/
+.mcp-instances/*/temp/
+
+# Project Management - Track Organizational State  
+projectManagement/UserSettings/
+projectManagement/database/backups/
+projectManagement/.mcp-session-*
+```
+
+**Git State Recording**:
+- Insert initial git_project_state record in database
+- Record current Git hash as baseline for change detection
+- Set reconciliation status to 'initialized'
+
+## 1.6 Instance Identification
+
+**Directive**: Identify whether running in main instance or branch instance and establish authority.
+
+**Instance Type Detection**:
+- **Main Instance**: Look for `.mcp-instance-main` file in `projectManagement/`
+- **Branch Instance**: Look for `.mcp-branch-info.json` in workspace directory
+- **Workspace Path**: Determine location to confirm instance type
+
+**Authority Establishment**:
+
+**Main Instance Authority** (Primary Decision Maker):
+- Git repository change detection authority
+- Merge conflict resolution primary decision maker
+- Instance coordination and management
+- Project code change impact assessment
+
+**Branch Instance Capabilities** (Isolated Development):
+- Independent development within isolated workspace
+- Prepare organizational changes for merge
+- Maintain instance metadata and work summaries
+
+**Instance Configuration Validation**:
+- Verify workspace isolation for branch instances
+- Check instance metadata completeness (.mcp-branch-info.json)
+- Validate database isolation for branch instances
+- Confirm main instance authority if main
+
+## 1.7 Database Initialization
+
+**Directive**: Initialize database components and establish hybrid file-database architecture.
+
+**Database Setup Process**:
+1. **Create project.db** from `mcp-server/database/schema.sql`
+2. **Initialize all required tables and indexes** for performance
+3. **Set up database triggers** for real-time file-database synchronization
+4. **Create performance optimization views** for fast queries
+
+**Hybrid Architecture Configuration**:
+- **Real-time synchronization**: File updates trigger database updates atomically
+- **Session persistence**: Complete session context preservation and restoration
+- **Event analytics**: Real-time event logging for pattern analysis
+- **Performance optimization**: Fast context loading and intelligent recommendations
+
+**Database Integrity Validation**:
+- Test all database tables and relationships
+- Verify trigger functionality for sync operations
+- Test atomic operation rollback capabilities
+- Confirm performance index effectiveness
+
+## Configuration Settings
+
+### Git Integration Settings
+```json
+{
+  "git": {
+    "enabled": true,
+    "auto_init_repo": true,
+    "code_change_detection": true,
+    "auto_reconcile_on_boot": true
+  }
+}
+```
+
+### Instance Management Settings
+```json
+{
+  "instance_management": {
+    "enabled": true,
+    "main_instance_authority": true,
+    "max_active_instances": 10,
+    "instance_naming_validation": true,
+    "auto_archive_completed": true
+  }
+}
+```
+
+### Database Integration Settings
+```json
+{
+  "database": {
+    "enabled": true,
+    "real_time_sync": true,
+    "session_persistence": true
+  }
+}
+```
+
+## Error Handling
+
+### Git Repository Issues
+- **Missing Repository**: Initialize if `auto_init_repo` enabled, otherwise report clear error
+- **Repository Corruption**: Attempt repair and report status to user
+- **Permission Issues**: Provide clear error message with resolution steps
+
+### Instance Identification Failures
+- **Unknown Instance Type**: Default to main instance and warn user
+- **Authority Conflicts**: Enforce main instance authority and log conflict
+- **Metadata Issues**: Create missing metadata with defaults
+
+### Database Initialization Failures
+- **Schema Errors**: Report error clearly and offer file-only mode
+- **Permission Issues**: Check file permissions and suggest fixes
+- **Corruption**: Attempt recovery or reinitialize with user approval
+
+## Integration Points
+
+This directive integrates with:
+- **02-project-initialization**: Project structure setup
+- **03-session-management**: Git-aware session boot
+- **13-metadata-management**: Compatibility verification  
+- **14-instance-management**: Instance authority establishment
+- **16-git-integration**: Repository configuration
+- **database-integration**: Hybrid architecture setup
+
+## User Communication Guidelines
+
+### Initialization Progress
+```
+🔧 System Initialization
+✅ MCP server connection verified
+✅ Git repository detected/initialized  
+✅ Instance type: Main (authority established)
+✅ Database initialized with complete schema
+✅ Ready for project operations
+```
+
+### Error Communication
+```
+❌ Database initialization failed
+   Issue: Unable to create project.db
+   Solution: Check file permissions in projectManagement/
+   Alternative: Continue with file-only mode (reduced performance)
+   Would you like to retry or continue with file-only mode?
+```
+
+### Configuration Updates
+```  
+🔄 Configuration Update Detected
+   Previous version: 1.0.0
+   Current version: 1.1.0
+   Changes: Added Git integration and instance management
+   
+   Update recommended for full functionality.
+   Update project structure? (Y/n)
+```
+
+This enhanced system initialization directive ensures robust foundation for Git-like instance management while maintaining backward compatibility and user-friendly error handling.

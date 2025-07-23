@@ -152,6 +152,148 @@ class CompressedContextManager:
         
         return False, "No escalation triggers found in issue"
     
+    def _directive_id_to_compressed_key(self, directive_id: str) -> str:
+        """Convert numbered directive ID to compressed directive key."""
+        # Handle already converted keys
+        if not directive_id.startswith(('0', '1', '2')):
+            return directive_id
+            
+        # Remove number prefix and convert to camelCase
+        parts = directive_id.split('-', 1)
+        if len(parts) == 2:
+            name_parts = parts[1].split('-')
+            # First part lowercase, rest title case
+            camel_case = name_parts[0] + ''.join(word.capitalize() for word in name_parts[1:])
+            return camel_case
+        
+        return directive_id
+    
+    def _has_implementation_note(self, obj: Any) -> bool:
+        """Recursively search for implementationNote in a nested object."""
+        if isinstance(obj, dict):
+            if 'implementationNote' in obj:
+                return True
+            for value in obj.values():
+                if self._has_implementation_note(value):
+                    return True
+        elif isinstance(obj, list):
+            for item in obj:
+                if self._has_implementation_note(item):
+                    return True
+        return False
+    
+    def get_directive_escalation_level(self, directive_id: str, operation_context: str = "") -> str:
+        """Determine appropriate directive escalation level based on new escalation logic."""
+        if not self._loaded:
+            return "compressed"  # Default fallback
+        
+        # Get escalation rules from compressed directives
+        directive_escalation = self._core_context.get('directive-compressed', {}).get('directiveEscalation', {})
+        escalation_protocol = directive_escalation.get('escalationProtocol', {})
+        
+        # Check for forced JSON operations
+        forced_json_ops = escalation_protocol.get('forcedJSONOperations', [])
+        if directive_id in forced_json_ops:
+            logger.info(f"Forcing JSON escalation for {directive_id} (complex system operation)")
+            return "json"
+        
+        # Check for implementationNote in compressed directive (search recursively)
+        compressed_key = self._directive_id_to_compressed_key(directive_id)
+        compressed_directive = self.get_directive_summary(compressed_key)
+        if compressed_directive and self._has_implementation_note(compressed_directive):
+            logger.info(f"Auto-escalating {directive_id} to JSON (implementationNote present)")
+            return "json"
+        
+        # Check escalation triggers
+        when_to_escalate = directive_escalation.get('whenToEscalate', {})
+        
+        # Check for force JSON triggers
+        force_json = when_to_escalate.get('forceJSON', [])
+        auto_json = when_to_escalate.get('autoJSON', [])
+        
+        operation_lower = operation_context.lower()
+        
+        for trigger in force_json + auto_json:
+            if trigger.lower() in operation_lower:
+                logger.info(f"Auto-escalating {directive_id} to JSON (trigger: {trigger})")
+                return "json"
+        
+        # Default to compressed for routine operations
+        logger.debug(f"Using compressed directives for {directive_id} (routine operation)")
+        return "compressed"
+    
+    def should_escalate_to_markdown(self, directive_id: str, json_context_insufficient: bool = False, 
+                                   error_context: str = "") -> bool:
+        """Determine if should escalate from JSON to Markdown directives."""
+        if not self._loaded:
+            return False
+        
+        # Always escalate if JSON context is insufficient
+        if json_context_insufficient:
+            logger.info(f"Escalating {directive_id} to MD (JSON context insufficient)")
+            return True
+        
+        # Check escalation triggers
+        directive_escalation = self._core_context.get('directive-compressed', {}).get('directiveEscalation', {})
+        when_to_escalate = directive_escalation.get('whenToEscalate', {})
+        auto_md = when_to_escalate.get('autoMD', [])
+        
+        error_lower = error_context.lower()
+        
+        for trigger in auto_md:
+            if trigger.lower() in error_lower:
+                logger.info(f"Auto-escalating {directive_id} to MD (trigger: {trigger})")
+                return True
+        
+        return False
+    
+    async def load_directive_with_escalation(self, directive_id: str, operation_context: str = "", 
+                                           force_level: Optional[str] = None) -> Dict[str, Any]:
+        """Load directive with appropriate escalation level."""
+        try:
+            # Determine escalation level
+            if force_level:
+                escalation_level = force_level
+                logger.info(f"Using forced escalation level {force_level} for {directive_id}")
+            else:
+                escalation_level = self.get_directive_escalation_level(directive_id, operation_context)
+            
+            directive_content = {}
+            
+            # Always start with compressed (for context preservation)
+            compressed = self.get_directive_summary(directive_id)
+            if compressed:
+                directive_content['compressed'] = compressed
+            
+            # Load JSON if needed
+            if escalation_level in ['json', 'markdown']:
+                json_path = self.mcp_server_path / "reference" / "directives" / f"{directive_id}.json"
+                if json_path.exists():
+                    json_content = json.loads(json_path.read_text())
+                    directive_content['json'] = json_content
+                    logger.debug(f"Loaded JSON directive for {directive_id}")
+                else:
+                    logger.warning(f"JSON directive not found: {json_path}")
+            
+            # Load Markdown if needed
+            if escalation_level == 'markdown':
+                md_path = self.mcp_server_path.parent / "docs" / "directives" / f"{directive_id}.md"
+                if md_path.exists():
+                    md_content = md_path.read_text()
+                    directive_content['markdown'] = md_content
+                    logger.debug(f"Loaded MD directive for {directive_id}")
+                else:
+                    logger.warning(f"MD directive not found: {md_path}")
+            
+            directive_content['escalation_level'] = escalation_level
+            directive_content['escalation_reason'] = f"Auto-escalated based on {operation_context}" if operation_context else "Default level"
+            
+            return directive_content
+            
+        except Exception as e:
+            logger.error(f"Error loading directive {directive_id}: {e}")
+            return {"error": str(e), "escalation_level": "compressed"}
+    
     async def generate_situational_context(self, project_path: Path, situation: str) -> Dict[str, Any]:
         """Generate context specific to current project situation."""
         try:

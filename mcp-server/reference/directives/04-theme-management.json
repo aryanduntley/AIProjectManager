@@ -11,7 +11,9 @@
     "Theme discovery",
     "Theme validation",
     "Theme modification",
-    "File structure changes"
+    "File structure changes",
+    "Git changes affecting project structure",
+    "Instance merge operations requiring theme reconciliation"
   ],
   "workflows": {
     "automaticThemeDiscovery": {
@@ -71,18 +73,20 @@
     },
     "autoMaintenance": {
       "directive": "Automatically maintain theme files when project structure changes",
-      "triggers": ["file creation", "file deletion", "file movement"],
+      "triggers": ["file creation", "file deletion", "file movement", "Git changes affecting project structure"],
       "actions": [
         "Reassess related theme files and update paths/links",
         "Flag conflicts or duplicates",
         "Propose merges if overlapping themes detected",
         "Maintain themes.json root-level theme index",
-        "Handle shared files across multiple themes"
+        "Handle shared files across multiple themes",
+        "Update Git tracking for theme changes"
       ],
       "logicDetails": {
         "keywordMatching": "Use keyword matching, folder path structure, and import reference graphs to discover thematic relevance",
         "sharedFileHandling": "If a file clearly belongs to multiple themes, it may appear in both and be flagged as shared",
-        "impactAssessment": "When AI modifies a shared file, it should assess impact on all listed themes before proceeding"
+        "impactAssessment": "When AI modifies a shared file, it should assess impact on all listed themes before proceeding",
+        "gitIntegration": "Track theme changes in database for instance merge analysis"
       }
     },
     "themePresentation": {
@@ -109,6 +113,40 @@
         "Update themes.json index",
         "Document changes in projectlogic.jsonl"
       ]
+    },
+    "gitReconciliation": {
+      "directive": "Reconcile themes with Git changes detected during session boot",
+      "triggers": ["Main instance session boot", "Git changes detected affecting project structure"],
+      "process": [
+        "Analyze Git changes for theme impact using file path analysis",
+        "Identify affected themes based on modified/added/deleted files",
+        "Update theme file paths and references to reflect code changes",
+        "Present reconciliation changes to user for approval",
+        "Update database with Git-theme relationship tracking"
+      ],
+      "themeImpactAnalysis": [
+        "Direct file mapping to existing themes",
+        "Directory structure inference for new themes",
+        "Naming pattern analysis for thematic relevance",
+        "Deletion impact assessment on theme completeness"
+      ]
+    },
+    "instanceMergeThemeConflicts": {
+      "directive": "Handle theme conflicts during instance merging (main instance authority)",
+      "authority": "Main instance has ultimate decision authority",
+      "process": [
+        "Detect theme conflicts between main and instance workspaces",
+        "Present conflicts in Git-like format with theme-specific context",
+        "Provide resolution options: accept_instance, accept_main, manual_merge, split_themes",
+        "Apply chosen resolution atomically to main instance themes",
+        "Update database tracking for merge history"
+      ],
+      "conflictTypes": [
+        "Theme definition changes (paths, linkedThemes, descriptions)",
+        "New themes added in both instances",
+        "Theme deletions vs modifications",
+        "Shared file reference conflicts"
+      ]
     }
   },
   "configSettings": {
@@ -132,7 +170,10 @@
   "integrations": [
     "05-context-loading",
     "11-quality-assurance",
-    "13-metadata-management"
+    "13-metadata-management",
+    "14-instance-management",
+    "15-conflict-resolution",
+    "16-git-integration"
   ],
   "dependencies": [
     "Themes/ directory",

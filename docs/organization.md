@@ -26,54 +26,68 @@ The structure is designed to:
 > The `Logs/` directory is for historical analysis and context discussion only. It tracks AI decisions and user feedback for auditing or retrospection. It should be periodically archived and rotated. It is **not** used to determine the current project direction or logic flow.
 
 ```
-/projectRoot
-└── projectManagement/
-    ├── .git/                      # Git repository for organizational state management
-    ├── .gitignore                 # Ignore user-specific session data and temporary files  
-    ├── .mcp-git-config.json       # Git integration configuration and settings
-    ├── ProjectBlueprint/
-    │   ├── blueprint.md           # High-level summary of the project (user-approved)
-    │   └── metadata.json          # Metadata, tags, author, project date, etc.
-    ├── ProjectFlow/
-    │   ├── flow-index.json          # Master flow index with flow file references and cross-flow dependencies
-    │   ├── authentication-flow.json  # Authentication and user management flows
-    │   ├── payment-flow.json       # Payment processing and transaction flows
-    │   ├── profile-flow.json       # User profile and settings management flows
-    │   └── ...                      # Additional flow files organized by domain/theme
-    ├── ProjectLogic/
-    │   ├── projectlogic.jsonl     # Stateful record of AI/user discussion, decisions, logic evolution
-    │   └── archived/
-    │       └── projectlogic-archived-2025-07-13.jsonl  # Auto-archived when size limit reached
-    ├── Themes/
-    │   ├── themes.json            # Master theme index with descriptions
-    │   ├── api.json               # Theme definition and structure mapping
-    │   ├── walletconnect.json     # Another theme example
-    │   └── ...                    # Dynamically added per discovered/defined theme
-    ├── Tasks/
-    |   ├── completion-path.json      # Evolving roadmap toward project finalization
-    │   ├── active/
-    │   │   └── TASK-<timestamp>.json         # Task file with milestone, theme, and flow references
-    │   ├── sidequests/
-    │   │   └── SQ-<tasktimestamp>-<seq>.json # Subtasks spun from main task context
-    │   └── archive/
-    │       ├── tasks/
-    │       └── sidequests/
-    ├── Implementations/
-    │   ├── active/
-    │   │   └── M01-v1-authentication-system.md    # Current milestone implementation plan
-    │   └── completed/
-    │       └── M00-v1-project-setup.md            # Completed implementation plans
-    ├── Logs/
-    │   ├── noteworthy.json                # AI decisions and user feedback for notable events
-    │   └── archived/
-    │       └── noteworthy-archived-2025-07-13.json  # Auto-archived when size limit reached
-    ├── Placeholders/
-    │   └── todos.jsonl            # Captures all deferred implementation notes and scaffolding TODOs
-    ├── UserSettings/
-    │   └── config.json            # User-specific configuration (not tracked in Git)
-    ├── project.db                 # SQLite database for persistent theme-flow relationships, session tracking, and project analytics
-    └── database/
-        └── backups/               # Database backups for recovery (recommended periodic backups)
+/projectRoot/
+├── .git/                              # Root-level Git repository
+├── [existing project files...]        # All project source code (tracked)
+├── projectManagement/                 # MAIN instance (canonical organizational state)
+│   ├── .mcp-instance-main             # Instance identification
+│   ├── ProjectBlueprint/              # Original structure preserved
+│   │   ├── blueprint.md               # High-level summary of the project (user-approved)
+│   │   └── metadata.json              # Metadata, tags, author, project date, etc.
+│   ├── ProjectFlow/
+│   │   ├── flow-index.json            # Master flow index with flow file references and cross-flow dependencies
+│   │   ├── authentication-flow.json   # Authentication and user management flows
+│   │   ├── payment-flow.json          # Payment processing and transaction flows
+│   │   ├── profile-flow.json          # User profile and settings management flows
+│   │   └── ...                        # Additional flow files organized by domain/theme
+│   ├── ProjectLogic/
+│   │   ├── projectlogic.jsonl         # Stateful record of AI/user discussion, decisions, logic evolution
+│   │   └── archived/
+│   │       └── projectlogic-archived-2025-07-13.jsonl  # Auto-archived when size limit reached
+│   ├── Themes/
+│   │   ├── themes.json                # Master theme index with descriptions
+│   │   ├── api.json                   # Theme definition and structure mapping
+│   │   ├── walletconnect.json         # Another theme example
+│   │   └── ...                        # Dynamically added per discovered/defined theme
+│   ├── Tasks/
+│   |   ├── completion-path.json       # Evolving roadmap toward project finalization
+│   │   ├── active/
+│   │   │   └── TASK-<timestamp>.json          # Task file with milestone, theme, and flow references
+│   │   ├── sidequests/
+│   │   │   └── SQ-<tasktimestamp>-<seq>.json  # Subtasks spun from main task context
+│   │   └── archive/
+│   │       ├── tasks/
+│   │       └── sidequests/
+│   ├── Implementations/
+│   │   ├── active/
+│   │   │   └── M01-v1-authentication-system.md     # Current milestone implementation plan
+│   │   └── completed/
+│   │       └── M00-v1-project-setup.md             # Completed implementation plans
+│   ├── Logs/
+│   │   ├── noteworthy.json            # AI decisions and user feedback for notable events
+│   │   └── archived/
+│   │       └── noteworthy-archived-2025-07-13.json  # Auto-archived when size limit reached
+│   ├── Placeholders/
+│   │   └── todos.jsonl                # Captures all deferred implementation notes and scaffolding TODOs
+│   ├── UserSettings/                  # NOT tracked (instance-specific)
+│   │   └── config.json                # User-specific configuration (not tracked in Git)
+│   ├── project.db                     # Main database (tracked)
+│   └── database/
+│       └── backups/                   # NOT tracked (database backups for recovery)
+├── .mcp-instances/                    # Instance management directory (tracked)
+│   ├── active/                        # Active instance workspaces
+│   │   ├── auth-enhancement-alice/    # Alice's authentication work
+│   │   │   ├── projectManagement/     # Her working copy of organizational state
+│   │   │   ├── .mcp-branch-info.json  # Instance metadata
+│   │   │   └── .mcp-work-summary.md   # Human-readable work summary
+│   │   └── payment-flow-bob/          # Bob's payment system work
+│   ├── completed/                     # Archived completed instances
+│   ├── conflicts/                     # Conflict resolution workspace
+│   │   ├─ auth-enhancement-merge-123/ # Specific merge conflict workspace
+│   │   └── resolution-templates/      # Conflict resolution guides
+│   ├── .mcp-config.json              # Instance management configuration
+│   └── .mcp-merge-log.jsonl          # Merge history and decisions
+└── .gitignore                        # Updated for MCP instance management
 ```
 
 > **Note**: This structure is created inside `/projectRoot/projectManagement/` by the MCP server. It represents the project’s managed state and persists throughout development.
@@ -394,7 +408,7 @@ This implementation plans system provides the strategic planning layer that brid
 
 **Template Source**: All organizational file templates are located in the `reference/templates/` directory in the MCP server repository.
 
-**AI Usage Directive**: When creating any organizational files (`completion-path.json`, `flow-index.json`, individual flow files, task files, implementation plans, etc.), AI must use the corresponding example file in `reference/templates/` as the template structure.
+**AI Usage Directive**: When creating any organizational files (`completion-path.json`, `flow-index.json`, individual flow files, task files, implementation plans, instance files, etc.), AI must use the corresponding example file in `reference/templates/` as the template structure.
 
 **Template Files Available**:
 - `reference/templates/completion-path.json` - Completion path structure and milestones
@@ -410,6 +424,10 @@ This implementation plans system provides the strategic planning layer that brid
 - `reference/templates/todos.jsonl` - TODO tracking format
 - `reference/templates/README-template.md` - Standard README template for directories
 - `reference/templates/README-template.json` - AI-specific directory metadata template
+- `reference/templates/mcp-branch-info.json` - Instance metadata structure
+- `reference/templates/mcp-work-summary.md` - Instance work summary template
+- `reference/templates/mcp-config.json` - Instance management configuration
+- `reference/templates/mcp-merge-log.jsonl` - Merge operation audit trail format
 
 **Implementation Requirement**: MCP server must reference `reference/templates/` directory when generating any organizational files to ensure consistency and proper structure across all managed projects.
 
@@ -738,7 +756,112 @@ Logging configuration in `UserSettings/config.json`:
 
 ---
 
-## 11. Key Interaction Directives (For MCP Server Only)
+## 11. Git Integration and Instance Management
+
+### 11.1 Git Repository Structure
+
+The AI Project Manager uses a **root-level Git repository** to track both project source code and organizational state. This unified approach enables:
+
+- **Project Code Change Detection**: Automatic detection when users modify code outside MCP sessions
+- **Organizational State Versioning**: Track changes to themes, flows, tasks, and project structure
+- **Git-Like Instance Management**: Multiple MCP instances operate like Git branches with merge-based integration
+
+### 11.2 Git Configuration
+
+**Updated `.gitignore` for MCP Instance Management**:
+```gitignore
+# MCP Instance Management - Track Structure, Not Content
+.mcp-instances/active/*/projectManagement/UserSettings/
+.mcp-instances/active/*/projectManagement/database/backups/
+.mcp-instances/*/logs/
+.mcp-instances/*/temp/
+
+# Project Management - Track Organizational State
+projectManagement/UserSettings/
+projectManagement/database/backups/
+projectManagement/.mcp-session-*
+```
+
+**Tracked in Git**:
+- All project source code (existing behavior)
+- Main `projectManagement/` organizational state
+- Instance management structure (`.mcp-instances/`)
+- Merge history and conflict resolution logs
+- Instance metadata and branch information
+
+**NOT Tracked**:
+- User-specific settings (`UserSettings/`)
+- Database backups (`database/backups/`)
+- Temporary session files
+- Active work logs during development
+
+### 11.3 MCP Instance Management System
+
+**Instance Naming Convention**: `{theme/area}-{purpose}-{user}` or `{theme/area}-{purpose}`
+
+**Examples**:
+- `auth-enhancement-alice` - Alice working on authentication improvements
+- `payment-integration` - Autonomous work on payment system integration
+- `ui-components-refactor-bob` - Bob refactoring UI components
+
+**Instance Lifecycle**:
+1. **Creation**: Copy main `projectManagement/` to instance workspace with isolated database
+2. **Development**: Instance operates independently without coordination overhead
+3. **Integration**: Git-like merge process with main instance authority for conflict resolution
+4. **Completion**: Archive instance to `.mcp-instances/completed/`
+
+### 11.4 Session Boot with Instance Awareness
+
+**Enhanced Boot Sequence**:
+1. **Instance Identification**: Determine if running in main instance or branch instance
+2. **Git Change Detection**: (Main instance only) Compare current Git HEAD with last known state
+3. **Organizational Reconciliation**: Update themes, flows, and tasks to reflect code changes
+4. **Standard Boot**: Continue with normal ProjectBlueprint, ProjectFlow, ProjectLogic loading
+5. **Context Loading**: Load appropriate organizational context based on instance type
+
+**Main Instance Responsibilities**:
+- Git repository change detection and reconciliation
+- Merge conflict resolution with primary decision authority
+- Instance coordination and management
+- Project code change impact assessment
+
+**Branch Instance Responsibilities**:
+- Independent development within isolated workspace
+- Prepare organizational changes for merge
+- Maintain instance metadata and work summaries
+
+### 11.5 Conflict Resolution Patterns
+
+**Conflict Types**:
+- **Theme Conflicts**: Same theme modified in both main and branch instance
+- **Task Conflicts**: Task status changes in both locations
+- **Flow Conflicts**: Flow definitions diverged between instances
+- **Database Conflicts**: Incompatible database schema or data changes
+
+**Resolution Authority**: Main instance is the **primary decision maker** for all conflict resolution
+
+**Resolution Options**:
+1. **Accept Branch Changes**: Use branch instance modifications
+2. **Keep Main**: Reject branch changes, maintain main version
+3. **Manual Merge**: Combine specific elements from both versions
+4. **Split Approach**: Create separate components for conflicting functionality
+
+### 11.6 Database Integration with Git
+
+**Database Schema Extensions** for Git Integration:
+- `git_project_state`: Track current and last known Git hash for change detection
+- `mcp_instances`: Instance lifecycle management and metadata
+- `instance_merges`: Merge history and conflict resolution decisions
+
+**Instance Database Isolation**:
+- Each branch instance receives isolated copy of main `project.db`
+- Instance-specific changes tracked separately in instance database
+- Database changes included in merge conflict detection and resolution
+- Main database updated with merged state after conflict resolution
+
+---
+
+## 12. Key Interaction Directives (For MCP Server Only)
 
 > These are not part of the projectManagement structure. They live in the MCP server and govern AI behavior when managing any project.
 

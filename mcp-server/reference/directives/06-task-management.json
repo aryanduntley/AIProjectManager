@@ -18,7 +18,9 @@
     "TODO tracking",
     "Parallel task coordination",
     "Multi-flow task planning",
-    "Flow scope evaluation"
+    "Flow scope evaluation",
+    "Instance merge task conflicts",
+    "Git changes affecting task relevance"
   ],
   "workflows": {
     "realTimeStatePreservation": {
@@ -31,7 +33,8 @@
         "Session Database: Save current context snapshot",
         "Implementation Plans: Update phase progress if applicable",
         "Related Themes: Update any affected theme relationships",
-        "Event Logging: Log completion event for analytics and recovery"
+        "Event Logging: Log completion event for analytics and recovery",
+        "Instance Tracking: Update instance workspace state for merge analysis"
       ],
       "sessionRestorationGoal": "Upon any restart, MCP/AI must be able to resume exactly where work left off with minimal review and zero lost progress",
       "atomicOperation": "If any update fails, the entire completion step fails and must be retried"
@@ -325,6 +328,39 @@
         "Cross-Flow Dependencies: Validate dependencies declared in flow-index.json",
         "Flow Index Consistency: Ensure flow-index.json is always up-to-date"
       ]
+    },
+    "instanceTaskIsolation": {
+      "directive": "Ensure task operations are isolated to current instance workspace",
+      "process": [
+        "All task file updates apply to current instance workspace only",
+        "Database updates include instance identification for merge analysis",
+        "Task state preservation includes instance context for restoration",
+        "Progress tracking maintains instance-specific history"
+      ],
+      "instanceAwareness": [
+        "Main instance: Can access all tasks and has merge authority",
+        "Branch instance: Operates independently with own task workspace",
+        "Merge preparation: Track all task changes for conflict detection",
+        "Context preservation: Include instance identification in all state updates"
+      ]
+    },
+    "instanceMergeTaskConflicts": {
+      "directive": "Handle task conflicts during instance merging (main instance authority)",
+      "authority": "Main instance has ultimate decision authority for all task conflicts",
+      "process": [
+        "Detect task conflicts between main and instance workspaces",
+        "Present conflicts with task-specific context and impact analysis",
+        "Provide resolution options: accept_instance, accept_main, manual_merge, split_tasks",
+        "Apply chosen resolution atomically to main instance tasks",
+        "Update database tracking for merge history and analytics"
+      ],
+      "conflictTypes": [
+        "Task status changes (completed vs in-progress)",
+        "Subtask modifications (different approaches to same subtask)",
+        "Task priority changes",
+        "Implementation plan phase conflicts",
+        "Flow integration differences"
+      ]
     }
   },
   "configSettings": {
@@ -361,7 +397,10 @@
     "05-context-loading",
     "07-implementation-plans",
     "08-project-management",
-    "11-quality-assurance"
+    "11-quality-assurance",
+    "14-instance-management",
+    "15-conflict-resolution",
+    "16-git-integration"
   ],
   "integrationDescriptions": {
     "04-theme-management": "Tasks need theme context for scoped development",

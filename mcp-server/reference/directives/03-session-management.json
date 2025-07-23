@@ -9,9 +9,12 @@
   },
   "triggers": [
     "Session start",
-    "Continue development",
+    "Continue development", 
     "Task resumption",
-    "New session initialization"
+    "New session initialization",
+    "Instance session boot",
+    "Git changes detected during boot",
+    "Context restoration needed"
   ],
   "workflows": {
     "sessionBootProtocol": {
@@ -30,19 +33,21 @@
         "Ensure proposed updates are confirmed by user before changing anything"
       ],
       "detailedBootSequence": [
-        "1. Initialize database connection and restore session context from project.db",
-        "2. Read ProjectBlueprint for project understanding",  
-        "3. Read ProjectFlow (flow-index.json) for interaction understanding",
-        "4. Read projectlogic.jsonl for reasoning history",
-        "5. Load completion-path.json + implementation plan status from database",
-        "6. Restore active themes, tasks, sidequests from session database context",
-        "7. Load recent noteworthy events from database (instead of file scanning)",
-        "8. Assess current state using database task/sidequest status queries",
-        "9. Determine next steps with priority suggestions based on database analytics",
-        "10. Get user approval for direction",
-        "11. Determine/restore context mode from session database",
-        "12. Generate/restore task context using database theme-flow relationships",
-        "13. Begin task execution with preserved session state"
+        "1. Identify instance type (main vs branch) and establish authority",
+        "2. Initialize database connection and restore session context from project.db",
+        "3. [MAIN INSTANCE ONLY] Detect Git changes and perform organizational reconciliation if needed",
+        "4. Read ProjectBlueprint for project understanding",  
+        "5. Read ProjectFlow (flow-index.json) for interaction understanding",
+        "6. Read projectlogic.jsonl for reasoning history",
+        "7. Load completion-path.json + implementation plan status from database",
+        "8. Restore active themes, tasks, sidequests from session database context",
+        "9. Load recent noteworthy events from database (instead of file scanning)",
+        "10. Assess current state using database task/sidequest status queries",
+        "11. Determine next steps with priority suggestions based on database analytics",
+        "12. Get user approval for direction",
+        "13. Determine/restore context mode from session database",
+        "14. Generate/restore task context using database theme-flow relationships",
+        "15. Begin task execution with preserved session state"
       ],
       "statePreservationProtocol": {
         "directive": "MANDATORY FOR SESSION CONTINUITY: Database-enhanced boot sequence requires STRICT adherence to real-time state updates",

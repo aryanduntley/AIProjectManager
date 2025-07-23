@@ -4,7 +4,7 @@
     "created": "2025-01-17T12:00:00Z",
     "lastUpdated": "2025-01-20T12:00:00Z",
     "description": "Flow-based index of AI Project Manager directives for MCP workflow navigation",
-    "totalDirectives": 14,
+    "totalDirectives": 17,
     "flowPhases": 6,
     "humanReadableDocs": "../docs/directives/",
     "organizationReference": "reference/organization.json"
@@ -36,6 +36,13 @@
           "triggers": ["Project initialization", "Database setup", "State synchronization"],
           "keyWorkflows": ["hybridArchitecture", "realTimeStateSynchronization", "sessionPersistence"],
           "criticalSettings": ["database.enabled", "synchronization.atomicOperations"]
+        },
+        "16-git-integration": {
+          "file": "reference/directives/16-git-integration.json",
+          "purpose": "Root-level Git tracking and code change detection with instance management",
+          "triggers": ["Session boot with project code changes", "Git repository state detection needed", "External code modifications detected"],
+          "keyWorkflows": ["sessionBootGitDetection", "organizationalReconciliation", "gitStateTracking", "instanceGitIntegration"],
+          "criticalSettings": ["git.enabled", "git.auto_init_repo", "git.code_change_detection", "instance_management.enabled"]
         }
       },
       "keyDecisionPoints": [
@@ -109,9 +116,9 @@
           "keyWorkflows": ["metadataInitialization", "updateTriggers", "workflowIntegration"],
           "criticalSettings": []
         },
-        "context-escalation-system": {
-          "file": "reference/directives/context-escalation-system.json",
-          "purpose": "Directive context escalation for complex scenarios and user communication",
+        "directive-escalation-system": {
+          "file": "reference/directives/directive-escalation-system.json",
+          "purpose": "Directive escalation system for accessing detailed implementation specifications",
           "triggers": ["Directive ambiguity", "User communication needed", "Complex workflow execution", "Edge case handling"],
           "keyWorkflows": ["escalationChain", "userApprovalProcess", "contextPreservation"],
           "criticalSettings": ["escalation.automaticJSON", "escalation.requireMDApproval"]
@@ -158,6 +165,20 @@
           "triggers": ["Code validation", "Testing requirements", "Quality checks"],
           "keyWorkflows": ["testingProtocol", "validationRequirements", "codeQualityStandards"],
           "criticalSettings": ["validation.enforceTaskMilestoneReference", "validation.validateJsonSchemas"]
+        },
+        "14-instance-management": {
+          "file": "reference/directives/14-instance-management.json",
+          "purpose": "Git-like instance lifecycle management",
+          "triggers": ["Instance creation request", "Multiple developer scenario", "Parallel development needed", "Instance merge operations"],
+          "keyWorkflows": ["instanceCreation", "instanceIsolation", "instanceMerging", "instanceManagement"],
+          "criticalSettings": ["instance_management.enabled", "instance_management.main_instance_authority", "instance_management.max_active_instances"]
+        },
+        "15-conflict-resolution": {
+          "file": "reference/directives/15-conflict-resolution.json",
+          "purpose": "Git-like conflict detection and resolution protocols",
+          "triggers": ["Instance merge conflicts detected", "Organizational state divergence", "Database conflicts during merge"],
+          "keyWorkflows": ["conflictDetection", "conflictPresentation", "themeConflictResolution", "flowConflictResolution", "taskConflictResolution", "databaseConflictResolution", "mergeCompletion"],
+          "criticalSettings": ["conflict_resolution.resolution_strategies", "conflict_resolution.require_main_instance_approval"]
         }
       },
       "keyDecisionPoints": [
@@ -305,21 +326,34 @@
     "userInteraction": "phase2.12-user-interaction",
     "projectCompletion": "phase6.06-task-management",
     "logging": "phase5.09-logging-documentation",
-    "flowIndexManagement": "phase5.08-project-management"
+    "flowIndexManagement": "phase5.08-project-management",
+    "gitIntegration": "phase1.16-git-integration",
+    "instanceManagement": "phase4.14-instance-management",
+    "conflictResolution": "phase4.15-conflict-resolution"
   },
   "configurationHierarchy": {
     "critical": [
       "project.maxFileLineCount",
       "project.avoidPlaceholders",
       "tasks.resumeTasksOnStart",
-      "themes.autoDiscovery"
+      "themes.autoDiscovery",
+      "git.enabled",
+      "git.auto_init_repo",
+      "git.code_change_detection",
+      "instance_management.enabled",
+      "instance_management.main_instance_authority"
     ],
     "important": [
       "tasks.maxActiveSidequests",
       "contextLoading.defaultMode",
       "contextLoading.maxFlowFiles",
       "validation.enforceTaskMilestoneReference",
-      "validation.requireApprovalForStructureChanges"
+      "validation.requireApprovalForStructureChanges",
+      "git.auto_init_repo",
+      "git.code_change_detection",
+      "instance_management.max_active_instances",
+      "conflict_resolution.resolution_strategies",
+      "conflict_resolution.require_main_instance_approval"
     ],
     "optional": [
       "archiving.deleteArchivesOlderThan",

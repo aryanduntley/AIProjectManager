@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-01-23T10:00:00Z",
+    "description": "MCP Instance Management Configuration",
+    "template": true
+  },
+  "instanceManagement": {
+    "enabled": true,
+    "maxActiveInstances": 10,
+    "namingValidation": true,
+    "autoArchiveCompleted": true,
+    "instanceTimeout": "30 days",
+    "warningThreshold": "7 days",
+    "staleInstanceCleanup": true,
+    "inactivityThreshold": "14 days",
+    "autoMergePrompts": false,
+    "cleanupSchedule": "daily"
+  },
+  "conflictResolution": {
+    "resolutionStrategies": [
+      "accept_main",
+      "accept_instance", 
+      "manual_merge",
+      "split_approach"
+    ],
+    "autoResolveSimpleConflicts": false,
+    "requireMainInstanceApproval": true,
+    "preserveResolutionHistory": true,
+    "conflictTimeoutHours": 24
+  },
+  "mergeOperations": {
+    "requireCleanState": true,
+    "validateBeforeMerge": true,
+    "backupBeforeMerge": true,
+    "atomicMergeOperations": true,
+    "rollbackOnFailure": true
+  },
+  "notifications": {
+    "instanceCreated": true,
+    "mergeConflicts": true,
+    "instanceExpiration": true,
+    "mergeCompleted": true
+  },
+  "security": {
+    "instanceIsolation": true,
+    "requireUserAuthorization": true,
+    "auditAllOperations": true,
+    "preventUnauthorizedMerge": true
+  },
+  "performance": {
+    "enableLargeProjectOptimization": true,
+    "parallelMergeOperations": false,
+    "cacheInstanceMetadata": true,
+    "optimizeMemoryUsage": true
+  },
+  "cleanup": {
+    "archiveRetention": "90 days",
+    "backupRetention": "30 days", 
+    "logRetention": "1 year",
+    "deleteOldArchives": true,
+    "compressOldInstances": false,
+    "cleanupOrphanedFiles": true
+  },
+  "notifications": {
+    "staleInstanceWarning": "7 days before timeout",
+    "mergeReminders": false,
+    "cleanupSummary": "weekly"
+  },
+  "defaults": {
+    "defaultInstanceDuration": "7 days",
+    "defaultIsolationLevel": "theme-focused", 
+    "defaultBackupRetention": "90 days",
+    "defaultConflictStrategy": "prompt_user"
+  },
+  "paths": {
+    "instanceDirectory": ".mcp-instances/",
+    "activeInstancesPath": ".mcp-instances/active/",
+    "completedInstancesPath": ".mcp-instances/completed/",
+    "conflictWorkspacePath": ".mcp-instances/conflicts/",
+    "backupsPath": ".mcp-instances/backups/"
+  },
+  "templateInstructions": {
+    "purpose": "This configuration file controls MCP instance management behavior",
+    "location": "Should be placed at project root/.mcp-instances/.mcp-config.json",
+    "userCustomizable": true,
+    "criticalSettings": [
+      "instanceManagement.maxActiveInstances",
+      "conflictResolution.requireMainInstanceApproval",
+      "security.instanceIsolation"
+    ]
+  }
+}

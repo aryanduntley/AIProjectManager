@@ -15,7 +15,10 @@
     "Theme modifications",
     "Structure changes",
     "Session initialization",
-    "Task resumption"
+    "Task resumption",
+    "Instance creation/merging",
+    "Git conflict resolution",
+    "Cross-instance coordination"
   ],
   "workflows": {
     "userApprovalRequirements": {
@@ -26,7 +29,10 @@
         "Completion path modifications",
         "Context escalation",
         "File structure changes affecting multiple themes",
-        "Breaking changes to shared files"
+        "Breaking changes to shared files",
+        "Instance creation requests",
+        "Git conflict resolution decisions",
+        "Instance merge operations"
       ],
       "approvalFormat": {
         "template": "I need your approval to [specific action].\n\nCurrent state: [description]\nProposed change: [detailed change description]\nImpact: [assessment of effects]\nAlternatives: [other options if applicable]\n\nDo you approve this change? (yes/no)"

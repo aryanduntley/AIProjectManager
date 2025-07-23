@@ -11,8 +11,10 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 from core.mcp_api import ToolDefinition
+from core.git_integration import GitIntegrationManager
 from database.session_queries import SessionQueries
 from database.file_metadata_queries import FileMetadataQueries
+from database.git_queries import GitQueries
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +22,14 @@ logger = logging.getLogger(__name__)
 class SessionManager:
     """Tools for session management and persistence."""
     
-    def __init__(self, session_queries: Optional[SessionQueries] = None, file_metadata_queries: Optional[FileMetadataQueries] = None):
+    def __init__(self, session_queries: Optional[SessionQueries] = None, 
+                 file_metadata_queries: Optional[FileMetadataQueries] = None,
+                 git_queries: Optional[GitQueries] = None,
+                 db_manager = None):
         self.session_queries = session_queries
         self.file_metadata_queries = file_metadata_queries
+        self.git_queries = git_queries
+        self.db_manager = db_manager
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get all session management tools."""
@@ -195,6 +202,32 @@ class SessionManager:
                     "required": ["session_id"]
                 },
                 handler=self.end_session
+            ),
+            ToolDefinition(
+                name="session_boot_with_git_detection",
+                description="Enhanced session boot with Git change detection and organizational reconciliation",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "project_path": {
+                            "type": "string",
+                            "description": "Path to the project directory"
+                        },
+                        "context_mode": {
+                            "type": "string",
+                            "enum": ["theme-focused", "theme-expanded", "project-wide"],
+                            "description": "Context loading mode for the session",
+                            "default": "theme-focused"
+                        },
+                        "force_git_check": {
+                            "type": "boolean",
+                            "description": "Force Git change detection even if session exists",
+                            "default": False
+                        }
+                    },
+                    "required": ["project_path"]
+                },
+                handler=self.boot_session_with_git_detection
             )
         ]
     
@@ -403,3 +436,146 @@ class SessionManager:
         except Exception as e:
             logger.error(f"Error ending session: {e}")
             return f"Error ending session: {str(e)}"
+    
+    async def boot_session_with_git_detection(self, arguments: Dict[str, Any]) -> str:
+        """
+        Enhanced session boot with Git change detection and organizational reconciliation.
+        This implements the enhanced boot sequence from the unified Git implementation plan.
+        """
+        try:
+            project_path = Path(arguments["project_path"])
+            context_mode = arguments.get("context_mode", "theme-focused")
+            force_git_check = arguments.get("force_git_check", False)
+            
+            if not self.db_manager or not self.git_queries:
+                return "Git integration not available. Database and Git queries required."
+            
+            # Initialize Git integration manager
+            git_manager = GitIntegrationManager(project_path, self.db_manager)
+            
+            # Phase 1: Instance Identification
+            instance_type = self._identify_instance_type(project_path)
+            
+            # Phase 2: Git Change Detection (Main instance only)
+            git_changes = None
+            if instance_type == "main" or force_git_check:
+                git_changes = git_manager.detect_project_code_changes()
+                
+                if git_changes.get("success") and git_changes.get("changes_detected"):
+                    logger.info(f"Git changes detected: {git_changes['change_summary']}")
+                else:
+                    logger.info("No Git changes detected since last session")
+            
+            # Phase 3: Organizational Reconciliation (if changes detected)
+            reconciliation_result = None
+            if git_changes and git_changes.get("reconciliation_needed"):
+                reconciliation_result = git_manager.reconcile_organizational_state_with_code(git_changes)
+                logger.info(f"Organizational reconciliation: {reconciliation_result.get('message', 'Completed')}")
+            
+            # Phase 4: Standard Session Boot
+            session_result = await self.start_session({
+                "project_path": str(project_path),
+                "context_mode": context_mode
+            })
+            
+            # Phase 5: Enhanced Boot Report
+            boot_report = self._generate_boot_report(
+                instance_type, git_changes, reconciliation_result, session_result
+            )
+            
+            return boot_report
+            
+        except Exception as e:
+            logger.error(f"Error in Git-aware session boot: {e}")
+            return f"Error in Git-aware session boot: {str(e)}"
+    
+    def _identify_instance_type(self, project_path: Path) -> str:
+        """
+        Identify if this is a main instance or branch instance based on marker files.
+        Returns 'main', 'branch', or 'unknown'
+        """
+        project_mgmt_dir = project_path / "projectManagement"
+        
+        # Check for main instance marker
+        if (project_mgmt_dir / ".mcp-instance-main").exists():
+            return "main"
+        
+        # Check for branch instance marker
+        if (project_mgmt_dir / ".mcp-branch-info.json").exists():
+            return "branch"
+        
+        # Default to main if no markers found (legacy behavior)
+        return "main"
+    
+    def _generate_boot_report(self, instance_type: str, git_changes: Optional[Dict], 
+                             reconciliation_result: Optional[Dict], session_result: str) -> str:
+        """Generate comprehensive boot report with Git integration status"""
+        
+        report_lines = [
+            "=== AI Project Manager Session Boot Report ===",
+            f"Instance Type: {instance_type.upper()}",
+            ""
+        ]
+        
+        # Git Integration Status
+        if git_changes:
+            if git_changes.get("success"):
+                if git_changes.get("changes_detected"):
+                    report_lines.extend([
+                        "🔄 Git Changes Detected:",
+                        f"  • {git_changes.get('change_summary', 'Changes found')}",
+                        f"  • Current Hash: {git_changes.get('current_hash', 'Unknown')[:8]}...",
+                        f"  • Last Known: {git_changes.get('last_known_hash', 'None')[:8] if git_changes.get('last_known_hash') else 'None'}...",
+                        f"  • Affected Files: {len(git_changes.get('affected_files', []))}",
+                        ""
+                    ])
+                    
+                    if git_changes.get("affected_themes"):
+                        report_lines.extend([
+                            "📋 Affected Themes:",
+                            *[f"  • {theme}" for theme in git_changes.get("affected_themes", [])],
+                            ""
+                        ])
+                else:
+                    report_lines.extend([
+                        "✅ No Git changes detected since last session",
+                        ""
+                    ])
+            else:
+                report_lines.extend([
+                    f"❌ Git change detection failed: {git_changes.get('error', 'Unknown error')}",
+                    ""
+                ])
+        elif instance_type == "branch":
+            report_lines.extend([
+                "🔀 Branch Instance: Git change detection skipped",
+                ""
+            ])
+        
+        # Organizational Reconciliation Status
+        if reconciliation_result:
+            if reconciliation_result.get("success"):
+                report_lines.extend([
+                    "🔧 Organizational Reconciliation:",
+                    f"  • Action: {reconciliation_result.get('action', 'None')}",
+                    f"  • Status: {reconciliation_result.get('message', 'Completed')}",
+                    ""
+                ])
+                
+                if reconciliation_result.get("requires_user_review"):
+                    report_lines.extend([
+                        "⚠️  User Review Required:",
+                        "  • Significant code changes detected",
+                        "  • Please review organizational state alignment",
+                        ""
+                    ])
+        
+        # Session Status
+        report_lines.extend([
+            "📊 Session Status:",
+            f"  {session_result}",
+            "",
+            "=== Boot Complete ==="
+        ])
+        
+        return "\n".join(report_lines)

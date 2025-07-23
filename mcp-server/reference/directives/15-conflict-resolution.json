@@ -1,0 +1,353 @@
+{
+  "metadata": {
+    "id": "15-conflict-resolution",
+    "title": "Git-Like Conflict Resolution Directives", 
+    "priority": "critical",
+    "frequency": "merge-operations",
+    "version": "1.0.0",
+    "humanReadable": "../docs/directives/15-conflict-resolution.md"
+  },
+  "triggers": [
+    "Instance merge conflicts detected",
+    "Organizational state divergence", 
+    "Database conflicts during merge",
+    "Theme/flow/task conflicts",
+    "Main instance merge authority needed"
+  ],
+  "workflows": {
+    "conflictDetection": {
+      "directive": "Comprehensive conflict detection across all organizational components before merge",
+      "steps": [
+        {
+          "action": "analyzeOrganizationalChanges",
+          "description": "Compare instance workspace with main workspace for all organizational files",
+          "required": true,
+          "analysis": [
+            "Theme file differences",
+            "Flow definition changes", 
+            "Task status modifications",
+            "Completion path updates",
+            "Implementation plan changes"
+          ]
+        },
+        {
+          "action": "detectDatabaseConflicts",
+          "description": "Identify database schema and data conflicts between instances",
+          "required": true,
+          "database_conflicts": [
+            "Schema differences",
+            "Task status conflicts",
+            "Session data inconsistencies",
+            "Theme-flow relationship conflicts",
+            "Event log conflicts"
+          ]
+        },
+        {
+          "action": "categorizeConflicts",
+          "description": "Categorize conflicts by type and severity for proper resolution",
+          "required": true,
+          "categories": [
+            "theme - Same theme modified in both main and instance",
+            "task - Task status changes in both locations",
+            "flow - Flow definitions diverged between instances", 
+            "database - Incompatible database changes",
+            "completion-path - Milestone conflicts"
+          ]
+        },
+        {
+          "action": "assessConflictSeverity",
+          "description": "Determine conflict severity to guide resolution strategy",
+          "required": true,
+          "severity_levels": [
+            "trivial - Minor formatting or metadata changes",
+            "moderate - Content changes that can be easily merged",
+            "significant - Major structural changes requiring decision",
+            "critical - Incompatible changes requiring manual resolution"
+          ]
+        }
+      ]
+    },
+    "conflictPresentation": {
+      "directive": "Present conflicts to main instance in Git-like format for resolution decisions",
+      "steps": [
+        {
+          "action": "generateGitLikeConflictMarkers",
+          "description": "Create familiar Git conflict markers for easy understanding",
+          "required": true,
+          "format": [
+            "<<<<<<< main",
+            "Main instance version",
+            "=======", 
+            "Instance version",
+            ">>>>>>> {instance-name}"
+          ]
+        },
+        {
+          "action": "presentResolutionOptions",
+          "description": "Show clear resolution options to main instance user",
+          "required": true,
+          "options": [
+            "Accept Instance Changes - Use branch instance modifications",
+            "Keep Main - Reject instance changes, maintain main version",
+            "Manual Merge - Combine specific elements from both versions",
+            "Split Approach - Create separate components for conflicting functionality"
+          ]
+        },
+        {
+          "action": "provideContextInformation",
+          "description": "Give main instance sufficient context for informed decisions",
+          "required": true,
+          "context": [
+            "When changes were made",
+            "Who made the changes (for user-specific instances)",
+            "Purpose of the instance work",
+            "Impact assessment of each option",
+            "Dependencies affected by the changes"
+          ]
+        }
+      ]
+    },
+    "themeConflictResolution": {
+      "directive": "Handle theme file conflicts with multiple resolution strategies",
+      "steps": [
+        {
+          "action": "identifyThemeConflicts",
+          "description": "Detect conflicts in theme definitions and file mappings",
+          "required": true,
+          "conflict_areas": [
+            "File path lists",
+            "Linked theme relationships", 
+            "Shared file configurations",
+            "Theme descriptions and metadata"
+          ]
+        },
+        {
+          "action": "applyThemeResolutionStrategy",
+          "description": "Apply chosen resolution strategy for theme conflicts",
+          "required": true,
+          "strategies": [
+            "accept_instance - Copy instance theme to main",
+            "accept_main - Keep main theme version",
+            "merge_files - Combine file lists from both versions",
+            "split_themes - Create separate themes for new functionality"
+          ]
+        },
+        {
+          "action": "updateThemeRelationships",
+          "description": "Update theme-flow relationships after resolution",
+          "required": true,
+          "updates": [
+            "Sync theme-flow database relationships",
+            "Update flow-index references",
+            "Validate linked theme consistency",
+            "Update shared file mappings"
+          ]
+        }
+      ]
+    },
+    "flowConflictResolution": {
+      "directive": "Handle flow definition conflicts with cross-flow dependency awareness",
+      "steps": [
+        {
+          "action": "identifyFlowConflicts",
+          "description": "Detect conflicts in flow definitions and cross-flow references",
+          "required": true,
+          "conflict_areas": [
+            "Flow step definitions",
+            "Cross-flow dependencies",
+            "Flow completion status",
+            "User experience changes"
+          ]
+        },
+        {
+          "action": "applyFlowResolutionStrategy", 
+          "description": "Apply chosen resolution strategy for flow conflicts",
+          "required": true,
+          "strategies": [
+            "accept_instance - Use instance flow version",
+            "accept_main - Keep main flow version", 
+            "manual_merge - Combine flow steps manually",
+            "split_flows - Create separate flows for different functionality"
+          ]
+        },
+        {
+          "action": "updateFlowIndex",
+          "description": "Update flow-index.json after resolution",
+          "required": true,
+          "updates": [
+            "Add/remove flow file references",
+            "Update cross-flow dependencies",
+            "Sync flow completion status",
+            "Update flow metadata"
+          ]
+        }
+      ]
+    },
+    "taskConflictResolution": {
+      "directive": "Handle task and completion path conflicts with milestone awareness",
+      "steps": [
+        {
+          "action": "identifyTaskConflicts",
+          "description": "Detect conflicts in task definitions and completion paths",
+          "required": true,
+          "conflict_areas": [
+            "Task status changes",
+            "Subtask modifications",
+            "Completion path milestones",
+            "Sidequest additions"
+          ]
+        },
+        {
+          "action": "applyTaskResolutionStrategy",
+          "description": "Apply chosen resolution strategy for task conflicts", 
+          "required": true,
+          "strategies": [
+            "accept_instance - Use instance task changes",
+            "accept_main - Keep main task version",
+            "merge_subtasks - Combine subtasks from both versions",
+            "preserve_both - Keep both versions with different names"
+          ]
+        },
+        {
+          "action": "updateCompletionPath",
+          "description": "Update completion-path.json after task conflict resolution",
+          "required": true,
+          "updates": [
+            "Merge milestone changes",
+            "Update progress tracking",
+            "Validate milestone dependencies",
+            "Update completion criteria"
+          ]
+        }
+      ]
+    },
+    "databaseConflictResolution": {
+      "directive": "Handle database conflicts with schema upgrade and data merging capabilities",
+      "steps": [
+        {
+          "action": "identifyDatabaseConflicts",
+          "description": "Detect conflicts in database schema and data",
+          "required": true,
+          "conflict_areas": [
+            "Schema differences",
+            "Data conflicts in shared tables",
+            "Index and trigger differences",
+            "Session data inconsistencies"
+          ]
+        },
+        {
+          "action": "applyDatabaseResolutionStrategy",
+          "description": "Apply chosen resolution strategy for database conflicts",
+          "required": true,
+          "strategies": [
+            "accept_instance - Apply instance database changes to main",
+            "accept_main - Keep main database state, discard instance changes",
+            "merge_data - Merge database changes using custom logic",
+            "schema_upgrade - Apply database schema upgrade to resolve conflicts"
+          ]
+        },
+        {
+          "action": "validateDatabaseIntegrity",
+          "description": "Ensure database integrity after conflict resolution",
+          "required": true,
+          "validation": [
+            "Check referential integrity",
+            "Validate all constraints",
+            "Test critical queries",
+            "Verify data consistency"
+          ]
+        }
+      ]
+    },
+    "mergeCompletion": {
+      "directive": "Complete merge process with comprehensive logging and cleanup",
+      "steps": [
+        {
+          "action": "applyAllResolutions",
+          "description": "Apply all conflict resolutions atomically",
+          "required": true,
+          "atomic_operation": "All resolutions must succeed or entire merge fails"
+        },
+        {
+          "action": "updateMainWorkspace",
+          "description": "Update main workspace with resolved changes",
+          "required": true,
+          "updates": [
+            "Copy resolved files to main workspace",
+            "Update main database with merged state",
+            "Update Git tracking if applicable",
+            "Sync organizational relationships"
+          ]
+        },
+        {
+          "action": "logMergeDecisions",
+          "description": "Log all merge decisions for audit and history",
+          "required": true,
+          "logging": [
+            "Conflict types and resolutions",
+            "Resolution strategies chosen",
+            "Who made resolution decisions",
+            "Timestamp and merge ID",
+            "Impact assessment"
+          ]
+        },
+        {
+          "action": "archiveInstance",
+          "description": "Archive completed instance and clean up workspace",
+          "required": true,
+          "archival": [
+            "Move instance to .mcp-instances/completed/",
+            "Update instance status in database",
+            "Preserve instance work summary",
+            "Clean up temporary merge files"
+          ]
+        }
+      ]
+    }
+  },
+  "conflictResolutionStrategies": {
+    "accept_instance": {
+      "description": "Use the branch instance changes, overriding main",
+      "use_cases": ["Instance has more complete implementation", "Main version is outdated"],
+      "caution": "Ensure main instance user approves overriding their changes"
+    },
+    "accept_main": {
+      "description": "Keep the main instance version, discard branch changes",
+      "use_cases": ["Instance changes conflict with project direction", "Main has newer updates"],
+      "caution": "May lose valuable work from branch instance"
+    },
+    "manual_merge": {
+      "description": "Manually combine elements from both versions",
+      "use_cases": ["Both versions have valuable contributions", "Complex integration needed"],
+      "process": "Present both versions side-by-side for selective merging"
+    },
+    "split_approach": {
+      "description": "Create separate components to preserve both approaches",
+      "use_cases": ["Fundamentally different approaches", "Both solutions needed"],
+      "result": "Creates multiple themes/flows/tasks instead of merging"
+    }
+  },
+  "mainInstanceAuthority": {
+    "principle": "Main instance has ultimate authority for all conflict resolution decisions",
+    "decision_process": [
+      "Present conflicts clearly to main instance user",
+      "Provide context and impact assessment",
+      "Allow main instance to choose resolution strategy", 
+      "Apply chosen strategy without further negotiation",
+      "Log decision for audit trail"
+    ],
+    "no_complex_coordination": "Eliminates need for complex multi-party conflict resolution"
+  },
+  "errorHandling": {
+    "resolutionFailure": "Provide rollback option and preserve both versions",
+    "atomicityFailure": "Roll back entire merge and preserve instance for retry",
+    "databaseCorruption": "Use database backup and recovery system",
+    "conflictDetectionFailure": "Err on side of caution and request manual review"
+  },
+  "integrationPoints": {
+    "instanceManagement": "Coordinate with instance management for merge lifecycle",
+    "auditSystem": "Log all conflict resolution decisions for compliance",
+    "errorRecovery": "Use error recovery system for failed merge operations",
+    "gitIntegration": "Consider Git changes in conflict detection and resolution"
+  }
+}

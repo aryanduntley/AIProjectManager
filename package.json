@@ -1,0 +1,63 @@
+{
+  "name": "ai-project-manager",
+  "version": "1.0.0",
+  "description": "Intelligent AI-powered project management through persistent context and autonomous task orchestration",
+  "main": "bin/ai-pm.js",
+  "bin": {
+    "ai-pm": "./bin/ai-pm.js",
+    "ai-project-manager": "./bin/ai-pm.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/setup.js",
+    "preuninstall": "node scripts/cleanup.js",
+    "test": "node scripts/test.js",
+    "start": "node bin/ai-pm.js",
+    "dev": "node bin/ai-pm.js --dev"
+  },
+  "keywords": [
+    "ai",
+    "project-management",
+    "mcp",
+    "automation",
+    "context",
+    "tasks",
+    "development"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/AIProjectManager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/AIProjectManager/issues"
+  },
+  "homepage": "https://github.com/yourusername/AIProjectManager#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
+  },
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "files": [
+    "bin/",
+    "scripts/",
+    "mcp-server/",
+    "docs/",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^9.4.1",
+    "inquirer": "^8.2.5",
+    "node-fetch": "^2.6.7",
+    "which": "^2.0.2"
+  },
+  "optionalDependencies": {
+    "python-shell": "^3.0.1"
+  }
+}

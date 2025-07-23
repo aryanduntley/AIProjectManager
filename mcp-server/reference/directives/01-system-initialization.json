@@ -11,7 +11,9 @@
     "MCP server startup",
     "First connection",
     "System boot",
-    "Session start"
+    "Session start",
+    "Instance initialization",
+    "Git repository setup needed"
   ],
   "workflows": {
     "mcpServerConnection": {
@@ -39,6 +41,13 @@
             "theme_delete",
             "theme_get_context",
             "theme_validate",
+            "instance_create",
+            "instance_list",
+            "instance_status",
+            "instance_merge",
+            "instance_archive",
+            "detect_conflicts",
+            "resolve_conflicts",
             "get_config",
             "read_file"
           ]
@@ -160,7 +169,7 @@
         },
         {
           "action": "updateFiles",
-          "description": "Make updates to files according to analysis. Always assess existing files for each step of analyzing before making updates, if updates are needed",
+          "description": "Make updates to files according to analysis. Always assess existing files for each step of analyzing before makes updates, if updates are needed",
           "required": true,
           "condition": "user approves evaluation"
         },
@@ -168,6 +177,137 @@
           "action": "continueNormalOperation",
           "description": "Finally, continue with projectManagement as normal",
           "required": true
+        }
+      ]
+    },
+    "gitRepositorySetup": {
+      "directive": "Initialize and configure Git repository for project code and organizational state tracking",
+      "steps": [
+        {
+          "action": "detectGitRepository",
+          "description": "Check if project root has existing Git repository",
+          "required": true,
+          "detection": [
+            "Look for .git/ directory in project root",
+            "Verify Git repository integrity if found",
+            "Check Git configuration compatibility"
+          ]
+        },
+        {
+          "action": "initializeGitIfNeeded", 
+          "description": "Initialize Git repository if not found and auto_init_repo enabled",
+          "required": true,
+          "condition": "no .git/ directory and git.auto_init_repo=true",
+          "initialization": [
+            "Run git init in project root",
+            "Set up initial .gitignore for MCP instance management",
+            "Create initial commit with project structure"
+          ]
+        },
+        {
+          "action": "configureGitIgnore",
+          "description": "Set up .gitignore for MCP instance management",
+          "required": true,
+          "gitignoreAdditions": [
+            "# MCP Instance Management - Track Structure, Not Content",
+            ".mcp-instances/active/*/projectManagement/UserSettings/",
+            ".mcp-instances/active/*/projectManagement/database/backups/",
+            "# Project Management - Track Organizational State", 
+            "projectManagement/UserSettings/",
+            "projectManagement/database/backups/"
+          ]
+        },
+        {
+          "action": "recordInitialGitState",
+          "description": "Record initial Git state in database for change detection",
+          "required": true,
+          "database_operations": [
+            "Insert initial git_project_state record",
+            "Record current Git hash as baseline",
+            "Set reconciliation status to 'initialized'"
+          ]
+        }
+      ]
+    },
+    "instanceIdentification": {
+      "directive": "Identify whether running in main instance or branch instance and establish authority",
+      "steps": [
+        {
+          "action": "checkInstanceType",
+          "description": "Determine instance type from workspace location and markers",
+          "required": true,
+          "identification": [
+            "Check for .mcp-instance-main file in projectManagement/",
+            "Check for .mcp-branch-info.json in workspace directory",
+            "Determine workspace path location"
+          ]
+        },
+        {
+          "action": "establishInstanceAuthority",
+          "description": "Set instance authority and capabilities based on type",
+          "required": true,
+          "authority": {
+            "mainInstance": [
+              "Git repository change detection authority",
+              "Merge conflict resolution primary decision maker",
+              "Instance coordination and management",
+              "Project code change impact assessment"
+            ],
+            "branchInstance": [
+              "Independent development within isolated workspace",
+              "Prepare organizational changes for merge",
+              "Maintain instance metadata and work summaries"
+            ]
+          }
+        },
+        {
+          "action": "validateInstanceConfiguration",
+          "description": "Ensure instance configuration is valid and consistent",
+          "required": true,
+          "validation": [
+            "Verify workspace isolation for branch instances",
+            "Check instance metadata completeness",
+            "Validate database isolation for branch instances",
+            "Confirm main instance authority if main"
+          ]
+        }
+      ]
+    },
+    "databaseInitialization": {
+      "directive": "Initialize database components and establish hybrid file-database architecture",
+      "steps": [
+        {
+          "action": "initializeProjectDatabase",
+          "description": "Set up project.db with complete schema",
+          "required": true,
+          "database_setup": [
+            "Create project.db from mcp-server/database/schema.sql",
+            "Initialize all required tables and indexes",
+            "Set up database triggers for real-time synchronization",
+            "Create performance optimization views"
+          ]
+        },
+        {
+          "action": "establishHybridArchitecture",
+          "description": "Configure hybrid file-database synchronization",
+          "required": true,
+          "synchronization": [
+            "Set up real-time file-database sync triggers",
+            "Configure atomic operation handling",
+            "Initialize session persistence system",
+            "Set up event analytics and logging"
+          ]
+        },
+        {
+          "action": "validateDatabaseIntegrity",
+          "description": "Verify database initialization completed successfully",
+          "required": true,
+          "validation": [
+            "Test all database tables and relationships",
+            "Verify trigger functionality",
+            "Test atomic operation rollback",
+            "Confirm performance index effectiveness"
+          ]
         }
       ]
     }
@@ -188,6 +328,84 @@
       "type": "boolean",
       "description": "Enable automatic theme discovery"
     },
+    "git": {
+      "type": "object",
+      "description": "Git integration configuration",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean",
+          "description": "Enable Git integration for project tracking"
+        },
+        "auto_init_repo": {
+          "default": true,
+          "type": "boolean", 
+          "description": "Automatically initialize Git repository if not found"
+        },
+        "code_change_detection": {
+          "default": true,
+          "type": "boolean",
+          "description": "Enable automatic code change detection during session boot"
+        },
+        "auto_reconcile_on_boot": {
+          "default": true,
+          "type": "boolean",
+          "description": "Automatically reconcile organizational state with code changes"
+        }
+      }
+    },
+    "instance_management": {
+      "type": "object",
+      "description": "Instance management configuration",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean",
+          "description": "Enable Git-like instance management"
+        },
+        "main_instance_authority": {
+          "default": true,
+          "type": "boolean",
+          "description": "Main instance has ultimate authority for conflict resolution"
+        },
+        "max_active_instances": {
+          "default": 10,
+          "type": "number",
+          "description": "Maximum number of active instances allowed"
+        },
+        "instance_naming_validation": {
+          "default": true,
+          "type": "boolean",
+          "description": "Enforce instance naming conventions"
+        },
+        "auto_archive_completed": {
+          "default": true,
+          "type": "boolean",
+          "description": "Automatically archive completed instances"
+        }
+      }
+    },
+    "database": {
+      "type": "object",
+      "description": "Database integration configuration",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean",
+          "description": "Enable database integration for performance optimization"
+        },
+        "real_time_sync": {
+          "default": true,
+          "type": "boolean",
+          "description": "Enable real-time file-database synchronization"
+        },
+        "session_persistence": {
+          "default": true,
+          "type": "boolean",  
+          "description": "Enable session context persistence and restoration"
+        }
+      }
+    },
     "log_retention": {
       "type": "object",
       "description": "Log retention policies"
@@ -199,29 +417,47 @@
   },
   "integrations": [
     "02-project-initialization",
-    "13-metadata-management"
+    "03-session-management",
+    "13-metadata-management",
+    "14-instance-management",
+    "16-git-integration",
+    "database-integration"
   ],
   "dependencies": [
     "UserSettings/config.json",
     "MCP server connectivity",
-    "ProjectBlueprint/metadata.json"
+    "ProjectBlueprint/metadata.json",
+    "Git repository (optional, can be created)",
+    "Database schema (mcp-server/database/schema.sql)",
+    "Instance management tools"
   ],
   "keyOperations": [
     "Server validation",
-    "Compatibility checking",
+    "Compatibility checking", 
     "Configuration loading",
-    "Project structure initialization"
+    "Project structure initialization",
+    "Git repository setup",
+    "Instance identification",
+    "Database initialization",
+    "Authority establishment"
   ],
   "errorHandling": {
     "mcpServerUnavailable": "Fail with clear error message",
     "toolsMissing": "Report missing tools and fail gracefully",
     "configurationInvalid": "Use defaults and warn user",
-    "compatibilityIssues": "Require user decision before proceeding"
+    "compatibilityIssues": "Require user decision before proceeding",
+    "gitRepositoryIssues": "Initialize repository or report clear error to user",
+    "instanceIdentificationFailure": "Default to main instance and warn user",
+    "databaseInitializationFailure": "Report error clearly and offer file-only mode",
+    "instanceAuthorityConflict": "Enforce main instance authority and log conflict"
   },
   "validation": {
     "serverConnection": "Must verify MCP server is responsive",
-    "toolAvailability": "All required tools must be available",
-    "configurationValid": "Configuration must pass validation",
-    "structureIntegrity": "Project structure must be valid or initializable"
+    "toolAvailability": "All required tools must be available including instance management",
+    "configurationValid": "Configuration must pass validation including Git and instance settings",
+    "structureIntegrity": "Project structure must be valid or initializable",
+    "gitRepositoryValid": "Git repository must be properly initialized and accessible",
+    "instanceTypeValid": "Instance type must be correctly identified and authority established",
+    "databaseIntegrity": "Database must be properly initialized with complete schema"
   }
 }

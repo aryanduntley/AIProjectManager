@@ -13,7 +13,9 @@
     "Theme context switching",
     "Project structure analysis",
     "Multi-flow loading",
-    "Flow scope evaluation"
+    "Flow scope evaluation",
+    "Instance isolation context loading",
+    "Git reconciliation context requirements"
   ],
   "workflows": {
     "contextModeSelection": {
@@ -136,6 +138,26 @@
           "No Barriers: No approval, notification, or consideration needed for expansion",
           "Theme Scope Definition: Theme scope handles all scope expansion decisions"
         ]
+      }
+    },
+    "instanceAwareContextLoading": {
+      "directive": "Ensure context loading respects instance isolation and merge considerations",
+      "process": [
+        "Load context from current instance workspace (main or branch)",
+        "Instance-specific theme files take precedence over global ones",
+        "Database queries include instance identification for proper context",
+        "Session context restoration includes instance workspace paths"
+      ],
+      "instanceTypes": {
+        "mainInstance": {
+          "authority": "Full access to all themes and contexts, Git reconciliation enabled",
+          "responsibilities": ["Git change impact analysis", "Cross-instance context coordination"]
+        },
+        "branchInstance": {
+          "isolation": "Independent context loading from isolated workspace",
+          "limitations": ["No Git reconciliation", "No cross-instance access"],
+          "mergePreparation": "Track context changes for conflict analysis"
+        }
       }
     }
   },
