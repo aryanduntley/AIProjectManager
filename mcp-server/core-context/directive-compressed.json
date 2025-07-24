@@ -194,7 +194,7 @@
       "action": "Modularize into logical function groups, update imports, document in README"
     },
     "antiPlaceholder": {
-      "prohibited": ["...continued", "TODO: implement", "placeholder", "rest unchanged"],
+      "prohibited": ["...continued", "TODO: implement", "placeholder", "rest unchanged", "in a real implementation", "for now", "simplified", "for simplicity", "todo", "fixme", "hack", "temporary", "future"],
       "requirement": "Complete implementations only when project.avoidPlaceholders=true"
     },
     "readmeManagement": "Update directory README.md with every significant file change",
@@ -269,12 +269,26 @@
   },
   "branchManagement": {
     "triggers": ["Branch creation request", "Multiple developer scenario", "Parallel development needed", "Branch merge operations"],
-    "workflow": [
-      "Detect user name automatically from Git config/system",
-      "Generate sequential branch name: ai-pm-org-branch-{XXX}",
-      "Create Git branch: git checkout -b ai-pm-org-branch-{XXX} ai-pm-org-main",
-      "Register branch in database and track user attribution"
-    ],
+    "aiMainBranchSetup": {
+      "priorityLogic": "Remote clone > Local restoration > Fresh creation",
+      "workflow": [
+        "Check if ai-pm-org-main exists locally",
+        "If missing locally, check remote repository for ai-pm-org-main",
+        "PRIORITY 1: If exists on remote, clone from remote (team collaboration)",
+        "PRIORITY 2: If no remote but has previous AI state, restore from organizational state",
+        "PRIORITY 3: If completely new, create fresh branch from user's main"
+      ],
+      "teamCollaboration": "Multiple developers can inherit shared AI organizational state automatically"
+    },
+    "workBranchCreation": {
+      "criticalPrinciple": "Work branches ALWAYS clone from ai-pm-org-main, NOT user's main",
+      "workflow": [
+        "Ensure ai-pm-org-main exists (may trigger remote clone for team scenarios)",
+        "Switch to ai-pm-org-main first: git checkout ai-pm-org-main",
+        "Create work branch FROM ai-pm-org-main: git checkout -b ai-pm-org-branch-{XXX} ai-pm-org-main",
+        "Register branch in database with team collaboration metadata"
+      ]
+    },
     "canonicalAuthority": "ai-pm-org-main is PRIMARY DECISION MAKER for all merge decisions",
     "isolation": "Git branches provide natural isolation with complete independent state",
     "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/14-branch-management.json for complete branch lifecycle protocols and merge procedures"
@@ -294,11 +308,18 @@
   "gitIntegration": {
     "triggers": ["Session boot with project code changes", "Git repository state detection needed", "External code modifications detected"],
     "workflow": [
-      "Detect Git repository and compare current hash with last known state",
+      "Detect Git repository and check for remote repository configuration (team collaboration)",
+      "Ensure ai-pm-org-main branch exists with remote clone support (NEW)",
+      "Compare current hash with last known state and detect project code changes",
       "Analyze changed files and perform theme impact analysis using directory structure and naming patterns",
       "Reconcile organizational state with code changes by updating affected themes and flows",
       "Update database with Git state tracking and file change impacts"
     ],
+    "teamCollaborationSupport": {
+      "remoteBranchDetection": "Check if ai-pm-org-main exists on remote origin",
+      "remoteClone": "git checkout -b ai-pm-org-main origin/ai-pm-org-main for team scenarios",
+      "networkResilience": "Handle network failures gracefully with timeout and fallback"
+    },
     "themeImpactAnalysis": ["Direct file mapping", "Directory structure inference", "Naming pattern analysis", "Deletion impact assessment"],
     "reconciliation": "Update organizational files to reflect code changes, require user approval for significant changes",
     "branchIntegration": "Record Git base hash for branches and include code changes in merge analysis",

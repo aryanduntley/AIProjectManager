@@ -306,7 +306,7 @@ class ThemeFlowQueries:
     
     def _resolve_flow_file(self, flow_id: str, flow_index_data: Dict) -> Optional[str]:
         """
-        Resolve flow ID to flow file using flow index data.
+        Resolve flow ID to flow file using flow index data with comprehensive matching.
         
         Args:
             flow_id: The flow identifier
@@ -315,17 +315,105 @@ class ThemeFlowQueries:
         Returns:
             Flow file name or None if not found
         """
-        # Look through flow files in the index
-        for flow_file_data in flow_index_data.get('flowFiles', []):
-            flow_file = flow_file_data.get('filename')
-            if flow_file:
-                # This is a simplified resolution - in practice, we'd need to
-                # load the actual flow file to check if it contains the flow_id
-                # For now, we'll return the first match or a default
-                return flow_file
-        
-        # Default fallback - this should be improved based on actual flow file structure
-        return f"{flow_id.split('-')[0]}-flow.json"
+        try:
+            # Strategy 1: Direct filename match
+            for flow_file_data in flow_index_data.get('flowFiles', []):
+                flow_file = flow_file_data.get('filename')
+                if not flow_file:
+                    continue
+                
+                # Check if flow_id is directly mentioned in the filename
+                flow_base = flow_file.replace('.json', '').replace('-flow', '')
+                if flow_id == flow_base or flow_id == flow_file or flow_id in flow_file:
+                    return flow_file
+            
+            # Strategy 2: Check flow file contents if available
+            for flow_file_data in flow_index_data.get('flowFiles', []):
+                flow_file = flow_file_data.get('filename')
+                if not flow_file:
+                    continue
+                
+                # Check if flow_file_data contains flow details
+                if 'flows' in flow_file_data:
+                    for flow_info in flow_file_data['flows']:
+                        if isinstance(flow_info, dict):
+                            if flow_info.get('id') == flow_id or flow_info.get('flowId') == flow_id:
+                                return flow_file
+                            # Check flow title/name matches
+                            flow_title = flow_info.get('title', '').lower()
+                            if flow_title and flow_id.lower().replace('-', ' ') in flow_title:
+                                return flow_file
+                
+                # Check if flow_file_data has metadata about contained flows
+                if 'containedFlows' in flow_file_data:
+                    if flow_id in flow_file_data['containedFlows']:
+                        return flow_file
+            
+            # Strategy 3: Pattern-based matching
+            flow_patterns = [
+                f"{flow_id}.json",
+                f"{flow_id}-flow.json",
+                f"{flow_id.replace('-', '_')}.json",
+                f"{flow_id.replace('-', '_')}-flow.json"
+            ]
+            
+            for flow_file_data in flow_index_data.get('flowFiles', []):
+                flow_file = flow_file_data.get('filename')
+                if flow_file in flow_patterns:
+                    return flow_file
+            
+            # Strategy 4: Semantic matching based on flow_id components
+            flow_components = flow_id.split('-')
+            if len(flow_components) >= 2:
+                # Try matching primary component
+                primary_component = flow_components[0]
+                for flow_file_data in flow_index_data.get('flowFiles', []):
+                    flow_file = flow_file_data.get('filename', '')
+                    flow_file_lower = flow_file.lower()
+                    
+                    # Check if primary component appears in filename
+                    if primary_component.lower() in flow_file_lower:
+                        # Prefer more specific matches
+                        specificity_score = 0
+                        for component in flow_components:
+                            if component.lower() in flow_file_lower:
+                                specificity_score += 1
+                        
+                        # If more than half the components match, consider it a good match
+                        if specificity_score >= len(flow_components) / 2:
+                            return flow_file
+            
+            # Strategy 5: Fallback to most likely pattern
+            if flow_index_data.get('flowFiles'):
+                # Try to find the most generic or commonly named flow file
+                generic_patterns = ['main-flow.json', 'primary-flow.json', 'default-flow.json']
+                for pattern in generic_patterns:
+                    for flow_file_data in flow_index_data.get('flowFiles', []):
+                        if flow_file_data.get('filename') == pattern:
+                            self.db.logger.warning(f"Using fallback flow file '{pattern}' for flow_id '{flow_id}'")
+                            return pattern
+                
+                # If no generic patterns, use the first available flow file as last resort
+                first_flow_file = flow_index_data['flowFiles'][0].get('filename')
+                if first_flow_file:
+                    self.db.logger.warning(f"Using first available flow file '{first_flow_file}' for flow_id '{flow_id}'")
+                    return first_flow_file
+            
+            # Strategy 6: Generate educated guess based on flow_id
+            flow_id_clean = flow_id.replace('_', '-').lower()
+            potential_filenames = [
+                f"{flow_id_clean}-flow.json",
+                f"{flow_id_clean}.json",
+                f"{flow_components[0] if flow_components else flow_id_clean}-flow.json"
+            ]
+            
+            self.db.logger.info(f"Could not resolve flow_id '{flow_id}' to existing file. Potential matches: {potential_filenames}")
+            return potential_filenames[0]  # Return best guess
+            
+        except Exception as e:
+            self.db.logger.error(f"Error resolving flow file for flow_id '{flow_id}': {e}")
+            # Return a reasonable default
+            return f"{flow_id.split('-')[0] if '-' in flow_id else flow_id}-flow.json"
     
     def get_orphaned_flows(self) -> List[str]:
         """

@@ -26,7 +26,32 @@
             "Look for .git/ directory in project root",
             "Initialize Git repository if not found and auto_init_repo enabled",
             "Verify Git repository integrity",
-            "Set up Git configuration for MCP tracking"
+            "Set up Git configuration for MCP tracking",
+            "Check for remote repository configuration (team collaboration)"
+          ]
+        },
+        {
+          "action": "ensureAiMainBranchExists",
+          "description": "NEW: Establish ai-pm-org-main branch with team collaboration support",
+          "required": true,
+          "priorityLogic": "Remote clone > Local restoration > Fresh creation",
+          "teamCollaboration": [
+            "Check if ai-pm-org-main exists locally",
+            "If missing locally, check remote repository for ai-pm-org-main",
+            "If exists on remote: Clone from remote (team collaboration scenario)",
+            "If no remote but has previous AI state: Restore from organizational state",
+            "If completely new: Create fresh branch from user's main"
+          ],
+          "implementation": {
+            "remoteClone": "git checkout -b ai-pm-org-main origin/ai-pm-org-main",
+            "localRestore": "git checkout -b ai-pm-org-main main (with existing org state)",
+            "freshCreation": "git checkout -b ai-pm-org-main main (new AI structure)"
+          },
+          "benefits": [
+            "Multiple team members can inherit shared AI organizational state",
+            "Automatic detection of existing team setup",
+            "No manual coordination needed between developers",
+            "Consistent organizational structure across team"
           ]
         },
         {

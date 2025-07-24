@@ -32,14 +32,47 @@ This directive provides comprehensive guidance for integrating root-level Git re
 2. **Initialize Git repository** if not found and `auto_init_repo` enabled
 3. **Verify Git repository integrity** - check for corruption
 4. **Set up Git configuration** for MCP tracking and ignore rules
+5. **Check for remote repository** if configured (team collaboration)
 
 **AI Action**: Report Git repository status and any initialization actions taken.
 
 **User Communication**: 
 ```
 Git repository detected at project root.
+Remote repository: origin (team collaboration enabled)
 Last tracked state: commit abc123 (2 days ago)
 Repository status: Clean, ready for change detection
+```
+
+### Step 1.5: Ensure AI Main Branch Exists (NEW: Team Collaboration Support)
+**Purpose**: Establish ai-pm-org-main branch with proper remote/local/restoration handling
+
+**Priority Logic**: Remote clone > Local restoration > Fresh creation
+
+**Branch Establishment Process**:
+1. **Check if ai-pm-org-main exists locally**
+2. **If missing locally, check remote repository** for ai-pm-org-main
+3. **If exists on remote**: Clone from remote (team collaboration scenario)
+4. **If no remote but has previous AI state**: Restore from previous organizational state
+5. **If completely new**: Create fresh branch from user's main
+
+**Team Collaboration Support**:
+- **Remote Clone**: `git checkout -b ai-pm-org-main origin/ai-pm-org-main`
+- **Automatic Sync**: Sync local database with remote organizational state
+- **State Inheritance**: Multiple team members can inherit shared AI organizational state
+
+**User Communication Examples**:
+```
+✅ Cloned ai-pm-org-main from remote repository (team collaboration)
+   Synced organizational state with team's shared configuration
+```
+```
+✅ Restored ai-pm-org-main with previous organizational state
+   Found existing themes and tasks from previous sessions
+```
+```
+✅ Created fresh ai-pm-org-main from main (first-time setup)
+   Initialized AI project management structure
 ```
 
 ### Step 2: Compare Git State

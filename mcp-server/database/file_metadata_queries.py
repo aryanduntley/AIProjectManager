@@ -257,21 +257,88 @@ class FileMetadataQueries:
         exclude_patterns: List[str] = None
     ) -> Dict[str, List[str]]:
         """
-        Discover and categorize project files.
-        
-        This method would typically scan the filesystem and categorize files,
-        but for now it returns the structure that would be stored in the database.
+        Discover and categorize project files by scanning the filesystem.
         
         Args:
             project_path: Path to project root
-            file_patterns: File patterns to include
-            exclude_patterns: File patterns to exclude
+            file_patterns: File patterns to include (e.g., ['*.py', '*.js'])
+            exclude_patterns: File patterns to exclude (e.g., ['node_modules/*', '*.pyc'])
             
         Returns:
             Dictionary with categorized file lists
         """
-        # This would be implemented to scan the filesystem
-        # For now, return structure that would be populated
+        import os
+        import fnmatch
+        from pathlib import Path
+        
+        try:
+            project_root = Path(project_path)
+            if not project_root.exists():
+                return self._empty_file_categorization()
+            
+            # Default file patterns if not provided
+            if file_patterns is None:
+                file_patterns = ['*']
+            
+            # Default exclude patterns
+            default_excludes = [
+                '__pycache__/*', '*.pyc', '*.pyo', '.git/*', '.idea/*', '.vscode/*',
+                'node_modules/*', '*.log', '.DS_Store', '*.swp', '*.swo',
+                'projectManagement/UserSettings/*', 'projectManagement/database/backups/*'
+            ]
+            
+            if exclude_patterns is None:
+                exclude_patterns = default_excludes
+            else:
+                exclude_patterns.extend(default_excludes)
+            
+            categorized_files = {
+                "source_files": [],
+                "config_files": [],
+                "documentation": [],
+                "tests": [],
+                "build_files": [],
+                "data_files": []
+            }
+            
+            # Walk through the project directory
+            for root, dirs, files in os.walk(project_root):
+                # Convert to relative path
+                rel_root = os.path.relpath(root, project_root)
+                if rel_root == '.':
+                    rel_root = ''
+                
+                for file in files:
+                    if rel_root:
+                        file_path = f"{rel_root}/{file}"
+                    else:
+                        file_path = file
+                    
+                    # Check if file should be excluded
+                    if self._should_exclude_file(file_path, exclude_patterns):
+                        continue
+                    
+                    # Check if file matches include patterns
+                    if not self._matches_include_patterns(file, file_patterns):
+                        continue
+                    
+                    # Categorize the file
+                    category = self._categorize_file(file_path, file)
+                    if category in categorized_files:
+                        categorized_files[category].append(file_path)
+            
+            # Sort file lists for consistency
+            for category in categorized_files:
+                categorized_files[category].sort()
+            
+            return categorized_files
+            
+        except Exception as e:
+            self.db.logger.error(f"Error discovering and categorizing files: {e}")
+            return self._empty_file_categorization()
+    
+    def _empty_file_categorization(self) -> Dict[str, List[str]]:
+        """Return empty file categorization structure"""
         return {
             "source_files": [],
             "config_files": [],
@@ -281,11 +348,67 @@ class FileMetadataQueries:
             "data_files": []
         }
     
+    def _should_exclude_file(self, file_path: str, exclude_patterns: List[str]) -> bool:
+        """Check if file should be excluded based on patterns"""
+        import fnmatch
+        
+        for pattern in exclude_patterns:
+            if fnmatch.fnmatch(file_path, pattern) or fnmatch.fnmatch(file_path.lower(), pattern.lower()):
+                return True
+        return False
+    
+    def _matches_include_patterns(self, filename: str, file_patterns: List[str]) -> bool:
+        """Check if file matches include patterns"""
+        import fnmatch
+        
+        if '*' in file_patterns:
+            return True
+        
+        for pattern in file_patterns:
+            if fnmatch.fnmatch(filename, pattern) or fnmatch.fnmatch(filename.lower(), pattern.lower()):
+                return True
+        return False
+    
+    def _categorize_file(self, file_path: str, filename: str) -> str:
+        """Categorize a file based on its path and name"""
+        file_lower = filename.lower()
+        path_lower = file_path.lower()
+        
+        # Test files
+        if (any(pattern in file_lower for pattern in ['test_', '_test.', '.test.', '.spec.', '_spec.']) or
+            any(pattern in path_lower for pattern in ['/test/', '/tests/', '__tests__', '.test/', '.spec/'])):
+            return "tests"
+        
+        # Documentation files
+        if (any(file_lower.endswith(ext) for ext in ['.md', '.rst', '.txt', '.doc', '.docx', '.pdf']) or
+            file_lower in ['readme', 'changelog', 'license', 'authors', 'contributors', 'history'] or
+            any(pattern in path_lower for pattern in ['/doc/', '/docs/', '/documentation/'])):
+            return "documentation"
+        
+        # Configuration files
+        if (any(file_lower.endswith(ext) for ext in ['.json', '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf']) or
+            file_lower in ['dockerfile', 'makefile', 'rakefile', 'gulpfile.js', 'gruntfile.js'] or
+            any(pattern in file_lower for pattern in ['config', 'settings', '.env', 'package.json', 'requirements.txt', 
+                                                      'cargo.toml', 'composer.json', 'setup.py', 'pyproject.toml'])):
+            return "config_files"
+        
+        # Build files
+        if (any(file_lower.endswith(ext) for ext in ['.sh', '.bat', '.cmd', '.ps1']) or
+            file_lower in ['dockerfile', 'makefile', 'rakefile', 'gulpfile.js', 'gruntfile.js', 'webpack.config.js'] or
+            any(pattern in path_lower for pattern in ['/build/', '/dist/', '/target/', '/bin/', '/scripts/'])):
+            return "build_files"
+        
+        # Data files
+        if (any(file_lower.endswith(ext) for ext in ['.csv', '.tsv', '.json', '.xml', '.sql', '.db', '.sqlite']) or
+            any(pattern in path_lower for pattern in ['/data/', '/fixtures/', '/seeds/'])):
+            return "data_files"
+        
+        # Source files (default)
+        return "source_files"
+    
     def analyze_file_dependencies(self, file_path: str) -> Dict[str, Any]:
         """
-        Analyze file dependencies and relationships.
-        
-        This would parse import statements, references, and dependencies.
+        Analyze file dependencies and relationships by parsing file content.
         
         Args:
             file_path: Path to file to analyze
@@ -293,12 +416,245 @@ class FileMetadataQueries:
         Returns:
             Dictionary with dependency information
         """
-        # Placeholder for file analysis logic
+        try:
+            from pathlib import Path
+            import re
+            
+            file_obj = Path(file_path)
+            if not file_obj.exists():
+                return self._empty_dependency_analysis()
+            
+            # Read file content
+            try:
+                with open(file_obj, 'r', encoding='utf-8') as f:
+                    content = f.read()
+            except (UnicodeDecodeError, IOError):
+                # Skip binary files or files we can't read
+                return self._empty_dependency_analysis()
+            
+            # Analyze based on file extension
+            file_extension = file_obj.suffix.lower()
+            
+            if file_extension == '.py':
+                return self._analyze_python_dependencies(content, file_path)
+            elif file_extension in ['.js', '.ts', '.jsx', '.tsx']:
+                return self._analyze_javascript_dependencies(content, file_path)
+            elif file_extension in ['.java']:
+                return self._analyze_java_dependencies(content, file_path)
+            elif file_extension in ['.go']:
+                return self._analyze_go_dependencies(content, file_path)
+            elif file_extension in ['.rs']:
+                return self._analyze_rust_dependencies(content, file_path)
+            else:
+                return self._analyze_generic_dependencies(content, file_path)
+                
+        except Exception as e:
+            self.db.logger.error(f"Error analyzing file dependencies for {file_path}: {e}")
+            return self._empty_dependency_analysis()
+    
+    def _empty_dependency_analysis(self) -> Dict[str, Any]:
+        """Return empty dependency analysis"""
         return {
             "imports": [],
             "exports": [],
             "dependencies": [],
             "dependents": [],
+            "analysis_timestamp": datetime.now().isoformat()
+        }
+    
+    def _analyze_python_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+        """Analyze Python file dependencies"""
+        import re
+        
+        imports = []
+        exports = []
+        
+        # Find import statements
+        import_patterns = [
+            r'import\s+([a-zA-Z_][a-zA-Z0-9_\.]*)',
+            r'from\s+([a-zA-Z_][a-zA-Z0-9_\.]*)\s+import',
+            r'from\s+\.([a-zA-Z_][a-zA-Z0-9_\.]*)\s+import',  # relative imports
+        ]
+        
+        for pattern in import_patterns:
+            matches = re.findall(pattern, content, re.MULTILINE)
+            imports.extend(matches)
+        
+        # Find class and function definitions (exports)
+        export_patterns = [
+            r'class\s+([a-zA-Z_][a-zA-Z0-9_]*)',
+            r'def\s+([a-zA-Z_][a-zA-Z0-9_]*)',
+            r'^([A-Z_][A-Z0-9_]*)\s*=',  # Constants
+        ]
+        
+        for pattern in export_patterns:
+            matches = re.findall(pattern, content, re.MULTILINE)
+            exports.extend(matches)
+        
+        return {
+            "imports": list(set(imports)),
+            "exports": list(set(exports)),
+            "dependencies": list(set(imports)),
+            "dependents": [],  # Would need project-wide analysis
+            "language": "python",
+            "analysis_timestamp": datetime.now().isoformat()
+        }
+    
+    def _analyze_javascript_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+        """Analyze JavaScript/TypeScript file dependencies"""
+        import re
+        
+        imports = []
+        exports = []
+        
+        # Find import statements
+        import_patterns = [
+            r'import\s+.*?\s+from\s+[\'"]([^\'"]+)[\'"]',
+            r'import\s+[\'"]([^\'"]+)[\'"]',
+            r'require\s*\(\s*[\'"]([^\'"]+)[\'"]\s*\)',
+        ]
+        
+        for pattern in import_patterns:
+            matches = re.findall(pattern, content, re.MULTILINE)
+            imports.extend(matches)
+        
+        # Find export statements
+        export_patterns = [
+            r'export\s+(?:default\s+)?(?:class|function|const|let|var)\s+([a-zA-Z_][a-zA-Z0-9_]*)',
+            r'export\s*\{\s*([^}]+)\s*\}',
+            r'module\.exports\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)',
+        ]
+        
+        for pattern in export_patterns:
+            matches = re.findall(pattern, content, re.MULTILINE)
+            exports.extend(matches)
+        
+        return {
+            "imports": list(set(imports)),
+            "exports": list(set(exports)),
+            "dependencies": list(set(imports)),
+            "dependents": [],
+            "language": "javascript",
+            "analysis_timestamp": datetime.now().isoformat()
+        }
+    
+    def _analyze_java_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+        """Analyze Java file dependencies"""
+        import re
+        
+        imports = []
+        exports = []
+        
+        # Find import statements
+        import_matches = re.findall(r'import\s+([a-zA-Z_][a-zA-Z0-9_\.]*)', content, re.MULTILINE)
+        imports.extend(import_matches)
+        
+        # Find class definitions
+        class_matches = re.findall(r'(?:public\s+)?class\s+([a-zA-Z_][a-zA-Z0-9_]*)', content, re.MULTILINE)
+        exports.extend(class_matches)
+        
+        return {
+            "imports": list(set(imports)),
+            "exports": list(set(exports)),
+            "dependencies": list(set(imports)),
+            "dependents": [],
+            "language": "java",
+            "analysis_timestamp": datetime.now().isoformat()
+        }
+    
+    def _analyze_go_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+        """Analyze Go file dependencies"""
+        import re
+        
+        imports = []
+        exports = []
+        
+        # Find import statements
+        import_patterns = [
+            r'import\s+[\'"]([^\'"]+)[\'"]',
+            r'import\s*\(\s*[\'"]([^\'"]+)[\'"]',
+        ]
+        
+        for pattern in import_patterns:
+            matches = re.findall(pattern, content, re.MULTILINE)
+            imports.extend(matches)
+        
+        # Find exported functions and types
+        export_patterns = [
+            r'func\s+([A-Z][a-zA-Z0-9_]*)',  # Exported functions start with capital
+            r'type\s+([A-Z][a-zA-Z0-9_]*)',  # Exported types start with capital
+            r'var\s+([A-Z][a-zA-Z0-9_]*)',   # Exported vars start with capital
+        ]
+        
+        for pattern in export_patterns:
+            matches = re.findall(pattern, content, re.MULTILINE)
+            exports.extend(matches)
+        
+        return {
+            "imports": list(set(imports)),
+            "exports": list(set(exports)),
+            "dependencies": list(set(imports)),
+            "dependents": [],
+            "language": "go",
+            "analysis_timestamp": datetime.now().isoformat()
+        }
+    
+    def _analyze_rust_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+        """Analyze Rust file dependencies"""
+        import re
+        
+        imports = []
+        exports = []
+        
+        # Find use statements
+        use_matches = re.findall(r'use\s+([a-zA-Z_][a-zA-Z0-9_:]*)', content, re.MULTILINE)
+        imports.extend(use_matches)
+        
+        # Find public items
+        export_patterns = [
+            r'pub\s+fn\s+([a-zA-Z_][a-zA-Z0-9_]*)',
+            r'pub\s+struct\s+([a-zA-Z_][a-zA-Z0-9_]*)',
+            r'pub\s+enum\s+([a-zA-Z_][a-zA-Z0-9_]*)',
+            r'pub\s+trait\s+([a-zA-Z_][a-zA-Z0-9_]*)',
+        ]
+        
+        for pattern in export_patterns:
+            matches = re.findall(pattern, content, re.MULTILINE)
+            exports.extend(matches)
+        
+        return {
+            "imports": list(set(imports)),
+            "exports": list(set(exports)),
+            "dependencies": list(set(imports)),
+            "dependents": [],
+            "language": "rust",
+            "analysis_timestamp": datetime.now().isoformat()
+        }
+    
+    def _analyze_generic_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+        """Analyze generic file dependencies using basic heuristics"""
+        import re
+        
+        # Look for common include/import patterns
+        imports = []
+        
+        include_patterns = [
+            r'#include\s+[<"]([^>"]+)[>"]',  # C/C++
+            r'@import\s+[\'"]([^\'"]+)[\'"]',  # Objective-C
+            r'#import\s+[<"]([^>"]+)[>"]',     # Objective-C
+            r'require\s+[\'"]([^\'"]+)[\'"]',  # Various languages
+        ]
+        
+        for pattern in include_patterns:
+            matches = re.findall(pattern, content, re.MULTILINE)
+            imports.extend(matches)
+        
+        return {
+            "imports": list(set(imports)),
+            "exports": [],
+            "dependencies": list(set(imports)),
+            "dependents": [],
+            "language": "generic",
             "analysis_timestamp": datetime.now().isoformat()
         }
     
@@ -332,10 +688,55 @@ class FileMetadataQueries:
         }
     
     def _get_themes_for_file(self, file_path: str) -> List[str]:
-        """Get themes that reference this file path."""
-        # This would query theme files to find which themes include this file
-        # For now, return empty list - would be implemented with theme integration
-        return []
+        """Get themes that reference this file path by querying theme-flow relationships."""
+        try:
+            # Query theme-flow relationships to find themes associated with this file
+            query = """
+                SELECT DISTINCT tf.theme_name
+                FROM theme_flows tf
+                WHERE tf.flow_file LIKE ? 
+                   OR JSON_EXTRACT(tf.metadata, '$.files') LIKE ?
+                   OR JSON_EXTRACT(tf.metadata, '$.related_files') LIKE ?
+                ORDER BY tf.theme_name
+            """
+            
+            # Create search patterns for the file path
+            file_pattern = f"%{file_path}%"
+            
+            results = self.db.execute_query(query, (file_pattern, file_pattern, file_pattern))
+            
+            themes = []
+            for row in results:
+                themes.append(row["theme_name"])
+            
+            # Additionally, check file modifications for theme associations
+            mod_query = """
+                SELECT DISTINCT JSON_EXTRACT(details, '$.themes') as theme_data
+                FROM file_modifications
+                WHERE file_path = ? 
+                  AND JSON_EXTRACT(details, '$.themes') IS NOT NULL
+                ORDER BY timestamp DESC
+                LIMIT 10
+            """
+            
+            mod_results = self.db.execute_query(mod_query, (file_path,))
+            for row in mod_results:
+                theme_data = row.get("theme_data")
+                if theme_data:
+                    try:
+                        import json
+                        theme_list = json.loads(theme_data) if isinstance(theme_data, str) else theme_data
+                        if isinstance(theme_list, list):
+                            themes.extend(theme_list)
+                    except (json.JSONDecodeError, TypeError):
+                        continue
+            
+            # Remove duplicates and return
+            return list(set(themes))
+            
+        except Exception as e:
+            self.db.logger.error(f"Error getting themes for file {file_path}: {e}")
+            return []
     
     def _calculate_impact_level(
         self,
@@ -387,14 +788,362 @@ class FileMetadataQueries:
         Returns:
             Dictionary with file relationship mapping
         """
-        # This would be a comprehensive analysis of all project files
+        try:
+            from pathlib import Path
+            import networkx as nx
+            from collections import defaultdict, deque
+            
+            project_root = Path(project_path)
+            if not project_root.exists():
+                return self._empty_relationship_mapping()
+            
+            # Discover all project files
+            project_files = self.discover_project_files(project_path)
+            all_files = []
+            for category, files in project_files.items():
+                all_files.extend(files)
+            
+            # Build dependency graph
+            dependency_graph = {}
+            file_dependencies = {}
+            reverse_dependencies = defaultdict(list)
+            
+            # Analyze each file's dependencies
+            for file_path in all_files:
+                try:
+                    full_path = project_root / file_path
+                    if full_path.exists():
+                        analysis = self.analyze_file_dependencies(str(full_path))
+                        file_dependencies[file_path] = analysis
+                        
+                        # Build dependency graph
+                        dependencies = analysis.get("dependencies", [])
+                        dependency_graph[file_path] = dependencies
+                        
+                        # Build reverse dependency mapping
+                        for dep in dependencies:
+                            reverse_dependencies[dep].append(file_path)
+                            
+                except Exception as e:
+                    self.db.logger.warning(f"Could not analyze dependencies for {file_path}: {e}")
+                    dependency_graph[file_path] = []
+            
+            # Detect circular dependencies
+            circular_dependencies = self._detect_circular_dependencies(dependency_graph)
+            
+            # Find orphaned files (no dependencies and no dependents)
+            orphaned_files = []
+            for file_path in all_files:
+                has_dependencies = len(dependency_graph.get(file_path, [])) > 0
+                has_dependents = len(reverse_dependencies.get(file_path, [])) > 0
+                
+                if not has_dependencies and not has_dependents:
+                    orphaned_files.append(file_path)
+            
+            # Identify critical files (many dependents)
+            critical_files = []
+            for file_path, dependents in reverse_dependencies.items():
+                if len(dependents) >= 5:  # Files with 5+ dependents are critical
+                    critical_files.append({
+                        "file_path": file_path,
+                        "dependent_count": len(dependents),
+                        "dependents": dependents[:10],  # Limit to top 10
+                        "criticality_score": self._calculate_criticality_score(file_path, dependents, dependency_graph)
+                    })
+            
+            # Sort critical files by dependent count
+            critical_files.sort(key=lambda x: x["dependent_count"], reverse=True)
+            
+            # Create file clusters based on dependency relationships
+            file_clusters = self._create_file_clusters(dependency_graph, reverse_dependencies)
+            
+            # Calculate relationship statistics
+            stats = self._calculate_relationship_statistics(
+                dependency_graph, reverse_dependencies, all_files
+            )
+            
+            return {
+                "dependency_graph": dependency_graph,
+                "reverse_dependencies": dict(reverse_dependencies),
+                "circular_dependencies": circular_dependencies,
+                "orphaned_files": orphaned_files,
+                "critical_files": critical_files,
+                "file_clusters": file_clusters,
+                "statistics": stats,
+                "total_files_analyzed": len(all_files),
+                "analysis_timestamp": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            self.db.logger.error(f"Error mapping file relationships: {e}")
+            return self._empty_relationship_mapping()
+    
+    def _empty_relationship_mapping(self) -> Dict[str, Any]:
+        """Return empty relationship mapping structure"""
         return {
             "dependency_graph": {},
+            "reverse_dependencies": {},
             "circular_dependencies": [],
             "orphaned_files": [],
             "critical_files": [],
             "file_clusters": [],
+            "statistics": {
+                "total_files": 0,
+                "total_dependencies": 0,
+                "average_dependencies_per_file": 0.0,
+                "max_dependencies": 0,
+                "max_dependents": 0
+            },
+            "total_files_analyzed": 0,
             "analysis_timestamp": datetime.now().isoformat()
+        }
+    
+    def _detect_circular_dependencies(self, dependency_graph: Dict[str, List[str]]) -> List[List[str]]:
+        """Detect circular dependencies using depth-first search"""
+        circular_deps = []
+        visited = set()
+        rec_stack = set()
+        
+        def dfs_visit(node: str, path: List[str]) -> None:
+            if node in rec_stack:
+                # Found a cycle - extract the circular portion
+                cycle_start = path.index(node)
+                cycle = path[cycle_start:] + [node]
+                if len(cycle) > 2:  # Ignore self-references
+                    circular_deps.append(cycle)
+                return
+            
+            if node in visited:
+                return
+            
+            visited.add(node)
+            rec_stack.add(node)
+            
+            # Visit all dependencies
+            for dep in dependency_graph.get(node, []):
+                if dep in dependency_graph:  # Only visit files we have data for
+                    dfs_visit(dep, path + [node])
+            
+            rec_stack.remove(node)
+        
+        # Check each file for circular dependencies
+        for file_path in dependency_graph:
+            if file_path not in visited:
+                dfs_visit(file_path, [])
+        
+        # Remove duplicate cycles (same cycle in different order)
+        unique_cycles = []
+        for cycle in circular_deps:
+            # Normalize cycle by starting with the lexicographically smallest element
+            if cycle:
+                min_idx = cycle.index(min(cycle))
+                normalized = cycle[min_idx:] + cycle[:min_idx]
+                if normalized not in unique_cycles:
+                    unique_cycles.append(normalized)
+        
+        return unique_cycles
+    
+    def _calculate_criticality_score(self, file_path: str, dependents: List[str], 
+                                   dependency_graph: Dict[str, List[str]]) -> float:
+        """Calculate a criticality score for a file based on its role in the dependency graph"""
+        score = 0.0
+        
+        # Base score from number of direct dependents
+        score += len(dependents) * 2
+        
+        # Bonus for being in critical paths (files that many others depend on transitively)
+        transitive_dependents = set()
+        for dependent in dependents:
+            transitive_dependents.update(self._get_transitive_dependents(dependent, dependency_graph))
+        score += len(transitive_dependents) * 0.5
+        
+        # Bonus for file type criticality
+        if any(pattern in file_path.lower() for pattern in ['config', 'settings', 'main', 'index', 'init']):
+            score += 5
+        
+        # Bonus for being in root or core directories
+        if '/' not in file_path or any(pattern in file_path for pattern in ['/core/', '/lib/', '/utils/']):
+            score += 3
+        
+        return round(score, 2)
+    
+    def _get_transitive_dependents(self, file_path: str, dependency_graph: Dict[str, List[str]]) -> Set[str]:
+        """Get all files that transitively depend on the given file"""
+        transitive = set()
+        queue = deque([file_path])
+        visited = set()
+        
+        while queue:
+            current = queue.popleft()
+            if current in visited:
+                continue
+            visited.add(current)
+            
+            # Find all files that depend on current
+            for file, deps in dependency_graph.items():
+                if current in deps and file not in visited:
+                    transitive.add(file)
+                    queue.append(file)
+        
+        return transitive
+    
+    def _create_file_clusters(self, dependency_graph: Dict[str, List[str]], 
+                            reverse_dependencies: Dict[str, List[str]]) -> List[Dict[str, Any]]:
+        """Create clusters of related files based on dependency relationships"""
+        try:
+            import networkx as nx
+        except ImportError:
+            # Fallback clustering without networkx
+            return self._create_simple_file_clusters(dependency_graph, reverse_dependencies)
+        
+        # Create undirected graph for clustering
+        G = nx.Graph()
+        
+        # Add edges for dependency relationships
+        for file_path, deps in dependency_graph.items():
+            for dep in deps:
+                if dep in dependency_graph:  # Only include files we have data for
+                    G.add_edge(file_path, dep)
+        
+        # Find connected components (clusters)
+        clusters = []
+        for i, component in enumerate(nx.connected_components(G)):
+            if len(component) > 1:  # Ignore single-file "clusters"
+                cluster_files = list(component)
+                
+                # Calculate cluster statistics
+                internal_edges = 0
+                external_dependencies = set()
+                
+                for file_path in cluster_files:
+                    deps = dependency_graph.get(file_path, [])
+                    for dep in deps:
+                        if dep in cluster_files:
+                            internal_edges += 1
+                        else:
+                            external_dependencies.add(dep)
+                
+                clusters.append({
+                    "cluster_id": f"cluster_{i+1}",
+                    "files": cluster_files,
+                    "size": len(cluster_files),
+                    "internal_dependencies": internal_edges,
+                    "external_dependencies": len(external_dependencies),
+                    "cohesion_score": internal_edges / len(cluster_files) if cluster_files else 0,
+                    "common_patterns": self._find_common_patterns(cluster_files)
+                })
+        
+        # Sort clusters by size (largest first)
+        clusters.sort(key=lambda x: x["size"], reverse=True)
+        
+        return clusters
+    
+    def _create_simple_file_clusters(self, dependency_graph: Dict[str, List[str]], 
+                                   reverse_dependencies: Dict[str, List[str]]) -> List[Dict[str, Any]]:
+        """Simple clustering fallback when networkx is not available"""
+        clusters = []
+        visited = set()
+        
+        for file_path in dependency_graph:
+            if file_path in visited:
+                continue
+            
+            # Find all files connected to this one
+            cluster_files = set()
+            queue = deque([file_path])
+            
+            while queue:
+                current = queue.popleft()
+                if current in visited:
+                    continue
+                
+                visited.add(current)
+                cluster_files.add(current)
+                
+                # Add dependencies and dependents
+                deps = dependency_graph.get(current, [])
+                dependents = reverse_dependencies.get(current, [])
+                
+                for related_file in deps + dependents:
+                    if related_file not in visited and related_file in dependency_graph:
+                        queue.append(related_file)
+            
+            if len(cluster_files) > 1:
+                clusters.append({
+                    "cluster_id": f"cluster_{len(clusters)+1}",
+                    "files": list(cluster_files),
+                    "size": len(cluster_files),
+                    "common_patterns": self._find_common_patterns(list(cluster_files))
+                })
+        
+        return clusters
+    
+    def _find_common_patterns(self, files: List[str]) -> List[str]:
+        """Find common patterns in a cluster of files"""
+        patterns = []
+        
+        # Common directory patterns
+        directories = set()
+        for file_path in files:
+            if '/' in file_path:
+                directories.add(file_path.split('/')[0])
+        
+        if len(directories) == 1:
+            patterns.append(f"All files in '{list(directories)[0]}' directory")
+        
+        # Common file extensions
+        extensions = set()
+        for file_path in files:
+            if '.' in file_path:
+                extensions.add(file_path.split('.')[-1])
+        
+        if len(extensions) == 1:
+            patterns.append(f"All files are .{list(extensions)[0]} files")
+        
+        # Common naming patterns
+        if len(files) >= 3:
+            # Look for common prefixes
+            common_prefix = ""
+            if files:
+                first_file = files[0].split('/')[-1]  # Get filename only
+                for char_idx in range(len(first_file)):
+                    char = first_file[char_idx]
+                    if all(f.split('/')[-1].startswith(first_file[:char_idx+1]) for f in files):
+                        common_prefix = first_file[:char_idx+1]
+                    else:
+                        break
+            
+            if len(common_prefix) > 2:
+                patterns.append(f"Common prefix: '{common_prefix}'")
+        
+        return patterns
+    
+    def _calculate_relationship_statistics(self, dependency_graph: Dict[str, List[str]], 
+                                         reverse_dependencies: Dict[str, List[str]], 
+                                         all_files: List[str]) -> Dict[str, Any]:
+        """Calculate comprehensive statistics about file relationships"""
+        total_dependencies = sum(len(deps) for deps in dependency_graph.values())
+        total_files = len(all_files)
+        
+        # Calculate dependency distribution
+        dependency_counts = [len(deps) for deps in dependency_graph.values()]
+        dependent_counts = [len(deps) for deps in reverse_dependencies.values()]
+        
+        return {
+            "total_files": total_files,
+            "total_dependencies": total_dependencies,
+            "average_dependencies_per_file": round(total_dependencies / total_files, 2) if total_files > 0 else 0.0,
+            "max_dependencies": max(dependency_counts) if dependency_counts else 0,
+            "max_dependents": max(dependent_counts) if dependent_counts else 0,
+            "files_with_no_dependencies": len([c for c in dependency_counts if c == 0]),
+            "files_with_no_dependents": len([c for c in dependent_counts if c == 0]),
+            "highly_connected_files": len([c for c in dependency_counts if c >= 10]),
+            "dependency_distribution": {
+                "0_deps": len([c for c in dependency_counts if c == 0]),
+                "1_5_deps": len([c for c in dependency_counts if 1 <= c <= 5]),
+                "6_10_deps": len([c for c in dependency_counts if 6 <= c <= 10]),
+                "11_plus_deps": len([c for c in dependency_counts if c >= 11])
+            }
         }
     
     def get_critical_files(self, project_path: str) -> List[Dict[str, Any]]:

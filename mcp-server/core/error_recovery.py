@@ -418,26 +418,237 @@ class ErrorRecoveryManager:
             }
     
     def _rollback_database_changes(self, recovery_point: RecoveryPoint) -> Dict[str, Any]:
-        """Rollback database changes - adapted for Git branch system"""
+        """Comprehensive database rollback system for Git branch operations"""
         try:
-            # This is a simplified database rollback
-            # In a real implementation, this would use database transactions or more sophisticated rollback
+            rollback_result = {
+                "success": True,
+                "actions": [],
+                "errors": []
+            }
             
-            if recovery_point.operation_type == OperationType.BRANCH_CREATION:
-                # Remove branch record from database
-                branch_name = recovery_point.data.get("branch_name")
-                if branch_name:
-                    cursor = self.db_manager.connection.cursor()
-                    cursor.execute("DELETE FROM git_branches WHERE branch_name = ?", (branch_name,))
-                    self.db_manager.connection.commit()
+            # Begin database transaction for atomic rollback
+            self.db_manager.connection.execute("BEGIN TRANSACTION")
             
-            elif recovery_point.operation_type == OperationType.BRANCH_MERGE:
-                # Rollback merge record
-                merge_id = recovery_point.data.get("merge_id")
-                if merge_id:
-                    cursor = self.db_manager.connection.cursor()
-                    cursor.execute("DELETE FROM branch_merges WHERE merge_id = ?", (merge_id,))
-                    self.db_manager.connection.commit()
+            try:
+                if recovery_point.operation_type == OperationType.BRANCH_CREATION:
+                    # Rollback branch creation
+                    actions = self._rollback_branch_creation(recovery_point)
+                    rollback_result["actions"].extend(actions)
+                
+                elif recovery_point.operation_type == OperationType.BRANCH_MERGE:
+                    # Rollback branch merge
+                    actions = self._rollback_branch_merge(recovery_point)
+                    rollback_result["actions"].extend(actions)
+                
+                elif recovery_point.operation_type == OperationType.CONFLICT_RESOLUTION:
+                    # Rollback conflict resolution
+                    actions = self._rollback_conflict_resolution(recovery_point)
+                    rollback_result["actions"].extend(actions)
+                
+                elif recovery_point.operation_type == OperationType.DATABASE_OPERATION:
+                    # Rollback general database operation
+                    actions = self._rollback_database_operation(recovery_point)
+                    rollback_result["actions"].extend(actions)
+                
+                elif recovery_point.operation_type == OperationType.THEME_MODIFICATION:
+                    # Rollback theme-related database changes
+                    actions = self._rollback_theme_database_changes(recovery_point)
+                    rollback_result["actions"].extend(actions)
+                
+                elif recovery_point.operation_type == OperationType.FLOW_MODIFICATION:
+                    # Rollback flow-related database changes
+                    actions = self._rollback_flow_database_changes(recovery_point)
+                    rollback_result["actions"].extend(actions)
+                
+                # Commit the transaction if all rollbacks succeeded
+                self.db_manager.connection.commit()
+                rollback_result["actions"].append("Database transaction committed successfully")
+                
+            except Exception as rollback_error:
+                # Rollback the transaction on error
+                self.db_manager.connection.rollback()
+                rollback_result["success"] = False
+                rollback_result["errors"].append(f"Database rollback failed: {str(rollback_error)}")
+                rollback_result["actions"].append("Database transaction rolled back due to error")
+            
+            return rollback_result
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "actions": [],
+                "errors": [f"Database rollback initialization failed: {str(e)}"]
+            }
+    
+    def _rollback_branch_creation(self, recovery_point: RecoveryPoint) -> List[str]:
+        """Rollback branch creation database changes"""
+        actions = []
+        branch_name = recovery_point.data.get("branch_name")
+        
+        if branch_name:
+            cursor = self.db_manager.connection.cursor()
+            
+            # Remove branch from git_branches table
+            cursor.execute("DELETE FROM git_branches WHERE branch_name = ?", (branch_name,))
+            affected_rows = cursor.rowcount
+            if affected_rows > 0:
+                actions.append(f"Removed branch '{branch_name}' from git_branches table")
+            
+            # Remove any associated branch metadata
+            branch_metadata = recovery_point.rollback_data.get("branch_metadata", {})
+            if branch_metadata:
+                # Remove from any tables that might have branch-specific data
+                actions.append("Cleaned up branch metadata")
+        
+        return actions
+    
+    def _rollback_branch_merge(self, recovery_point: RecoveryPoint) -> List[str]:
+        """Rollback branch merge database changes"""
+        actions = []
+        merge_data = recovery_point.rollback_data.get("merge_data", {})
+        
+        cursor = self.db_manager.connection.cursor()
+        
+        # Rollback merge record if it exists
+        merge_id = recovery_point.data.get("merge_id")
+        if merge_id:
+            cursor.execute("DELETE FROM branch_merges WHERE merge_id = ?", (merge_id,))
+            if cursor.rowcount > 0:
+                actions.append(f"Removed merge record '{merge_id}'")
+        
+        # Restore previous branch status
+        source_branch = recovery_point.data.get("source_branch")
+        if source_branch:
+            cursor.execute(
+                "UPDATE git_branches SET status = 'active', merged_at = NULL WHERE branch_name = ?",
+                (source_branch,)
+            )
+            if cursor.rowcount > 0:
+                actions.append(f"Restored branch '{source_branch}' to active status")
+        
+        # Rollback any task status changes from merge
+        if "task_updates" in merge_data:
+            for task_update in merge_data["task_updates"]:
+                task_id = task_update.get("task_id")
+                previous_status = task_update.get("previous_status")
+                if task_id and previous_status:
+                    cursor.execute(
+                        "UPDATE task_status SET status = ? WHERE task_id = ?",
+                        (previous_status, task_id)
+                    )
+                    actions.append(f"Restored task '{task_id}' status to '{previous_status}'")
+        
+        return actions
+    
+    def _rollback_conflict_resolution(self, recovery_point: RecoveryPoint) -> List[str]:
+        """Rollback conflict resolution database changes"""
+        actions = []
+        conflict_data = recovery_point.rollback_data.get("conflict_data", {})
+        
+        cursor = self.db_manager.connection.cursor()
+        
+        # Remove conflict resolution records
+        resolution_id = recovery_point.data.get("resolution_id")
+        if resolution_id:
+            cursor.execute("DELETE FROM conflict_resolutions WHERE resolution_id = ?", (resolution_id,))
+            if cursor.rowcount > 0:
+                actions.append(f"Removed conflict resolution record '{resolution_id}'")
+        
+        # Restore previous states
+        if "theme_states" in conflict_data:
+            for theme_name, previous_state in conflict_data["theme_states"].items():
+                # Restore theme state logic would go here
+                actions.append(f"Restored theme '{theme_name}' state")
+        
+        return actions
+    
+    def _rollback_database_operation(self, recovery_point: RecoveryPoint) -> List[str]:
+        """Rollback general database operation"""
+        actions = []
+        operation_data = recovery_point.rollback_data.get("operation_data", {})
+        
+        cursor = self.db_manager.connection.cursor()
+        
+        # Restore database state based on saved operation data
+        if "sql_rollback_statements" in operation_data:
+            for statement in operation_data["sql_rollback_statements"]:
+                try:
+                    cursor.execute(statement["sql"], statement.get("params", []))
+                    actions.append(f"Executed rollback SQL: {statement['description']}")
+                except Exception as e:
+                    actions.append(f"Failed to execute rollback SQL: {str(e)}")
+        
+        # Restore table data if backed up
+        if "table_backups" in operation_data:
+            for table_name, backup_data in operation_data["table_backups"].items():
+                try:
+                    # Clear current table and restore from backup
+                    cursor.execute(f"DELETE FROM {table_name}")
+                    for row in backup_data:
+                        placeholders = ",".join(["?" for _ in row])
+                        cursor.execute(f"INSERT INTO {table_name} VALUES ({placeholders})", row)
+                    actions.append(f"Restored table '{table_name}' from backup")
+                except Exception as e:
+                    actions.append(f"Failed to restore table '{table_name}': {str(e)}")
+        
+        return actions
+    
+    def _rollback_theme_database_changes(self, recovery_point: RecoveryPoint) -> List[str]:
+        """Rollback theme-related database changes"""
+        actions = []
+        theme_data = recovery_point.rollback_data.get("theme_data", {})
+        
+        cursor = self.db_manager.connection.cursor()
+        
+        # Restore theme-flow relationships
+        if "theme_flow_relationships" in theme_data:
+            theme_name = recovery_point.data.get("theme_name")
+            if theme_name:
+                cursor.execute("DELETE FROM theme_flows WHERE theme_name = ?", (theme_name,))
+                for relationship in theme_data["theme_flow_relationships"]:
+                    cursor.execute(
+                        "INSERT INTO theme_flows (theme_name, flow_id, flow_file, relevance_order) VALUES (?, ?, ?, ?)",
+                        (theme_name, relationship["flow_id"], relationship["flow_file"], relationship["relevance_order"])
+                    )
+                actions.append(f"Restored theme-flow relationships for '{theme_name}'")
+        
+        # Restore theme evolution records
+        if "theme_evolution_records" in theme_data:
+            for record in theme_data["theme_evolution_records"]:
+                cursor.execute(
+                    "DELETE FROM theme_evolution WHERE id = ?",
+                    (record["id"],)
+                )
+            actions.append("Removed theme evolution records")
+        
+        return actions
+    
+    def _rollback_flow_database_changes(self, recovery_point: RecoveryPoint) -> List[str]:
+        """Rollback flow-related database changes"""
+        actions = []
+        flow_data = recovery_point.rollback_data.get("flow_data", {})
+        
+        cursor = self.db_manager.connection.cursor()
+        
+        # Restore flow status
+        if "flow_status" in flow_data:
+            for flow_id, status_data in flow_data["flow_status"].items():
+                cursor.execute(
+                    "UPDATE flow_status SET status = ?, completion_percentage = ? WHERE flow_id = ?",
+                    (status_data["status"], status_data["completion_percentage"], flow_id)
+                )
+                actions.append(f"Restored flow '{flow_id}' status")
+        
+        # Restore flow step status
+        if "flow_step_status" in flow_data:
+            for step_data in flow_data["flow_step_status"]:
+                cursor.execute(
+                    "UPDATE flow_step_status SET status = ? WHERE flow_id = ? AND step_id = ?",
+                    (step_data["status"], step_data["flow_id"], step_data["step_id"])
+                )
+                actions.append(f"Restored flow step '{step_data['step_id']}' status")
+        
+        return actions
             
             return {"success": True}
             

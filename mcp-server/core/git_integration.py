@@ -110,15 +110,12 @@ class GitIntegrationManager:
         return result
     
     def _generate_mcp_gitignore(self) -> str:
-        """Generate .gitignore content for MCP instance management"""
+        """Generate .gitignore content for Git branch-based AI Project Manager"""
         return """
-# MCP Instance Management - Track Structure, Not Content
-.mcp-instances/active/*/projectManagement/UserSettings/
-.mcp-instances/active/*/projectManagement/database/backups/
-.mcp-instances/*/logs/
-.mcp-instances/*/temp/
+# AI Project Manager - Git Branch Based Management
+# Track organizational state, not user-specific settings or temporary files
 
-# Project Management - Track Organizational State
+# Project Management - Track Organizational State, Not User Data
 projectManagement/UserSettings/
 projectManagement/database/backups/
 projectManagement/.mcp-session-*
@@ -132,6 +129,16 @@ __pycache__/
 *.swp
 *.swo
 *~
+
+# Node modules and build artifacts
+node_modules/
+dist/
+build/
+*.log
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 """
     
     def get_current_git_hash(self) -> Optional[str]:
@@ -552,6 +559,9 @@ __pycache__/
             # Record individual file changes for impact tracking
             git_state_id = cursor.lastrowid
             for file_change in changes["files"]:
+                # Analyze per-file theme impact
+                file_themes = self._analyze_single_file_theme_impact(file_change["path"])
+                
                 cursor.execute("""
                     INSERT INTO git_change_impacts (
                         git_state_id, file_path, change_type, affected_themes
@@ -560,7 +570,7 @@ __pycache__/
                     git_state_id,
                     file_change["path"],
                     file_change["type"],
-                    json.dumps([])  # TODO: Per-file theme impact analysis
+                    json.dumps(file_themes)
                 ))
             
             self.db_manager.connection.commit()
@@ -585,21 +595,271 @@ __pycache__/
                 "message": "No organizational reconciliation needed"
             }
         
-        # TODO: Implement comprehensive organizational reconciliation
-        # This would involve:
-        # 1. Analyzing affected themes and updating theme files
-        # 2. Checking if flows need updates based on changed files
-        # 3. Updating task status if implementation files changed
-        # 4. Notifying user of significant changes requiring review
-        
-        # For now, return basic reconciliation status
-        return {
+        reconciliation_result = {
             "success": True,
-            "action": "analyzed",
-            "message": f"Code changes analyzed - {len(change_analysis.get('affected_themes', []))} themes potentially affected",
+            "action": "reconciled",
+            "message": "",
             "affected_themes": change_analysis.get("affected_themes", []),
-            "requires_user_review": len(change_analysis.get("affected_themes", [])) > 0
+            "theme_updates": [],
+            "flow_updates": [],
+            "task_updates": [],
+            "requires_user_review": False
         }
+        
+        try:
+            affected_themes = change_analysis.get("affected_themes", [])
+            changed_files = change_analysis.get("files", [])
+            
+            # 1. Update theme files with new file references
+            theme_updates = self._update_themes_with_file_changes(affected_themes, changed_files)
+            reconciliation_result["theme_updates"] = theme_updates
+            
+            # 2. Check and update flows based on changed files
+            flow_updates = self._update_flows_with_file_changes(affected_themes, changed_files)
+            reconciliation_result["flow_updates"] = flow_updates
+            
+            # 3. Update task status if implementation files changed
+            task_updates = self._update_tasks_with_file_changes(changed_files)
+            reconciliation_result["task_updates"] = task_updates
+            
+            # 4. Determine if user review is required
+            requires_review = (
+                len(theme_updates) > 0 or
+                len(flow_updates) > 0 or
+                any(change["type"] == "deleted" for change in changed_files) or
+                len(affected_themes) > 3  # Many themes affected
+            )
+            
+            reconciliation_result["requires_user_review"] = requires_review
+            
+            # Generate summary message
+            changes_summary = []
+            if theme_updates:
+                changes_summary.append(f"{len(theme_updates)} theme files updated")
+            if flow_updates:
+                changes_summary.append(f"{len(flow_updates)} flow references updated")
+            if task_updates:
+                changes_summary.append(f"{len(task_updates)} task statuses updated")
+            
+            if changes_summary:
+                reconciliation_result["message"] = f"Organizational state reconciled: {', '.join(changes_summary)}"
+            else:
+                reconciliation_result["message"] = f"Code changes analyzed - {len(affected_themes)} themes identified but no updates needed"
+            
+            if requires_review:
+                reconciliation_result["message"] += " - User review recommended"
+            
+            return reconciliation_result
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "action": "error",
+                "message": f"Error during organizational reconciliation: {str(e)}",
+                "affected_themes": change_analysis.get("affected_themes", []),
+                "requires_user_review": True
+            }
+    
+    def _update_themes_with_file_changes(self, affected_themes: List[str], changed_files: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Update theme files to reflect file changes"""
+        theme_updates = []
+        themes_dir = self.project_root / "projectManagement" / "Themes"
+        
+        if not themes_dir.exists():
+            return theme_updates
+        
+        try:
+            for theme_name in affected_themes:
+                theme_file = themes_dir / f"{theme_name}.json"
+                if not theme_file.exists():
+                    continue
+                
+                # Load existing theme data
+                with open(theme_file, 'r') as f:
+                    theme_data = json.load(f)
+                
+                if not isinstance(theme_data, dict) or "files" not in theme_data:
+                    continue
+                
+                current_files = set(theme_data.get("files", []))
+                updated_files = current_files.copy()
+                changes_made = False
+                
+                # Process file changes for this theme
+                for file_change in changed_files:
+                    file_path = file_change["path"]
+                    change_type = file_change["type"]
+                    
+                    # Check if this file belongs to this theme
+                    file_themes = self._get_themes_for_file(file_path, {theme_name: theme_data})
+                    if theme_name not in file_themes:
+                        # Check if file should be added based on inference
+                        inferred_themes = (
+                            self._infer_themes_from_directory(file_path) +
+                            self._infer_themes_from_patterns(file_path)
+                        )
+                        if theme_name not in inferred_themes:
+                            continue
+                    
+                    if change_type == "added" and file_path not in current_files:
+                        updated_files.add(file_path)
+                        changes_made = True
+                    elif change_type == "deleted" and file_path in current_files:
+                        updated_files.discard(file_path)
+                        changes_made = True
+                
+                # Save updated theme file if changes were made
+                if changes_made:
+                    theme_data["files"] = sorted(list(updated_files))
+                    theme_data["lastModified"] = datetime.now().isoformat()
+                    
+                    with open(theme_file, 'w') as f:
+                        json.dump(theme_data, f, indent=2)
+                    
+                    theme_updates.append({
+                        "theme": theme_name,
+                        "files_added": len(updated_files) - len(current_files),
+                        "files_removed": len(current_files) - len(updated_files),
+                        "action": "updated"
+                    })
+            
+            return theme_updates
+            
+        except Exception as e:
+            print(f"Error updating themes with file changes: {e}")
+            return []
+    
+    def _update_flows_with_file_changes(self, affected_themes: List[str], changed_files: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Update flow references based on file changes"""
+        flow_updates = []
+        flows_dir = self.project_root / "projectManagement" / "ProjectFlow"
+        
+        if not flows_dir.exists():
+            return flow_updates
+        
+        try:
+            # Check flow-index.json for flows related to affected themes
+            flow_index_path = flows_dir / "flow-index.json"
+            if not flow_index_path.exists():
+                return flow_updates
+            
+            with open(flow_index_path, 'r') as f:
+                flow_index = json.load(f)
+            
+            flow_files = flow_index.get("flowFiles", [])
+            
+            for flow_info in flow_files:
+                if not isinstance(flow_info, dict):
+                    continue
+                
+                flow_file = flow_info.get("file", "")
+                flow_themes = flow_info.get("primaryThemes", []) + flow_info.get("secondaryThemes", [])
+                
+                # Check if this flow is affected by theme changes
+                if any(theme in affected_themes for theme in flow_themes):
+                    flow_path = flows_dir / flow_file
+                    if flow_path.exists():
+                        # Mark flow for potential review
+                        flow_updates.append({
+                            "flow_file": flow_file,
+                            "affected_themes": [t for t in flow_themes if t in affected_themes],
+                            "action": "review_recommended"
+                        })
+            
+            return flow_updates
+            
+        except Exception as e:
+            print(f"Error updating flows with file changes: {e}")
+            return []
+    
+    def _update_tasks_with_file_changes(self, changed_files: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Update task status based on implementation file changes"""
+        task_updates = []
+        tasks_dir = self.project_root / "projectManagement" / "Tasks"
+        
+        if not tasks_dir.exists():
+            return task_updates
+        
+        try:
+            # Check active tasks for file references
+            active_tasks_dir = tasks_dir / "active"
+            if active_tasks_dir.exists():
+                for task_file in active_tasks_dir.glob("TASK-*.json"):
+                    try:
+                        with open(task_file, 'r') as f:
+                            task_data = json.load(f)
+                        
+                        if not isinstance(task_data, dict):
+                            continue
+                        
+                        # Check if any changed files are referenced in task subtasks
+                        subtasks = task_data.get("subtasks", [])
+                        task_affected = False
+                        
+                        for subtask in subtasks:
+                            if not isinstance(subtask, dict):
+                                continue
+                            
+                            subtask_files = subtask.get("files", [])
+                            for file_change in changed_files:
+                                if file_change["path"] in subtask_files:
+                                    task_affected = True
+                                    break
+                            
+                            if task_affected:
+                                break
+                        
+                        if task_affected:
+                            # Mark task as potentially needing review
+                            task_updates.append({
+                                "task_file": task_file.name,
+                                "task_id": task_data.get("taskId", "unknown"),
+                                "action": "implementation_files_changed"
+                            })
+                    
+                    except (json.JSONDecodeError, IOError):
+                        continue
+            
+            return task_updates
+            
+        except Exception as e:
+            print(f"Error updating tasks with file changes: {e}")
+            return []
+    
+    def _analyze_single_file_theme_impact(self, file_path: str) -> List[str]:
+        """Analyze theme impact for a single file"""
+        try:
+            themes = set()
+            
+            # Load existing theme data
+            theme_files = {}
+            themes_dir = self.project_root / "projectManagement" / "Themes"
+            if themes_dir.exists():
+                themes_json_path = themes_dir / "themes.json"
+                if themes_json_path.exists():
+                    try:
+                        with open(themes_json_path, 'r') as f:
+                            theme_files = json.load(f)
+                    except (json.JSONDecodeError, FileNotFoundError):
+                        theme_files = {}
+            
+            # Direct theme mapping
+            direct_themes = self._get_themes_for_file(file_path, theme_files)
+            themes.update(direct_themes)
+            
+            # Directory-based inference
+            dir_themes = self._infer_themes_from_directory(file_path)
+            themes.update(dir_themes)
+            
+            # Pattern-based inference
+            pattern_themes = self._infer_themes_from_patterns(file_path)
+            themes.update(pattern_themes)
+            
+            return list(themes)
+            
+        except Exception as e:
+            print(f"Error analyzing single file theme impact for {file_path}: {e}")
+            return []
     
     # ============================================================================
     # UTILITY METHODS
@@ -626,16 +886,16 @@ __pycache__/
             validation_result["issues"].append("No Git repository found at project root")
             validation_result["recommendations"].append("Run git init or initialize through MCP")
         
-        # Check .gitignore for MCP patterns
+        # Check .gitignore for AI Project Manager patterns
         gitignore_path = self.project_root / ".gitignore"
         if gitignore_path.exists():
             with open(gitignore_path, 'r') as f:
                 gitignore_content = f.read()
             
-            if ".mcp-instances/" not in gitignore_content:
-                validation_result["recommendations"].append("Update .gitignore with MCP instance management patterns")
+            if "projectManagement/UserSettings/" not in gitignore_content:
+                validation_result["recommendations"].append("Update .gitignore with AI Project Manager patterns")
         else:
-            validation_result["recommendations"].append("Create .gitignore with MCP-specific patterns")
+            validation_result["recommendations"].append("Create .gitignore with AI Project Manager patterns")
         
         return validation_result
     
@@ -681,44 +941,144 @@ __pycache__/
     
     def ensure_ai_main_branch_exists(self) -> Dict[str, Any]:
         """
-        Ensure the ai-pm-org-main branch exists.
-        Creates it from user's main branch if it doesn't exist.
+        Ensure the ai-pm-org-main branch exists with proper remote/local handling.
+        Priority: Remote clone > Local restoration > Fresh creation
         """
         result = {
             "success": False,
             "action": "none",
             "message": "",
-            "branch_created": False
+            "branch_created": False,
+            "source": None
         }
         
         try:
             ai_main_branch = "ai-pm-org-main"
             user_main_branch = "main"
             
-            # Check if ai-pm-org-main exists
-            if not self._branch_exists(ai_main_branch):
-                # Create ai-pm-org-main from main
-                subprocess.run([
-                    'git', 'checkout', '-b', ai_main_branch, user_main_branch
-                ], cwd=self.project_root, check=True, capture_output=True)
-                
-                result["success"] = True
-                result["action"] = "created"
-                result["message"] = f"Created {ai_main_branch} branch from {user_main_branch}"
-                result["branch_created"] = True
-                
-                # Initialize AI project management structure on this branch
-                self._initialize_ai_structure_on_branch()
-                
-            else:
+            # Check if ai-pm-org-main exists locally
+            if self._branch_exists_local(ai_main_branch):
                 result["success"] = True
                 result["action"] = "exists"
-                result["message"] = f"{ai_main_branch} already exists"
+                result["message"] = f"{ai_main_branch} already exists locally"
+                result["source"] = "local"
+                return result
+            
+            # Branch doesn't exist locally - check remote and previous state
+            has_remote = self._has_remote_repository()
+            remote_branch_exists = has_remote and self._branch_exists_remote(ai_main_branch)
+            has_previous_state = self._has_previous_ai_state()
+            
+            if remote_branch_exists:
+                # Priority 1: Clone from remote (team collaboration)
+                result = self._clone_ai_branch_from_remote(ai_main_branch)
                 
+            elif has_previous_state and not remote_branch_exists:
+                # Priority 2: Restore from previous local state
+                result = self._restore_ai_organizational_state(ai_main_branch, user_main_branch)
+                
+            else:
+                # Priority 3: Create fresh branch (first-time setup)
+                result = self._create_fresh_ai_branch(ai_main_branch, user_main_branch)
+            
             return result
             
         except Exception as e:
             result["message"] = f"Error ensuring AI main branch: {str(e)}"
+            return result
+    
+    def _clone_ai_branch_from_remote(self, ai_main_branch: str) -> Dict[str, Any]:
+        """Clone AI main branch from remote repository."""
+        result = {
+            "success": False,
+            "action": "cloned_from_remote",
+            "message": "",
+            "branch_created": True,
+            "source": "remote"
+        }
+        
+        try:
+            # Clone branch from remote
+            subprocess.run([
+                'git', 'checkout', '-b', ai_main_branch, f'origin/{ai_main_branch}'
+            ], cwd=self.project_root, check=True, capture_output=True, text=True)
+            
+            result["success"] = True
+            result["message"] = f"Cloned {ai_main_branch} from remote repository (team collaboration)"
+            
+            # Sync local database with remote organizational state
+            self._sync_with_remote_ai_state()
+            
+            return result
+            
+        except subprocess.CalledProcessError as e:
+            result["message"] = f"Failed to clone {ai_main_branch} from remote: {e.stderr}"
+            return result
+        except Exception as e:
+            result["message"] = f"Error cloning from remote: {str(e)}"
+            return result
+    
+    def _restore_ai_organizational_state(self, ai_main_branch: str, user_main_branch: str) -> Dict[str, Any]:
+        """Restore AI branch from previous local organizational state."""
+        result = {
+            "success": False,
+            "action": "restored_from_local",
+            "message": "",
+            "branch_created": True,
+            "source": "restoration"
+        }
+        
+        try:
+            # Create branch from user main but preserve organizational state
+            subprocess.run([
+                'git', 'checkout', '-b', ai_main_branch, user_main_branch
+            ], cwd=self.project_root, check=True, capture_output=True, text=True)
+            
+            result["success"] = True
+            result["message"] = f"Restored {ai_main_branch} with previous organizational state"
+            
+            # The organizational files should already exist from previous state
+            # Just ensure database consistency
+            self._validate_organizational_consistency()
+            
+            return result
+            
+        except subprocess.CalledProcessError as e:
+            result["message"] = f"Failed to restore {ai_main_branch}: {e.stderr}"
+            return result
+        except Exception as e:
+            result["message"] = f"Error restoring organizational state: {str(e)}"
+            return result
+    
+    def _create_fresh_ai_branch(self, ai_main_branch: str, user_main_branch: str) -> Dict[str, Any]:
+        """Create fresh AI main branch for first-time setup."""
+        result = {
+            "success": False,
+            "action": "created_fresh",
+            "message": "",
+            "branch_created": True,
+            "source": "fresh"
+        }
+        
+        try:
+            # Create fresh branch from user main
+            subprocess.run([
+                'git', 'checkout', '-b', ai_main_branch, user_main_branch
+            ], cwd=self.project_root, check=True, capture_output=True, text=True)
+            
+            result["success"] = True
+            result["message"] = f"Created fresh {ai_main_branch} from {user_main_branch} (first-time setup)"
+            
+            # Initialize AI project management structure
+            self._initialize_ai_structure_on_branch()
+            
+            return result
+            
+        except subprocess.CalledProcessError as e:
+            result["message"] = f"Failed to create fresh {ai_main_branch}: {e.stderr}"
+            return result
+        except Exception as e:
+            result["message"] = f"Error creating fresh branch: {str(e)}"
             return result
     
     def switch_to_ai_branch(self, branch_name: str = "ai-pm-org-main") -> Dict[str, Any]:
@@ -825,13 +1185,105 @@ __pycache__/
             return result
     
     def _branch_exists(self, branch_name: str) -> bool:
-        """Check if a branch exists."""
+        """Check if a branch exists locally."""
+        return self._branch_exists_local(branch_name)
+    
+    def _branch_exists_local(self, branch_name: str) -> bool:
+        """Check if a branch exists locally."""
         try:
             result = subprocess.run([
                 'git', 'branch', '--list', branch_name
             ], cwd=self.project_root, capture_output=True, text=True)
             
             return bool(result.stdout.strip())
+            
+        except Exception:
+            return False
+    
+    def _branch_exists_remote(self, branch_name: str, remote_name: str = "origin") -> bool:
+        """Check if a branch exists on the remote repository."""
+        try:
+            # First, try to fetch latest remote refs
+            subprocess.run([
+                'git', 'fetch', remote_name, '--quiet'
+            ], cwd=self.project_root, capture_output=True, text=True, timeout=10)
+            
+            # Check if remote branch exists
+            result = subprocess.run([
+                'git', 'branch', '-r', '--list', f'{remote_name}/{branch_name}'
+            ], cwd=self.project_root, capture_output=True, text=True)
+            
+            return bool(result.stdout.strip())
+            
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            # Network issues or no remote - return False
+            return False
+        except Exception:
+            return False
+    
+    def _has_remote_repository(self, remote_name: str = "origin") -> bool:
+        """Check if a remote repository is configured."""
+        try:
+            result = subprocess.run([
+                'git', 'remote', 'get-url', remote_name
+            ], cwd=self.project_root, capture_output=True, text=True)
+            
+            return bool(result.stdout.strip())
+            
+        except Exception:
+            return False
+    
+    def _has_previous_ai_state(self) -> bool:
+        """Check if there's evidence of previous AI Project Manager state."""
+        try:
+            # Check for projectManagement directory with content
+            proj_mgmt_dir = self.project_root / "projectManagement"
+            if proj_mgmt_dir.exists():
+                # Check for key organizational files
+                key_files = [
+                    "ProjectBlueprint/blueprint.md",
+                    "Themes/themes.json",
+                    "Tasks/completion-path.json",
+                    "project.db"
+                ]
+                
+                if any((proj_mgmt_dir / key_file).exists() for key_file in key_files):
+                    return True
+            
+            # Check database for previous sessions or branches
+            try:
+                cursor = self.db_manager.connection.cursor()
+                cursor.execute("SELECT COUNT(*) FROM sessions WHERE project_root_path = ?", 
+                             (str(self.project_root),))
+                session_count = cursor.fetchone()[0]
+                
+                if session_count > 0:
+                    return True
+                    
+                cursor.execute("SELECT COUNT(*) FROM git_project_state WHERE project_root_path = ?", 
+                             (str(self.project_root),))
+                git_state_count = cursor.fetchone()[0]
+                
+                if git_state_count > 0:
+                    return True
+                    
+            except Exception:
+                # Database might not exist yet
+                pass
+            
+            # Check Git history for AI commits
+            try:
+                result = subprocess.run([
+                    'git', 'log', '--oneline', '--grep=AI Project Manager', '--all'
+                ], cwd=self.project_root, capture_output=True, text=True)
+                
+                if result.stdout.strip():
+                    return True
+                    
+            except Exception:
+                pass
+            
+            return False
             
         except Exception:
             return False
@@ -892,3 +1344,232 @@ __pycache__/
         except Exception as e:
             # Log error but don't fail the operation
             print(f"Warning: Could not sync branch metadata: {e}")
+    
+    def _sync_with_remote_ai_state(self) -> None:
+        """Sync local database with remote organizational state after cloning."""
+        try:
+            # Update database to reflect that we're now working with remote state
+            cursor = self.db_manager.connection.cursor()
+            cursor.execute("""
+                INSERT INTO git_project_state (
+                    project_root_path, current_git_hash, change_summary,
+                    reconciliation_status
+                ) VALUES (?, ?, ?, ?)
+            """, (
+                str(self.project_root),
+                self.get_current_git_hash(),
+                "Synced with remote AI organizational state",
+                "completed"
+            ))
+            self.db_manager.connection.commit()
+            
+        except Exception as e:
+            print(f"Warning: Could not sync remote AI state: {e}")
+    
+    def _validate_organizational_consistency(self) -> None:
+        """Validate organizational file consistency after restoration."""
+        try:
+            # Basic validation that key organizational files exist
+            proj_mgmt_dir = self.project_root / "projectManagement"
+            if not proj_mgmt_dir.exists():
+                proj_mgmt_dir.mkdir(exist_ok=True)
+            
+            # Ensure database exists and is accessible
+            db_path = proj_mgmt_dir / "project.db"
+            if db_path.exists():
+                # Test database connectivity
+                self.db_manager.connection.execute("SELECT 1").fetchone()
+            
+        except Exception as e:
+            print(f"Warning: Organizational consistency validation failed: {e}")
+    
+    def create_work_branch(self, branch_number: int) -> Dict[str, Any]:
+        """
+        Create a new work branch from ai-pm-org-main (not user's main).
+        This ensures work branches always clone the organizational state.
+        """
+        result = {
+            "success": False,
+            "action": "none",
+            "message": "",
+            "branch_name": None,
+            "branch_created": False
+        }
+        
+        try:
+            ai_main_branch = "ai-pm-org-main"
+            work_branch = f"ai-pm-org-branch-{branch_number}"
+            
+            # Ensure ai-pm-org-main exists first
+            main_result = self.ensure_ai_main_branch_exists()
+            if not main_result["success"]:
+                result["message"] = f"Cannot create work branch: {main_result['message']}"
+                return result
+            
+            # Check if work branch already exists
+            if self._branch_exists_local(work_branch):
+                result["success"] = True
+                result["action"] = "exists"
+                result["message"] = f"Work branch {work_branch} already exists"
+                result["branch_name"] = work_branch
+                return result
+            
+            # Switch to ai-pm-org-main first to ensure we're on the right base
+            switch_result = self.switch_to_ai_branch(ai_main_branch)
+            if not switch_result["success"]:
+                result["message"] = f"Could not switch to {ai_main_branch}: {switch_result['message']}"
+                return result
+            
+            # Create work branch from ai-pm-org-main (cloning organizational state)
+            subprocess.run([
+                'git', 'checkout', '-b', work_branch, ai_main_branch
+            ], cwd=self.project_root, check=True, capture_output=True, text=True)
+            
+            # Create minimal branch metadata
+            branch_metadata = {
+                "branchId": work_branch,
+                "branchNumber": branch_number,
+                "createdFrom": ai_main_branch,
+                "createdAt": datetime.now().isoformat(),
+                "primaryThemes": [],
+                "status": "active",
+                "description": f"Work branch {branch_number} cloned from {ai_main_branch}"
+            }
+            
+            metadata_path = self.project_root / ".ai-pm-meta.json"
+            with open(metadata_path, 'w') as f:
+                json.dump(branch_metadata, f, indent=2)
+            
+            # Commit the metadata
+            subprocess.run(['git', 'add', '.ai-pm-meta.json'], cwd=self.project_root, check=True)
+            subprocess.run([
+                'git', 'commit', '-m', f'Initialize work branch {work_branch} metadata'
+            ], cwd=self.project_root, check=True, capture_output=True)
+            
+            # Update database tracking
+            self.sync_ai_branch_metadata(work_branch)
+            
+            result["success"] = True
+            result["action"] = "created"
+            result["message"] = f"Created work branch {work_branch} from {ai_main_branch}"
+            result["branch_name"] = work_branch
+            result["branch_created"] = True
+            
+            return result
+            
+        except subprocess.CalledProcessError as e:
+            result["message"] = f"Git command failed creating work branch: {e.stderr}"
+            return result
+        except Exception as e:
+            result["message"] = f"Error creating work branch: {str(e)}"
+            return result
+    
+    def get_next_branch_number(self) -> int:
+        """Get the next available branch number for work branches."""
+        try:
+            # Get all existing AI work branches
+            result = subprocess.run([
+                'git', 'branch', '-a', '--list', 'ai-pm-org-branch-*'
+            ], cwd=self.project_root, capture_output=True, text=True)
+            
+            branch_numbers = []
+            for line in result.stdout.strip().split('\n'):
+                if not line.strip():
+                    continue
+                    
+                # Extract branch name from output (remove * and whitespace)
+                branch_name = line.strip().lstrip('* ').replace('remotes/origin/', '')
+                
+                # Extract number from branch name
+                if branch_name.startswith('ai-pm-org-branch-'):
+                    try:
+                        number_str = branch_name[17:]  # Remove 'ai-pm-org-branch-' prefix
+                        branch_numbers.append(int(number_str))
+                    except ValueError:
+                        continue
+            
+            # Return next available number
+            if not branch_numbers:
+                return 1
+            else:
+                return max(branch_numbers) + 1
+                
+        except Exception as e:
+            print(f"Warning: Could not determine next branch number: {e}")
+            return 1
+    
+    def create_next_work_branch(self) -> Dict[str, Any]:
+        """Create a new work branch with the next available number."""
+        next_number = self.get_next_branch_number()
+        return self.create_work_branch(next_number)
+    
+    def list_ai_branches(self) -> Dict[str, Any]:
+        """List all AI-related branches (local and remote)."""
+        result = {
+            "success": False,
+            "branches": {
+                "main": None,
+                "work_branches": []
+            },
+            "message": ""
+        }
+        
+        try:
+            # Get all branches
+            branch_result = subprocess.run([
+                'git', 'branch', '-a'
+            ], cwd=self.project_root, capture_output=True, text=True, check=True)
+            
+            ai_main_exists = False
+            work_branches = []
+            
+            for line in branch_result.stdout.strip().split('\n'):
+                if not line.strip():
+                    continue
+                    
+                # Clean branch name
+                branch_name = line.strip().lstrip('* ').replace('remotes/origin/', '')
+                is_current = line.strip().startswith('*')
+                is_remote = 'remotes/origin/' in line
+                
+                if branch_name == 'ai-pm-org-main':
+                    ai_main_exists = True
+                    result["branches"]["main"] = {
+                        "name": branch_name,
+                        "current": is_current,
+                        "remote": is_remote,
+                        "local": not is_remote or self._branch_exists_local(branch_name)
+                    }
+                elif branch_name.startswith('ai-pm-org-branch-'):
+                    # Extract branch number
+                    try:
+                        number_str = branch_name[17:]
+                        branch_number = int(number_str)
+                        work_branches.append({
+                            "name": branch_name,
+                            "number": branch_number,
+                            "current": is_current,
+                            "remote": is_remote,
+                            "local": not is_remote or self._branch_exists_local(branch_name)
+                        })
+                    except ValueError:
+                        continue
+            
+            # Sort work branches by number
+            work_branches.sort(key=lambda x: x["number"])
+            result["branches"]["work_branches"] = work_branches
+            
+            result["success"] = True
+            result["message"] = f"Found {len(work_branches)} work branches"
+            
+            if not ai_main_exists:
+                result["message"] += " (ai-pm-org-main not found)"
+            
+            return result
+            
+        except subprocess.CalledProcessError as e:
+            result["message"] = f"Git command failed: {e.stderr}"
+            return result
+        except Exception as e:
+            result["message"] = f"Error listing AI branches: {str(e)}"
+            return result

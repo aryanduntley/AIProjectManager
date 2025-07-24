@@ -21,13 +21,24 @@
       "steps": [
         {
           "action": "ensureAiMainBranchExists",
-          "description": "Create ai-pm-org-main branch if it doesn't exist",
+          "description": "Enhanced: Create ai-pm-org-main with remote clone support for team collaboration",
           "required": true,
+          "priorityLogic": "Remote clone > Local restoration > Fresh creation",
+          "teamCollaborationSupport": true,
           "process": [
-            "Check if ai-pm-org-main branch exists: git branch --list ai-pm-org-main",
-            "If not exists: git checkout -b ai-pm-org-main main",
-            "Initialize AI organizational structure on branch",
-            "Commit initial organizational state"
+            "Check if ai-pm-org-main exists locally: git branch --list ai-pm-org-main",
+            "If missing locally, check remote: git branch -r --list origin/ai-pm-org-main",
+            "PRIORITY 1 - Remote exists: git checkout -b ai-pm-org-main origin/ai-pm-org-main",
+            "PRIORITY 2 - No remote but has previous AI state: restore from organizational state",
+            "PRIORITY 3 - Completely new: git checkout -b ai-pm-org-main main",
+            "Initialize or validate AI organizational structure",
+            "Sync database with remote organizational state if cloned"
+          ],
+          "teamCollaborationBenefits": [
+            "Multiple developers can share AI organizational state",
+            "Automatic detection of existing team setup", 
+            "No manual coordination needed between team members",
+            "Consistent organizational structure across team"
           ]
         },
         {
@@ -88,14 +99,26 @@
         },
         {
           "action": "createBranch",
-          "description": "Pure Git operation to create branch with inherited state",
+          "description": "ENHANCED: Always clone from ai-pm-org-main (not user's main) for organizational state consistency",
           "required": true,
+          "criticalPrinciple": "Work branches ALWAYS clone from ai-pm-org-main, NOT from user's main",
           "process": [
-            "Validate ai-pm-org-main branch is clean",
+            "Ensure ai-pm-org-main exists (may trigger remote clone for team scenarios)",
+            "Switch to ai-pm-org-main first: git checkout ai-pm-org-main", 
             "Execute: git checkout -b {branch-name} ai-pm-org-main",
-            "Branch inherits complete organizational state naturally",
-            "Create .ai-pm-meta.json with branch metadata"
-          ]
+            "Branch inherits complete AI organizational state from canonical branch",
+            "Create .ai-pm-meta.json with branch metadata including createdFrom: ai-pm-org-main"
+          ],
+          "whyAlwaysCloneFromAiMain": [
+            "Organizational State Consistency: All work branches have same starting AI context",
+            "Team Collaboration: Multiple developers get consistent organizational state",
+            "Theme/Flow Inheritance: Work branches inherit latest AI structure", 
+            "Database State: Proper AI database state in all work branches"
+          ],
+          "teamCollaborationExample": {
+            "developerA": "git checkout -b ai-pm-org-branch-001 ai-pm-org-main  # Gets full AI state",
+            "developerB": "git checkout -b ai-pm-org-branch-002 ai-pm-org-main  # Same AI state as Developer A"
+          }
         },
         {
           "action": "registerBranch",

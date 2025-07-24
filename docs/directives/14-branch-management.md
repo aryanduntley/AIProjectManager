@@ -129,16 +129,40 @@ ai-pm-org-main branch is the **PRIMARY DECISION MAKER** for all merge decisions.
 
 ## Branch Creation Workflow
 
-### Step 1: Ensure ai-pm-org-main Branch Exists
-**Purpose**: Initialize canonical organizational branch if needed
+### Step 1: Ensure ai-pm-org-main Branch Exists (Enhanced for Team Collaboration)
+**Purpose**: Initialize canonical organizational branch with remote/local/restoration handling
 
-**Process**:
-- Check if ai-pm-org-main branch exists: `git branch --list ai-pm-org-main`
-- If not exists: `git checkout -b ai-pm-org-main main`
-- Initialize AI organizational structure on branch
-- Commit initial organizational state
+**Priority Logic**: Remote clone > Local restoration > Fresh creation
 
-**AI Action**: One-time setup, done automatically during project initialization.
+**Enhanced Process**:
+1. **Check if ai-pm-org-main exists locally**: `git branch --list ai-pm-org-main`
+2. **If missing locally, check remote**: `git branch -r --list origin/ai-pm-org-main`
+3. **Branch establishment logic**:
+   - **Remote exists**: Clone from remote (team collaboration)
+   - **No remote but has previous AI state**: Restore from local organizational state
+   - **Completely new**: Create fresh from user's main branch
+
+**Team Collaboration Implementation**:
+```bash
+# Priority 1: Clone from remote (team member scenario)
+git checkout -b ai-pm-org-main origin/ai-pm-org-main
+
+# Priority 2: Restore from local state (branch was deleted but org state exists) 
+git checkout -b ai-pm-org-main main
+# Organizational files already exist, validate consistency
+
+# Priority 3: Fresh creation (first-time setup)
+git checkout -b ai-pm-org-main main
+# Initialize new AI organizational structure
+```
+
+**Team Collaboration Benefits**:
+- **Multiple developers can share organizational state**
+- **Automatic detection of existing team setup**
+- **No manual coordination needed between team members**
+- **Consistent organizational structure across team**
+
+**AI Action**: Automatic branch establishment with appropriate source detection and user communication.
 
 ### Step 2: Generate Sequential Branch Number
 **Purpose**: Create unique branch number automatically without user input
@@ -157,16 +181,34 @@ FROM ai_instance_branches
 WHERE branch_name LIKE 'ai-pm-org-branch-{XXX}
 ```
 
-### Step 3: Create Git Branch
-**Purpose**: Pure Git operation to create branch with inherited state
+### Step 3: Create Git Branch (Always Clone from ai-pm-org-main)
+**Purpose**: Pure Git operation to create branch that ALWAYS clones organizational state
 
-**Process**:
-1. Validate ai-pm-org-main branch is clean
-2. Execute: `git checkout -b ai-pm-org-branch-{XXX}
-3. Branch inherits complete organizational state naturally
-4. Create .ai-pm-meta.json with branch metadata
+**Critical Principle**: Work branches ALWAYS clone from ai-pm-org-main, NOT from user's main
 
-**Git Benefits**: Zero file copying, natural state inheritance, complete isolation
+**Enhanced Process**:
+1. **Ensure ai-pm-org-main exists** (may trigger remote clone for team scenarios)
+2. **Switch to ai-pm-org-main first**: `git checkout ai-pm-org-main`
+3. **Create work branch FROM ai-pm-org-main**: `git checkout -b ai-pm-org-branch-{XXX} ai-pm-org-main`
+4. **Branch inherits complete organizational state** from AI canonical branch
+5. **Create .ai-pm-meta.json** with branch metadata
+
+**Why Always Clone from ai-pm-org-main**:
+- **Organizational State Consistency**: All work branches have same starting AI context
+- **Team Collaboration**: Multiple developers get consistent organizational state
+- **Theme/Flow Inheritance**: Work branches inherit latest AI structure
+- **Database State**: Proper AI database state in all work branches
+
+**Team Collaboration Example**:
+```bash
+# Developer A creates first work branch
+git checkout -b ai-pm-org-branch-001 ai-pm-org-main  # Gets full AI state
+
+# Developer B (remote team member) gets work branch  
+git checkout -b ai-pm-org-branch-002 ai-pm-org-main  # Same AI state as Developer A
+```
+
+**Git Benefits**: Zero file copying, natural state inheritance, complete isolation, consistent team state
 
 **Branch Metadata (.ai-pm-meta.json)**:
 ```json

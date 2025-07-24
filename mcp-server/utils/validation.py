@@ -517,14 +517,230 @@ def validate_cross_references(
         >>> rules = [{
         ...     "source_field": "task.milestoneId", 
         ...     "target_field": "milestones",
-        ...     "rule": "exists_in_list"
+        ...     "rule": "exists_in_list",
+        ...     "target_id_field": "id"
         ... }]
         >>> validate_cross_references(data, rules)
     """
     errors = []
     
-    # This is a placeholder for cross-reference validation logic
-    # Implementation would depend on specific reference rules format
-    # For now, just return valid
+    try:
+        for rule in reference_rules:
+            rule_type = rule.get("rule")
+            source_field = rule.get("source_field")
+            target_field = rule.get("target_field")
+            
+            if not all([rule_type, source_field, target_field]):
+                errors.append(f"Invalid reference rule: missing required fields (rule, source_field, target_field)")
+                continue
+            
+            # Get source value
+            source_value = _get_nested_value(data, source_field)
+            if source_value is None:
+                # Source field doesn't exist - skip validation (might be optional)
+                continue
+            
+            # Get target data
+            target_data = _get_nested_value(data, target_field)
+            if target_data is None:
+                errors.append(f"Target field '{target_field}' not found for cross-reference validation")
+                continue
+            
+            # Apply validation rule
+            if rule_type == "exists_in_list":
+                error = _validate_exists_in_list(source_value, target_data, rule, source_field, target_field)
+                if error:
+                    errors.append(error)
+                    
+            elif rule_type == "exists_in_dict":
+                error = _validate_exists_in_dict(source_value, target_data, rule, source_field, target_field)
+                if error:
+                    errors.append(error)
+                    
+            elif rule_type == "unique_in_list":
+                error = _validate_unique_in_list(source_value, target_data, rule, source_field, target_field)
+                if error:
+                    errors.append(error)
+                    
+            elif rule_type == "parent_child_relationship":
+                error = _validate_parent_child_relationship(source_value, target_data, rule, source_field, target_field)
+                if error:
+                    errors.append(error)
+                    
+            elif rule_type == "conditional_required":
+                error = _validate_conditional_required(data, rule, source_field, target_field)
+                if error:
+                    errors.append(error)
+                    
+            elif rule_type == "mutual_exclusion":
+                error = _validate_mutual_exclusion(data, rule, source_field, target_field)
+                if error:
+                    errors.append(error)
+                    
+            else:
+                errors.append(f"Unknown cross-reference rule type: {rule_type}")
     
-    return True, []
+    except Exception as e:
+        errors.append(f"Error during cross-reference validation: {str(e)}")
+    
+    if errors and raise_on_error:
+        raise SchemaValidationError(f"Cross-reference validation failed", errors)
+        
+    return len(errors) == 0, errors
+
+
+def _get_nested_value(data: Dict[str, Any], field_path: str) -> Any:
+    """Get value from nested dictionary using dot notation."""
+    try:
+        keys = field_path.split('.')
+        current = data
+        
+        for key in keys:
+            if isinstance(current, dict) and key in current:
+                current = current[key]
+            elif isinstance(current, list) and key.isdigit():
+                index = int(key)
+                if 0 <= index < len(current):
+                    current = current[index]
+                else:
+                    return None
+            else:
+                return None
+                
+        return current
+    except (TypeError, ValueError, KeyError):
+        return None
+
+
+def _validate_exists_in_list(source_value: Any, target_list: List[Any], rule: Dict[str, Any], 
+                           source_field: str, target_field: str) -> Optional[str]:
+    """Validate that source_value exists in target_list."""
+    if not isinstance(target_list, list):
+        return f"Target field '{target_field}' is not a list for exists_in_list validation"
+    
+    target_id_field = rule.get("target_id_field", "id")
+    
+    # Handle different target list structures
+    if target_list and isinstance(target_list[0], dict):
+        # List of objects - check specified field
+        target_values = [item.get(target_id_field) for item in target_list if isinstance(item, dict)]
+    else:
+        # List of primitives
+        target_values = target_list
+    
+    if source_value not in target_values:
+        return f"Value '{source_value}' in field '{source_field}' does not exist in '{target_field}'"
+    
+    return None
+
+
+def _validate_exists_in_dict(source_value: Any, target_dict: Dict[str, Any], rule: Dict[str, Any],
+                           source_field: str, target_field: str) -> Optional[str]:
+    """Validate that source_value exists as a key in target_dict."""
+    if not isinstance(target_dict, dict):
+        return f"Target field '{target_field}' is not a dictionary for exists_in_dict validation"
+    
+    if source_value not in target_dict:
+        return f"Key '{source_value}' in field '{source_field}' does not exist in '{target_field}'"
+    
+    return None
+
+
+def _validate_unique_in_list(source_value: Any, target_list: List[Any], rule: Dict[str, Any],
+                           source_field: str, target_field: str) -> Optional[str]:
+    """Validate that source_value appears only once in target_list."""
+    if not isinstance(target_list, list):
+        return f"Target field '{target_field}' is not a list for unique_in_list validation"
+    
+    target_id_field = rule.get("target_id_field", "id")
+    
+    # Handle different target list structures
+    if target_list and isinstance(target_list[0], dict):
+        # List of objects - check specified field
+        target_values = [item.get(target_id_field) for item in target_list if isinstance(item, dict)]
+    else:
+        # List of primitives
+        target_values = target_list
+    
+    count = target_values.count(source_value)
+    if count > 1:
+        return f"Value '{source_value}' appears {count} times in '{target_field}', expected exactly 1"
+    elif count == 0:
+        return f"Value '{source_value}' in field '{source_field}' does not exist in '{target_field}'"
+    
+    return None
+
+
+def _validate_parent_child_relationship(source_value: Any, target_data: Any, rule: Dict[str, Any],
+                                      source_field: str, target_field: str) -> Optional[str]:
+    """Validate parent-child relationship constraints."""
+    parent_field = rule.get("parent_field", "parentId")
+    child_field = rule.get("child_field", "id")
+    
+    if not isinstance(target_data, list):
+        return f"Target field '{target_field}' must be a list for parent_child_relationship validation"
+    
+    # Find the source item
+    source_item = None
+    for item in target_data:
+        if isinstance(item, dict) and item.get(child_field) == source_value:
+            source_item = item
+            break
+    
+    if not source_item:
+        return f"Item with {child_field}='{source_value}' not found in '{target_field}'"
+    
+    # Check parent relationship
+    parent_id = source_item.get(parent_field)
+    if parent_id:
+        # Verify parent exists
+        parent_exists = any(
+            isinstance(item, dict) and item.get(child_field) == parent_id 
+            for item in target_data
+        )
+        if not parent_exists:
+            return f"Parent '{parent_id}' for item '{source_value}' not found in '{target_field}'"
+    
+    return None
+
+
+def _validate_conditional_required(data: Dict[str, Any], rule: Dict[str, Any],
+                                 source_field: str, target_field: str) -> Optional[str]:
+    """Validate conditional requirements between fields."""
+    condition_field = rule.get("condition_field")
+    condition_value = rule.get("condition_value")
+    required_when = rule.get("required_when", True)
+    
+    if not condition_field:
+        return "conditional_required rule missing 'condition_field'"
+    
+    condition_actual = _get_nested_value(data, condition_field)
+    source_actual = _get_nested_value(data, source_field)
+    
+    # Check if condition is met
+    condition_met = condition_actual == condition_value
+    
+    if required_when and condition_met and source_actual is None:
+        return f"Field '{source_field}' is required when '{condition_field}' equals '{condition_value}'"
+    elif not required_when and condition_met and source_actual is not None:
+        return f"Field '{source_field}' must be empty when '{condition_field}' equals '{condition_value}'"
+    
+    return None
+
+
+def _validate_mutual_exclusion(data: Dict[str, Any], rule: Dict[str, Any],
+                             source_field: str, target_field: str) -> Optional[str]:
+    """Validate that fields are mutually exclusive."""
+    source_value = _get_nested_value(data, source_field)
+    target_value = _get_nested_value(data, target_field)
+    
+    # Both fields have values - violation
+    if source_value is not None and target_value is not None:
+        return f"Fields '{source_field}' and '{target_field}' are mutually exclusive"
+    
+    # Check if at least one is required
+    require_one = rule.get("require_one", False)
+    if require_one and source_value is None and target_value is None:
+        return f"At least one of '{source_field}' or '{target_field}' is required"
+    
+    return None

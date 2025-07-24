@@ -346,6 +346,41 @@
         "isolation": "Branch operates independently with full Git isolation",
         "merging": "ai-pm-org-main has authority for merge decisions using standard Git merge",
         "completion": "Git branch can be deleted after successful merge"
+      },
+      "teamCollaboration": {
+        "aiMainBranchSetup": {
+          "priorityLogic": "Remote clone > Local restoration > Fresh creation",
+          "remoteClone": "git checkout -b ai-pm-org-main origin/ai-pm-org-main",
+          "localRestore": "git checkout -b ai-pm-org-main main (with existing organizational state)",
+          "freshCreation": "git checkout -b ai-pm-org-main main (new AI structure)",
+          "benefits": [
+            "Multiple developers share AI organizational state",
+            "Automatic detection of existing team setup", 
+            "No manual coordination needed between team members",
+            "Consistent organizational structure across team"
+          ]
+        },
+        "workBranchCreation": {
+          "principle": "Work branches ALWAYS clone from ai-pm-org-main, NOT user's main",
+          "process": [
+            "Ensure ai-pm-org-main exists (may trigger remote clone)",
+            "Switch to ai-pm-org-main first",
+            "Create work branch FROM ai-pm-org-main", 
+            "Inherit complete AI organizational state"
+          ],
+          "consistency": [
+            "All work branches have same starting AI context",
+            "Team members get identical organizational state",
+            "Theme/flow inheritance from canonical AI branch",
+            "Proper AI database state in all branches"
+          ]
+        },
+        "remoteDetection": {
+          "hasRemoteRepository": "Check for configured remote origin",
+          "remoteBranchExists": "Check if ai-pm-org-main exists on remote with fetch",
+          "networkResilience": "Handle network failures gracefully with timeouts",
+          "fallbackBehavior": "Default to local operations if remote unavailable"
+        }
       }
     }
   },

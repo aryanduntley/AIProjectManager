@@ -34,13 +34,21 @@
     },
     "antiPlaceholderProtocol": {
       "directive": "Never use placeholder text or truncated outputs",
-      "prohibited": [
+      "prohibitedPatterns": [
         "...continued",
-        "rest of file unchanged",
+        "rest of file unchanged", 
         "// TODO: implement this",
         "/* placeholder */",
         "Truncated code blocks",
-        "Incomplete implementations without explicit user permission"
+        "Incomplete implementations without explicit user permission",
+        "in a real implementation",
+        "for now",
+        "simplified",
+        "for simplicity", 
+        "todo",
+        "fixme",
+        "temporary",
+        "future"
       ],
       "requiredBehavior": [
         "Always output complete implementations when project.avoidPlaceholders is true",
@@ -127,6 +135,39 @@
         "Configurable based on user preference",
         "Maintains data integrity"
       ]
+    },
+    "sharedFileImpactAssessment": {
+      "directive": "Assess and document modifications to files shared across themes",
+      "process": [
+        "Identify affected themes from sharedWith array",
+        "Quick impact review by reading README.md files for affected themes", 
+        "Conflict assessment - evaluate if changes might break other functionality",
+        "Proceed with awareness considering cross-theme implications"
+      ],
+      "documentationRequirements": [
+        "Log cross-theme modifications in noteworthy.json",
+        "Update affected theme README files if necessary"
+      ],
+      "modificationGuidelines": [
+        "Changes are contextually appropriate for current task",
+        "Modifications align with project-wide standards", 
+        "Updates improve overall project consistency"
+      ],
+      "assessmentCriteria": [
+        "Will this change affect other themes negatively?",
+        "Are there alternative approaches that minimize cross-theme impact?",
+        "Is this the appropriate time to make this change?"
+      ]
+    },
+    "versionControlIntegration": {
+      "directive": "Work harmoniously with version control systems",
+      "awarenessRequirements": [
+        "Respect .gitignore and similar patterns",
+        "Document significant changes in appropriate commit contexts",
+        "Consider impact on code reviews",
+        "Maintain clean file states for commits",
+        "Avoid creating conflicts with development workflows"
+      ]
     }
   },
   "configSettings": {
@@ -206,5 +247,23 @@
       }
     },
     "escalationAwareness": "WHEN file operations encounter complexity beyond basic handling → ESCALATE to ../docs/directives/10-file-operations.md for comprehensive file management protocols"
+  },
+  "enforcementTriggers": [
+    "Before any file write operation",
+    "After any file modification", 
+    "During code generation",
+    "When creating new files",
+    "During refactoring operations"
+  ],
+  "documentationFormat": {
+    "sharedFileModification": {
+      "timestamp": "ISO 8601 format",
+      "type": "shared-file-modification",
+      "file": "file path",
+      "sharedWith": "array of theme names",
+      "changes": "description of changes made",
+      "impactAssessment": "impact level and description",
+      "themeReadmeReviewed": "array of reviewed theme READMEs"
+    }
   }
 }

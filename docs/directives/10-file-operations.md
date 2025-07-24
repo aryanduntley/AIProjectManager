@@ -43,6 +43,14 @@ Modularized files must be properly named and referenced in their original locati
 - `/* placeholder */`
 - Truncated code blocks
 - Incomplete implementations without explicit user permission
+- `in a real implementation`
+- `for now`
+- `simplified`
+- `for simplicity`
+- `todo`
+- `fixme`
+- `temporary`
+- `future`
 
 **Required Behavior**:
 - When `project.avoidPlaceholders` is true: Always output complete implementations
@@ -213,7 +221,31 @@ const jsonOutput = minifyJson
 - Configurable based on user preference
 - Maintains data integrity
 
-## 10.6 Version Control Integration
+## 10.6 Shared File Impact Assessment
+
+**Directive**: Assess and document modifications to files shared across themes.
+
+**Assessment Process**:
+1. Identify affected themes from sharedWith array
+2. Quick impact review by reading README.md files for affected themes
+3. Conflict assessment - evaluate if changes might break other functionality
+4. Proceed with awareness considering cross-theme implications
+
+**Documentation Requirements**:
+- Log cross-theme modifications in noteworthy.json
+- Update affected theme README files if necessary
+
+**Modification Guidelines**:
+- Changes are contextually appropriate for current task
+- Modifications align with project-wide standards
+- Updates improve overall project consistency
+
+**Assessment Criteria**:
+- Will this change affect other themes negatively?
+- Are there alternative approaches that minimize cross-theme impact?
+- Is this the appropriate time to make this change?
+
+## 10.7 Version Control Integration
 
 **Directive**: Work harmoniously with version control systems.
 
@@ -223,3 +255,27 @@ const jsonOutput = minifyJson
 - Consider impact on code reviews
 - Maintain clean file states for commits
 - Avoid creating conflicts with development workflows
+
+## 10.8 Enforcement Triggers
+
+**When File Operation Rules Apply**:
+- Before any file write operation
+- After any file modification
+- During code generation
+- When creating new files
+- During refactoring operations
+
+## 10.9 Documentation Format
+
+**Shared File Modification Log Format**:
+```json
+{
+  "timestamp": "ISO 8601 format",
+  "type": "shared-file-modification",
+  "file": "file path",
+  "sharedWith": "array of theme names",
+  "changes": "description of changes made",
+  "impactAssessment": "impact level and description",
+  "themeReadmeReviewed": "array of reviewed theme READMEs"
+}
+```

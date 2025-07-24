@@ -1,7 +1,7 @@
 ### ### TODO:
 
 READ:
-docs/README.md
+README.md
 docs/organization.md
 mcp-server/reference/organization.json
 mcp-server/reference/index.json
@@ -11,6 +11,7 @@ mcp-server/core-context/directive-compressed.json
 docs/unified-git-implementation-plan.md
 docs/branch-based-git-implementation-plan.md
 
+NOTE:
 directives human readable in docs/directives/ with index directives.json
 directives AI efficient in mcp-server/reference/directives/ with index mcp-server/reference/index.json
 organization AI efficient mcp-server/reference/organization.json
@@ -37,8 +38,6 @@ mcp-server full code review.
 
 config.json review, map to directives. Ensure all configurable options (eg. true/false) are accounted for in directives (if true, do this, if false, do that)
 
-check branch creation. at init, main is created. at any other time, if main exists, check if clone is needed. think on this.
-
 review directives and mcp flow regarding directives. Does it follow the instructions well end escalate directives/instructions context well.
 
 ensure directives allow user to make decisions. project init should not be automatic. User should initiate. On init, we should have mcp-server discuss some user settings with user.
@@ -51,4 +50,4 @@ node/npm ignore file update, and implementation update according to new git bran
 
 ======================
 
-our directives are 3 layered. More detailed, human readable md files in docs/directives/?.md, more consolidated and more efficient for AI to read json files in mcp-s erver/reference/directives/?.json, and a compressed quick reference json mcp-server/core-context/direc tive-compressed.json. \ \\ Further, the base index/reference for the various directives: docs/directives/directives.json mcp-server/reference/index.json\ \ our directives structure allow for a hierarchy for AI to follow for context needed. compressed directives are not explicit enough but allow for mild and routine tasks. More context is provided in the json files for detailed step by step directives on how to handle the various scenarios of the project management steps. And the human readable (which should almost exactly match the json) for more explanatory context if AI decides something is unclear and might need more explanation.
+our directives are 3 layered. More detailed, human readable md files in docs/directives/?.md, more consolidated and more efficient for AI to read json files in mcp-s erver/reference/directives/?.json, and a compressed quick reference json mcp-server/core-context/directive-compressed.json. Further, the base index/reference for the various directives: docs/directives/directives.json mcp-server/reference/index.json our directives structure allow for a hierarchy for AI to follow for context needed. compressed directives are not explicit enough but allow for mild and routine tasks. More context is provided in the json files for detailed step by step directives on how to handle the various scenarios of the project management steps. And the human readable (which should almost exactly match the json) for more explanatory context if AI decides something is unclear and might need more explanation.

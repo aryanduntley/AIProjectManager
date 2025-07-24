@@ -812,6 +812,49 @@ projectManagement/.mcp-session-*
 3. **Integration**: Standard Git merge with ai-pm-org-main authority for decisions
 4. **Completion**: Git branch can be deleted after successful merge
 
+### 11.3.1 Team Collaboration Support (NEW)
+
+**ai-pm-org-main Branch Setup with Remote Clone Support**:
+
+**Priority Logic**: Remote clone > Local restoration > Fresh creation
+
+**Branch Establishment Process**:
+1. **Check if ai-pm-org-main exists locally**
+2. **If missing locally, check remote repository** for ai-pm-org-main
+3. **If exists on remote**: Clone from remote (team collaboration scenario)
+   - `git checkout -b ai-pm-org-main origin/ai-pm-org-main`
+   - Sync local database with remote organizational state
+4. **If no remote but has previous AI state**: Restore from organizational state
+5. **If completely new**: Create fresh branch from user's main
+
+**Team Collaboration Benefits**:
+- **Multiple developers can share AI organizational state**
+- **Automatic detection of existing team setup**
+- **No manual coordination needed between team members**
+- **Consistent organizational structure across team**
+
+**Work Branch Creation Enhancement**:
+
+**Critical Principle**: Work branches ALWAYS clone from ai-pm-org-main, NOT from user's main
+
+**Enhanced Process**:
+1. **Ensure ai-pm-org-main exists** (may trigger remote clone for team scenarios)
+2. **Switch to ai-pm-org-main first**: `git checkout ai-pm-org-main`
+3. **Create work branch FROM ai-pm-org-main**: `git checkout -b ai-pm-org-branch-{XXX} ai-pm-org-main`
+4. **Branch inherits complete AI organizational state** from canonical branch
+
+**Why Always Clone from ai-pm-org-main**:
+- **Organizational State Consistency**: All work branches have same starting AI context
+- **Team Collaboration**: Multiple developers get consistent organizational state  
+- **Theme/Flow Inheritance**: Work branches inherit latest AI structure
+- **Database State**: Proper AI database state in all work branches
+
+**Remote Detection and Network Resilience**:
+- **hasRemoteRepository**: Check for configured remote origin
+- **remoteBranchExists**: Check if ai-pm-org-main exists on remote with fetch
+- **networkResilience**: Handle network failures gracefully with timeouts
+- **fallbackBehavior**: Default to local operations if remote unavailable
+
 ### 11.4 Session Boot with Branch Awareness
 
 **Enhanced Boot Sequence**:

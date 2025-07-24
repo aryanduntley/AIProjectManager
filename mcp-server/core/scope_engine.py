@@ -987,17 +987,108 @@ class ScopeEngine:
             await self.session_queries.update_session_context(session_id, context_data)
             
             if task_id:
+                # Determine if context escalation is needed based on task complexity
+                target_mode = self._determine_required_mode_for_task(task_id, context)
+                
                 # Log context escalation if mode was changed
                 await self.session_queries.log_context_escalation(
                     session_id=session_id,
                     from_mode=context.mode.value,
-                    to_mode=context.mode.value,  # Same for now, would differ if escalated
-                    reason=f"Context loaded for task {task_id}",
+                    to_mode=target_mode.value,
+                    reason=f"Context loaded for task {task_id}" + (
+                        f" (escalated to {target_mode.value})" if target_mode != context.mode else ""
+                    ),
                     task_id=task_id
                 )
+                
+                # Update context mode if escalation is needed
+                if target_mode != context.mode:
+                    context.mode = target_mode
         
         except Exception as e:
             logger.debug(f"Error tracking context usage: {e}")
+    
+    def _determine_required_mode_for_task(self, task_id: str, current_context: ContextContainer) -> ContextMode:
+        """Determine the required context mode based on task complexity and requirements."""
+        try:
+            # Start with current mode as baseline
+            required_mode = current_context.mode
+            
+            # Get task details to assess complexity
+            if hasattr(self, 'task_queries') and self.task_queries:
+                try:
+                    task_details = self.task_queries.get_task_details(task_id)
+                    if task_details:
+                        # Escalate based on task complexity indicators
+                        priority = task_details.get('priority', 'medium').lower()
+                        estimated_effort = task_details.get('estimated_effort')
+                        themes = task_details.get('related_themes', [])
+                        
+                        # High priority tasks may need broader context
+                        if priority == 'high' and required_mode == ContextMode.FOCUSED:
+                            required_mode = ContextMode.BALANCED
+                        
+                        # Complex tasks with multiple themes need broader context
+                        if len(themes) >= 3 and required_mode == ContextMode.FOCUSED:
+                            required_mode = ContextMode.BALANCED
+                        elif len(themes) >= 5 and required_mode == ContextMode.BALANCED:
+                            required_mode = ContextMode.COMPREHENSIVE
+                        
+                        # Large estimated effort suggests comprehensive context needed
+                        if estimated_effort and isinstance(estimated_effort, (int, float)):
+                            if estimated_effort >= 8 and required_mode != ContextMode.COMPREHENSIVE:
+                                required_mode = ContextMode.COMPREHENSIVE
+                            elif estimated_effort >= 5 and required_mode == ContextMode.FOCUSED:
+                                required_mode = ContextMode.BALANCED
+                        
+                        # Check for task type indicators
+                        title = task_details.get('title', '').lower()
+                        description = task_details.get('description', '').lower()
+                        
+                        complexity_keywords = [
+                            'refactor', 'redesign', 'architecture', 'integration', 
+                            'migration', 'optimization', 'security', 'performance'
+                        ]
+                        
+                        comprehensive_keywords = [
+                            'system', 'entire', 'complete', 'full', 'comprehensive',
+                            'overhaul', 'rebuild', 'restructure'
+                        ]
+                        
+                        # Check for complexity indicators in title/description
+                        if any(keyword in title or keyword in description for keyword in comprehensive_keywords):
+                            required_mode = ContextMode.COMPREHENSIVE
+                        elif any(keyword in title or keyword in description for keyword in complexity_keywords):
+                            if required_mode == ContextMode.FOCUSED:
+                                required_mode = ContextMode.BALANCED
+                        
+                except Exception as task_error:
+                    logger.debug(f"Could not analyze task details for mode determination: {task_error}")
+            
+            # Context size-based escalation
+            current_files = len(current_context.relevant_files)
+            current_themes = len(current_context.loaded_themes)
+            
+            # If context is already large, maintain or escalate mode
+            if current_files >= 50 or current_themes >= 10:
+                if required_mode == ContextMode.FOCUSED:
+                    required_mode = ContextMode.COMPREHENSIVE
+                elif required_mode == ContextMode.BALANCED:
+                    required_mode = ContextMode.COMPREHENSIVE
+            elif current_files >= 20 or current_themes >= 5:
+                if required_mode == ContextMode.FOCUSED:
+                    required_mode = ContextMode.BALANCED
+            
+            # Never downgrade mode during a session (sticky escalation)
+            if required_mode.value < current_context.mode.value:
+                required_mode = current_context.mode
+            
+            return required_mode
+            
+        except Exception as e:
+            logger.error(f"Error determining required mode for task {task_id}: {e}")
+            # Safe fallback - maintain current mode
+            return current_context.mode
     
     async def _enhance_context_with_file_intelligence(self, project_path: Path, context: ContextResult):
         """Enhance context with file metadata and relationships."""

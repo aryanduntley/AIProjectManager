@@ -149,9 +149,13 @@ class MCPToolRegistry:
             await self._register_tool_module(BranchTools())
             
         except ImportError as e:
-            logger.warning(f"Some tool modules not available yet: {e}")
-            # For now, register basic tools manually
-            await self._register_basic_tools()
+            logger.error(f"Critical tool modules not available: {e}")
+            # Log missing modules and attempt fallback registration
+            missing_modules = str(e).split("'")[1] if "'" in str(e) else "unknown"
+            logger.info(f"Missing module: {missing_modules}. Attempting fallback tool registration.")
+            
+            # Try to register available tools individually
+            await self._register_available_tools_individually()
     
     async def _register_tool_module(self, tool_module):
         """Register tools from a tool module."""
@@ -160,6 +164,125 @@ class MCPToolRegistry:
             for tool_def in tools:
                 self.tools[tool_def.name] = tool_def
                 self.tool_handlers[tool_def.name] = tool_def.handler
+    
+    async def _register_available_tools_individually(self):
+        """Register tools individually, handling import errors gracefully."""
+        tool_modules = [
+            ("project_tools", "ProjectTools"),
+            ("theme_tools", "ThemeTools"), 
+            ("task_tools", "TaskTools"),
+            ("instance_tools", "InstanceTools"),
+            ("conflict_resolution_tools", "ConflictResolutionTools"),
+            ("branch_tools", "BranchTools")
+        ]
+        
+        registered_count = 0
+        
+        for module_name, class_name in tool_modules:
+            try:
+                # Dynamic import of tool module
+                module = __import__(f"tools.{module_name}", fromlist=[class_name])
+                tool_class = getattr(module, class_name)
+                
+                # Initialize tool with available dependencies
+                tool_instance = self._initialize_tool_with_dependencies(tool_class)
+                
+                # Register the tool
+                await self._register_tool_module(tool_instance)
+                registered_count += 1
+                logger.info(f"Successfully registered {class_name} from {module_name}")
+                
+            except ImportError as e:
+                logger.warning(f"Could not import {module_name}.{class_name}: {e}")
+                continue
+            except Exception as e:
+                logger.error(f"Error initializing {class_name}: {e}")
+                continue
+        
+        if registered_count == 0:
+            logger.warning("No tool modules could be loaded. Falling back to basic tools.")
+            await self._register_basic_tools()
+        else:
+            logger.info(f"Successfully registered {registered_count} tool modules")
+    
+    def _initialize_tool_with_dependencies(self, tool_class):
+        """Initialize a tool class with available database dependencies."""
+        try:
+            # Try to initialize with full dependencies
+            if hasattr(tool_class, '__init__'):
+                import inspect
+                sig = inspect.signature(tool_class.__init__)
+                params = list(sig.parameters.keys())[1:]  # Skip 'self'
+                
+                kwargs = {}
+                for param in params:
+                    if param == 'task_queries' and hasattr(self, 'task_queries'):
+                        kwargs[param] = self.task_queries
+                    elif param == 'session_queries' and hasattr(self, 'session_queries'):
+                        kwargs[param] = self.session_queries
+                    elif param == 'file_metadata_queries' and hasattr(self, 'file_metadata_queries'):
+                        kwargs[param] = self.file_metadata_queries
+                    elif param == 'theme_flow_queries' and hasattr(self, 'theme_flow_queries'):
+                        kwargs[param] = self.theme_flow_queries
+                    elif param == 'git_queries' and hasattr(self, 'git_queries'):
+                        kwargs[param] = self.git_queries
+                
+                return tool_class(**kwargs)
+            else:
+                return tool_class()
+                
+        except Exception as e:
+            logger.warning(f"Could not initialize {tool_class.__name__} with dependencies: {e}")
+            # Fallback to parameterless initialization
+            try:
+                return tool_class()
+            except Exception as fallback_error:
+                logger.error(f"Could not initialize {tool_class.__name__} at all: {fallback_error}")
+                raise
+    
+    def _resolve_project_root(self) -> Path:
+        """Intelligently resolve the project root directory."""
+        try:
+            # Strategy 1: Use stored project path if available
+            if hasattr(self, 'project_path') and self.project_path:
+                return Path(self.project_path)
+            
+            # Strategy 2: Look for Git repository root
+            current_dir = Path.cwd()
+            git_dir = current_dir
+            while git_dir != git_dir.parent:
+                if (git_dir / '.git').exists():
+                    return git_dir
+                git_dir = git_dir.parent
+            
+            # Strategy 3: Look for projectManagement directory
+            project_mgmt_dir = current_dir
+            while project_mgmt_dir != project_mgmt_dir.parent:
+                if (project_mgmt_dir / 'projectManagement').exists():
+                    return project_mgmt_dir
+                project_mgmt_dir = project_mgmt_dir.parent
+            
+            # Strategy 4: Look for common project markers
+            project_markers = [
+                'package.json', 'requirements.txt', 'Cargo.toml', 'pom.xml', 
+                'setup.py', 'pyproject.toml', 'composer.json', 'go.mod'
+            ]
+            
+            marker_dir = current_dir
+            while marker_dir != marker_dir.parent:
+                for marker in project_markers:
+                    if (marker_dir / marker).exists():
+                        logger.info(f"Resolved project root using marker '{marker}': {marker_dir}")
+                        return marker_dir
+                marker_dir = marker_dir.parent
+            
+            # Strategy 5: Fall back to current working directory
+            logger.warning("Could not resolve project root intelligently. Using current working directory.")
+            return current_dir
+            
+        except Exception as e:
+            logger.error(f"Error resolving project root: {e}")
+            return Path.cwd()
     
     async def _register_basic_tools(self):
         """Register basic tools for initial functionality."""
@@ -359,8 +482,9 @@ class MCPToolRegistry:
             project_relative = arguments.get("project_relative", True)
             
             if project_relative:
-                # Assume current working directory is project root for now
-                file_path = Path.cwd() / file_path
+                # Resolve project root intelligently
+                project_root = self._resolve_project_root()
+                file_path = project_root / file_path
             
             if not file_path.exists():
                 return f"File not found: {file_path}"
