@@ -29,8 +29,7 @@ The structure is designed to:
 /projectRoot/
 ├── .git/                              # Root-level Git repository
 ├── [existing project files...]        # All project source code (tracked)
-├── projectManagement/                 # MAIN instance (canonical organizational state)
-│   ├── .mcp-instance-main             # Instance identification
+├── projectManagement/                 # AI organizational state (on ai-pm-org-main branch)
 │   ├── ProjectBlueprint/              # Original structure preserved
 │   │   ├── blueprint.md               # High-level summary of the project (user-approved)
 │   │   └── metadata.json              # Metadata, tags, author, project date, etc.
@@ -69,25 +68,31 @@ The structure is designed to:
 │   │       └── noteworthy-archived-2025-07-13.json  # Auto-archived when size limit reached
 │   ├── Placeholders/
 │   │   └── todos.jsonl                # Captures all deferred implementation notes and scaffolding TODOs
-│   ├── UserSettings/                  # NOT tracked (instance-specific)
+│   ├── UserSettings/                  # NOT tracked (user-specific)
 │   │   └── config.json                # User-specific configuration (not tracked in Git)
 │   ├── project.db                     # Main database (tracked)
 │   └── database/
 │       └── backups/                   # NOT tracked (database backups for recovery)
-├── .mcp-instances/                    # Instance management directory (tracked)
-│   ├── active/                        # Active instance workspaces
-│   │   ├── auth-enhancement-alice/    # Alice's authentication work
-│   │   │   ├── projectManagement/     # Her working copy of organizational state
-│   │   │   ├── .mcp-branch-info.json  # Instance metadata
-│   │   │   └── .mcp-work-summary.md   # Human-readable work summary
-│   │   └── payment-flow-bob/          # Bob's payment system work
-│   ├── completed/                     # Archived completed instances
-│   ├── conflicts/                     # Conflict resolution workspace
-│   │   ├─ auth-enhancement-merge-123/ # Specific merge conflict workspace
-│   │   └── resolution-templates/      # Conflict resolution guides
-│   ├── .mcp-config.json              # Instance management configuration
-│   └── .mcp-merge-log.jsonl          # Merge history and decisions
-└── .gitignore                        # Updated for MCP instance management
+└── .gitignore                        # Updated for MCP branch management exclusions
+
+**Git Branch Structure:**
+```
+.git/
+├── main                              # User's project code (untouched)
+├── ai-pm-org-main                   # ✅ Canonical AI organizational state
+│   ├── projectManagement/           # Complete AI organizational structure
+│   ├── project.db                   # Main database state
+│   └── [user project files...]      # User code context
+├── ai-pm-org-branch-{XXX}
+├── ai-pm-org-branch-{XXX}
+├── ai-pm-org-branch-{XXX}
+└── ai-pm-org-branch-{XXX}
+```
+
+**Work Branch Metadata (Work branches only):**
+```
+.ai-pm-meta.json                     # Minimal branch metadata
+```
 ```
 
 > **Note**: This structure is created inside `/projectRoot/projectManagement/` by the MCP server. It represents the project’s managed state and persists throughout development.
@@ -408,7 +413,7 @@ This implementation plans system provides the strategic planning layer that brid
 
 **Template Source**: All organizational file templates are located in the `reference/templates/` directory in the MCP server repository.
 
-**AI Usage Directive**: When creating any organizational files (`completion-path.json`, `flow-index.json`, individual flow files, task files, implementation plans, instance files, etc.), AI must use the corresponding example file in `reference/templates/` as the template structure.
+**AI Usage Directive**: When creating any organizational files (`completion-path.json`, `flow-index.json`, individual flow files, task files, implementation plans, branch metadata files, etc.), AI must use the corresponding example file in `reference/templates/` as the template structure.
 
 **Template Files Available**:
 - `reference/templates/completion-path.json` - Completion path structure and milestones
@@ -764,30 +769,27 @@ The AI Project Manager uses a **root-level Git repository** to track both projec
 
 - **Project Code Change Detection**: Automatic detection when users modify code outside MCP sessions
 - **Organizational State Versioning**: Track changes to themes, flows, tasks, and project structure
-- **Git-Like Instance Management**: Multiple MCP instances operate like Git branches with merge-based integration
+- **Git Branch-Based Management**: Multiple AI work sessions operate as Git branches with native Git merge capabilities
 
 ### 11.2 Git Configuration
 
-**Updated `.gitignore` for MCP Instance Management**:
+**Updated `.gitignore` for MCP Branch Management**:
 ```gitignore
-# MCP Instance Management - Track Structure, Not Content
-.mcp-instances/active/*/projectManagement/UserSettings/
-.mcp-instances/active/*/projectManagement/database/backups/
-.mcp-instances/*/logs/
-.mcp-instances/*/temp/
-
-# Project Management - Track Organizational State
+# Project Management - Track Organizational State, Not User Data
 projectManagement/UserSettings/
 projectManagement/database/backups/
 projectManagement/.mcp-session-*
+
+# Temporary Files
+*.tmp
+.ai-pm-temp/
 ```
 
 **Tracked in Git**:
 - All project source code (existing behavior)
-- Main `projectManagement/` organizational state
-- Instance management structure (`.mcp-instances/`)
-- Merge history and conflict resolution logs
-- Instance metadata and branch information
+- Main `projectManagement/` organizational state (on ai-pm-org-main)
+- Branch metadata (`.ai-pm-meta.json` on work branches)
+- Git merge history (native Git log)
 
 **NOT Tracked**:
 - User-specific settings (`UserSettings/`)
@@ -795,69 +797,64 @@ projectManagement/.mcp-session-*
 - Temporary session files
 - Active work logs during development
 
-### 11.3 MCP Instance Management System
+### 11.3 Git Branch Management System
 
-**Instance Naming Convention**: `{theme/area}-{purpose}-{user}` or `{theme/area}-{purpose}`
+**Branch Naming Convention**: `ai-pm-org-branch-{XXX}` (sequential numbering)
 
 **Examples**:
-- `auth-enhancement-alice` - Alice working on authentication improvements
-- `payment-integration` - Autonomous work on payment system integration
-- `ui-components-refactor-bob` - Bob refactoring UI components
+- `ai-pm-org-branch-{XXX}
+- `ai-pm-org-branch-{XXX}
+- `ai-pm-org-branch-{XXX}
 
-**Instance Lifecycle**:
-1. **Creation**: Copy main `projectManagement/` to instance workspace with isolated database
-2. **Development**: Instance operates independently without coordination overhead
-3. **Integration**: Git-like merge process with main instance authority for conflict resolution
-4. **Completion**: Archive instance to `.mcp-instances/completed/`
+**Branch Lifecycle**:
+1. **Creation**: `git checkout -b ai-pm-org-branch-{XXX} ai-pm-org-main` - Natural state inheritance
+2. **Development**: Branch operates independently with full Git isolation
+3. **Integration**: Standard Git merge with ai-pm-org-main authority for decisions
+4. **Completion**: Git branch can be deleted after successful merge
 
-### 11.4 Session Boot with Instance Awareness
+### 11.4 Session Boot with Branch Awareness
 
 **Enhanced Boot Sequence**:
-1. **Instance Identification**: Determine if running in main instance or branch instance
-2. **Git Change Detection**: (Main instance only) Compare current Git HEAD with last known state
+1. **Branch Identification**: Determine current Git branch (ai-pm-org-main or work branch)
+2. **Git Change Detection**: (ai-pm-org-main only) Compare current Git HEAD with last known state
 3. **Organizational Reconciliation**: Update themes, flows, and tasks to reflect code changes
 4. **Standard Boot**: Continue with normal ProjectBlueprint, ProjectFlow, ProjectLogic loading
-5. **Context Loading**: Load appropriate organizational context based on instance type
+5. **Context Loading**: Load appropriate organizational context based on branch type
 
-**Main Instance Responsibilities**:
+**Main Branch (ai-pm-org-main) Responsibilities**:
 - Git repository change detection and reconciliation
-- Merge conflict resolution with primary decision authority
-- Instance coordination and management
+- Git merge operations with primary decision authority
+- Branch coordination and management
 - Project code change impact assessment
 
-**Branch Instance Responsibilities**:
-- Independent development within isolated workspace
+**Work Branch Responsibilities**:
+- Independent development within isolated Git branch
 - Prepare organizational changes for merge
-- Maintain instance metadata and work summaries
+- Maintain minimal branch metadata (.ai-pm-meta.json)
 
-### 11.5 Conflict Resolution Patterns
+### 11.5 Git Merge Operations
 
-**Conflict Types**:
-- **Theme Conflicts**: Same theme modified in both main and branch instance
-- **Task Conflicts**: Task status changes in both locations
-- **Flow Conflicts**: Flow definitions diverged between instances
-- **Database Conflicts**: Incompatible database schema or data changes
+**Standard Git Workflow**:
+1. **Branch Development**: Work proceeds independently on ai-pm-org-branch-{XXX}
+2. **Merge Preparation**: Ensure branch is ready for integration
+3. **Git Merge**: `git checkout ai-pm-org-main && git merge ai-pm-org-branch-{XXX}`
+4. **Conflict Resolution**: Use standard Git merge tools when conflicts occur
 
-**Resolution Authority**: Main instance is the **primary decision maker** for all conflict resolution
+**Merge Authority**: ai-pm-org-main branch is the **primary authority** for all merge decisions
 
-**Resolution Options**:
-1. **Accept Branch Changes**: Use branch instance modifications
-2. **Keep Main**: Reject branch changes, maintain main version
-3. **Manual Merge**: Combine specific elements from both versions
-4. **Split Approach**: Create separate components for conflicting functionality
+**Git Merge Tools**: Standard Git conflict resolution using `git mergetool`, manual editing, or IDE integration.
 
 ### 11.6 Database Integration with Git
 
-**Database Schema Extensions** for Git Integration:
+**Database Schema for Git Integration**:
 - `git_project_state`: Track current and last known Git hash for change detection
-- `mcp_instances`: Instance lifecycle management and metadata
-- `instance_merges`: Merge history and conflict resolution decisions
+- `ai_branch_registry`: Branch lifecycle management and metadata
 
-**Instance Database Isolation**:
-- Each branch instance receives isolated copy of main `project.db`
-- Instance-specific changes tracked separately in instance database
-- Database changes included in merge conflict detection and resolution
-- Main database updated with merged state after conflict resolution
+**Git-Native Database Handling**:
+- Database files tracked in Git like any other project file
+- Git provides natural versioning and merge capabilities for database changes
+- Branch-specific database changes merge automatically with organizational files
+- Standard Git workflow handles all database integration
 
 ---
 

@@ -34,7 +34,7 @@
         "Implementation Plans: Update phase progress if applicable",
         "Related Themes: Update any affected theme relationships",
         "Event Logging: Log completion event for analytics and recovery",
-        "Instance Tracking: Update instance workspace state for merge analysis"
+        "Branch Tracking: Update Git branch state for merge analysis"
       ],
       "sessionRestorationGoal": "Upon any restart, MCP/AI must be able to resume exactly where work left off with minimal review and zero lost progress",
       "atomicOperation": "If any update fails, the entire completion step fails and must be retried"
@@ -329,30 +329,30 @@
         "Flow Index Consistency: Ensure flow-index.json is always up-to-date"
       ]
     },
-    "instanceTaskIsolation": {
-      "directive": "Ensure task operations are isolated to current instance workspace",
+    "branchTaskIsolation": {
+      "directive": "Ensure task operations are isolated to current Git branch",
       "process": [
-        "All task file updates apply to current instance workspace only",
-        "Database updates include instance identification for merge analysis",
-        "Task state preservation includes instance context for restoration",
-        "Progress tracking maintains instance-specific history"
+        "All task file updates apply to current Git branch only",
+        "Database updates include branch identification for Git merge analysis",
+        "Task state preservation includes branch context for restoration",
+        "Progress tracking maintains branch-specific history"
       ],
-      "instanceAwareness": [
-        "Main instance: Can access all tasks and has merge authority",
-        "Branch instance: Operates independently with own task workspace",
-        "Merge preparation: Track all task changes for conflict detection",
-        "Context preservation: Include instance identification in all state updates"
+      "branchAwareness": [
+        "ai-pm-org-main: Can access all tasks and has merge authority",
+        "Work branch: Operates independently with isolated task state",
+        "Merge preparation: Track all task changes for Git conflict detection",
+        "Context preservation: Include branch identification in all state updates"
       ]
     },
-    "instanceMergeTaskConflicts": {
-      "directive": "Handle task conflicts during instance merging (main instance authority)",
-      "authority": "Main instance has ultimate decision authority for all task conflicts",
+    "branchMergeTaskConflicts": {
+      "directive": "Handle task conflicts during Git branch merging (ai-pm-org-main authority)",
+      "authority": "ai-pm-org-main has ultimate decision authority for all task conflicts",
       "process": [
-        "Detect task conflicts between main and instance workspaces",
+        "Detect task conflicts between ai-pm-org-main and work branch states",
         "Present conflicts with task-specific context and impact analysis",
-        "Provide resolution options: accept_instance, accept_main, manual_merge, split_tasks",
-        "Apply chosen resolution atomically to main instance tasks",
-        "Update database tracking for merge history and analytics"
+        "Provide resolution options: accept_branch, accept_main, manual_merge, split_tasks",
+        "Apply chosen resolution atomically to ai-pm-org-main tasks",
+        "Update database tracking for Git merge history and analytics"
       ],
       "conflictTypes": [
         "Task status changes (completed vs in-progress)",
@@ -398,9 +398,8 @@
     "07-implementation-plans",
     "08-project-management",
     "11-quality-assurance",
-    "14-instance-management",
-    "15-conflict-resolution",
-    "16-git-integration"
+    "14-branch-management",
+    "15-git-integration"
   ],
   "integrationDescriptions": {
     "04-theme-management": "Tasks need theme context for scoped development",

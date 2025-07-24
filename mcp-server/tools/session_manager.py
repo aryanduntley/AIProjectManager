@@ -257,6 +257,29 @@ class SessionManager:
                 context_mode=context_mode
             )
             
+            # Check for team member scenario BEFORE creating ai-pm-org-main
+            try:
+                from ..core.branch_manager import GitBranchManager
+                branch_manager = GitBranchManager(project_path)
+                
+                # Check if team member scenario FIRST (before creating ai-pm-org-main)
+                current_branch, created_new = branch_manager.initialize_for_team_member()
+                
+                # If NOT a team member, ensure AI main branch exists
+                if not created_new:
+                    branch_manager.ensure_ai_main_branch_exists()
+                    current_branch = branch_manager.get_current_branch()
+                
+                branch_info = ""
+                if created_new:
+                    branch_info = f" Team member detected - created work branch: {current_branch}"
+                else:
+                    branch_info = f" Working on branch: {current_branch}"
+                    
+            except Exception as e:
+                logger.warning(f"Error during team member detection: {e}")
+                branch_info = " (Branch detection failed - working on current branch)"
+            
             # Log session creation
             if self.file_metadata_queries:
                 self.file_metadata_queries.log_file_modification(
@@ -264,10 +287,10 @@ class SessionManager:
                     file_type="session",
                     operation="create",
                     session_id=session_id,
-                    details={"project_path": project_path, "context_mode": context_mode}
+                    details={"project_path": project_path, "context_mode": context_mode, "branch_info": branch_info}
                 )
             
-            return f"Started new session {session_id} for project {project_path}. Context mode: {context_mode}"
+            return f"Started new session {session_id} for project {project_path}. Context mode: {context_mode}{branch_info}"
             
         except Exception as e:
             logger.error(f"Error starting session: {e}")

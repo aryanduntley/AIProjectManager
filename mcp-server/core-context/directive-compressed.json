@@ -17,12 +17,12 @@
       "newProject": [
         "Initialize Git repository at project root if enabled",
         "Initialize database: Create project.db from mcp-server/database/schema.sql",
-        "Create projectManagement/ structure from templates with .mcp-instance-main marker",
+        "Create projectManagement/ structure from templates on ai-pm-org-main branch",
         "Generate initial blueprint.md with user discussion",
         "Create basic theme structure and flow index", 
         "Initialize completion-path.json with project objectives",
         "Initialize database with default session and project metadata",
-        "Set up .gitignore for MCP instance management"
+        "Set up .gitignore for AI branch management"
       ],
       "existingProject": [
         "Detect and integrate existing Git repository or initialize new one",
@@ -37,8 +37,8 @@
   },
   "sessionManagement": {
     "bootSequence": [
-      "Identify instance type (main vs branch) using .mcp-instance-main or .mcp-branch-info.json",
-      "Detect Git changes and perform organizational reconciliation if main instance",
+      "Identify branch type (ai-pm-org-main vs work branch) using git branch --show-current",
+      "Detect Git changes and perform organizational reconciliation if on ai-pm-org-main",
       "Initialize database connection and restore session context from project.db", 
       "Read ProjectBlueprint for project context",
       "Read completion-path.json + implementation plan status from database",
@@ -56,7 +56,7 @@
       "methods": ["keyword matching", "folder structure analysis", "import reference graphs"],
       "categories": ["Functional Domains", "Technical Layers", "UI Components", "External Integrations", "Data Management", "Operational"],
       "validation": "User approval required for all discovered themes",
-    "detailedImplementation": "LOAD reference/directives/04-theme-management.json for complete theme discovery workflows, conflict resolution, and user communication protocols"
+    "detailedImplementation": "LOAD reference/directives/04-theme-management.json for complete theme discovery workflows, theme organization, and user communication protocols"
     },
     "maintenance": {
       "triggers": ["file creation", "file deletion", "file movement", "directory restructuring", "Git changes affecting theme files"],
@@ -83,10 +83,10 @@
     "realTimeStatePreservation": {
       "mandatoryRequirement": "After EVERY subtask completion, step completion, or any work unit completion, ALL organizational files and database records MUST be immediately updated",
       "purpose": "Ensure seamless session restoration and prevent work loss from premature session termination",
-      "updateRequirements": ["Database status/progress/timestamps", "Task files synchronization", "Session context snapshots", "Event logging", "Theme relationship updates", "Instance state tracking"],
+      "updateRequirements": ["Database status/progress/timestamps", "Task files synchronization", "Session context snapshots", "Event logging", "Theme relationship updates", "Branch state tracking"],
       "atomicOperation": "All updates must succeed or entire completion step fails and must be retried",
       "sessionRestorationGoal": "AI must resume exactly where work left off with minimal review and zero lost progress",
-      "instanceAwareness": "Updates must be applied to current instance workspace (main or branch)"
+      "branchAwareness": "Updates must be applied to current Git branch (ai-pm-org-main or work branch)"
     },
     "requiredIntegration": ["milestone from completion-path.json", "primary/related themes", "flow references with flowFile context"],
     "lifecycle": ["creation with validation", "execution with context loading", "completion validation with state preservation", "archival"],
@@ -199,9 +199,9 @@
     },
     "readmeManagement": "Update directory README.md with every significant file change",
     "gitIntegration": {
-      "trackChanges": "Update database with file modification tracking for instance merge analysis",
-      "instanceIsolation": "File operations apply to current instance workspace only",
-      "mergeConflictPrevention": "Track file-level changes for conflict detection during instance merging"
+      "trackChanges": "Update database with file modification tracking for Git merge analysis",
+      "branchIsolation": "File operations apply to current Git branch only",
+      "mergeConflictPrevention": "Track file-level changes for conflict detection during Git branch merging"
     },
     "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/10-file-operations.json for file modification protocols, line limit procedures, and modularization strategies"
   },
@@ -236,8 +236,8 @@
     ],
     "escalationProtocol": {
       "forcedJSONOperations": [
-        "01-system-initialization", "16-git-integration", "03-session-management", 
-        "14-instance-management", "15-conflict-resolution", "database-integration",
+        "01-system-initialization", "15-git-integration", "03-session-management", 
+        "14-branch-management", "database-integration",
         "09-logging-documentation", "04-theme-management", "08-project-management"
       ],
       "level1Compressed": "Start with directive-compressed.json for routine task execution and basic workflows only",
@@ -253,44 +253,43 @@
     "contextPreservation": "Maintain findings from each escalation level to avoid re-reading same files"
   },
   "userInteraction": {
-    "approvalRequired": ["Project blueprint changes", "Theme modifications", "Completion path updates", "Implementation plan creation", "Structural project changes", "Instance creation/merging", "Git conflict resolution"],
+    "approvalRequired": ["Project blueprint changes", "Theme modifications", "Completion path updates", "Implementation plan creation", "Structural project changes", "Branch merge operations"],
     "communication": "Clear presentation of changes with rationale, explicit approval requests",
     "preferenceAdaptation": "Learn from user decisions and adapt future behavior",
-    "instanceAuthority": "Main instance has authority for merge decisions, branch instances can make isolated changes",
+    "branchAuthority": "ai-pm-org-main has authority for merge decisions, work branches can make isolated changes",
     "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/12-user-interaction.json for communication protocols, approval procedures, and user preference management"
   },
   "metadataManagement": {
-    "triggers": ["Project characteristic changes", "Theme discovery updates", "Blueprint modifications", "Git repository changes", "Instance operations"],
+    "triggers": ["Project characteristic changes", "Theme discovery updates", "Blueprint modifications", "Git repository changes", "Branch operations"],
     "maintenance": "Dynamic updates to metadata.json with project evolution",
     "integration": "Coordinate with theme discovery and project logic tracking",
-    "gitIntegration": "Track Git repository state and instance management activity in metadata",
-    "instanceAwareness": "Instance-specific metadata in .mcp-branch-info.json, shared metadata in main instance",
+    "gitIntegration": "Track Git repository state and branch management activity in metadata",
+    "branchAwareness": "Branch-specific metadata in .ai-pm-meta.json, shared metadata on ai-pm-org-main",
     "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/13-metadata-management.json for metadata update protocols, trigger conditions, and integration procedures"
   },
-  "instanceManagement": {
-    "triggers": ["Instance creation request", "Multiple developer scenario", "Parallel development needed", "Instance merge operations"],
+  "branchManagement": {
+    "triggers": ["Branch creation request", "Multiple developer scenario", "Parallel development needed", "Branch merge operations"],
     "workflow": [
-      "Validate main instance state before creating branch instance",
-      "Generate instance name following convention: {theme/area}-{purpose}-{user}",
-      "Create isolated workspace by copying projectManagement/ to .mcp-instances/active/{instance-name}/",
-      "Register instance in database and prevent naming conflicts"
+      "Detect user name automatically from Git config/system",
+      "Generate sequential branch name: ai-pm-org-branch-{XXX}",
+      "Create Git branch: git checkout -b ai-pm-org-branch-{XXX} ai-pm-org-main",
+      "Register branch in database and track user attribution"
     ],
-    "mainInstanceAuthority": "Main instance is PRIMARY DECISION MAKER for all conflict resolution",
-    "isolation": "Instance operates completely independently using its own workspace and database copy",
-    "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/14-instance-management.json for complete instance lifecycle protocols and merge procedures"
+    "canonicalAuthority": "ai-pm-org-main is PRIMARY DECISION MAKER for all merge decisions",
+    "isolation": "Git branches provide natural isolation with complete independent state",
+    "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/14-branch-management.json for complete branch lifecycle protocols and merge procedures"
   },
-  "conflictResolution": {
-    "triggers": ["Instance merge conflicts detected", "Organizational state divergence", "Database conflicts during merge"],
+  "gitMergeOperations": {
+    "triggers": ["Branch merge requested", "Work completion", "Git conflicts detected"],
     "workflow": [
-      "Detect conflicts across all organizational components (themes, flows, tasks, database)",
-      "Present conflicts to main instance in Git-like format with clear resolution options",
-      "Apply chosen resolution strategy (accept_instance, accept_main, manual_merge, split_approach)",
-      "Complete merge atomically and archive instance with comprehensive logging"
+      "Switch to ai-pm-org-main: git checkout ai-pm-org-main",
+      "Execute merge: git merge ai-pm-org-branch-{XXX}",
+      "Use standard Git conflict resolution if conflicts occur",
+      "Update database with merge status and user attribution"
     ],
-    "conflictTypes": ["theme", "task", "flow", "database"],
-    "resolutionStrategies": ["accept_instance", "accept_main", "manual_merge", "split_approach"],
-    "authority": "Main instance has ultimate authority for all conflict resolution decisions",
-    "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/15-conflict-resolution.json for detailed conflict resolution workflows and strategies"
+    "conflictHandling": "Use native Git merge tools (git mergetool, manual editing)",
+    "userAttribution": "All operations show which user's work is being processed",
+    "implementationNote": "Git handles all conflict detection and resolution - no custom logic needed"
   },
   "gitIntegration": {
     "triggers": ["Session boot with project code changes", "Git repository state detection needed", "External code modifications detected"],
@@ -302,56 +301,60 @@
     ],
     "themeImpactAnalysis": ["Direct file mapping", "Directory structure inference", "Naming pattern analysis", "Deletion impact assessment"],
     "reconciliation": "Update organizational files to reflect code changes, require user approval for significant changes",
-    "instanceIntegration": "Record Git base hash for instances and include code changes in merge conflict analysis",
+    "branchIntegration": "Record Git base hash for branches and include code changes in merge analysis",
     "criticalSettings": ["git.enabled", "git.code_change_detection", "git.auto_reconcile_on_boot"],
-    "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/16-git-integration.json for complete Git integration protocols and theme impact analysis"
+    "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/15-git-integration.json for complete Git integration protocols and theme impact analysis"
   },
-  "instanceManagementWorkflows": {
-    "instanceCreation": {
-      "triggers": ["User requests parallel work", "Team collaboration needed", "Isolated development required"],
-      "workflow": [
-        "Validate main instance authority and clean state",
-        "Generate instance name: {theme/area}-{purpose}-{user}",
-        "Copy projectManagement/ to .mcp-instances/active/{instance-name}/",
-        "Copy main project.db to instance workspace for isolation",
-        "Create .mcp-branch-info.json from reference/templates/mcp-branch-info.json",
-        "Create .mcp-work-summary.md from reference/templates/mcp-work-summary.md",
-        "Register instance in database and prevent naming conflicts"
+  "branchManagementWorkflows": {
+    "teamDetection": {
+      "triggers": ["Session startup", "New user joining project", "Clone detected"],
+      "detection": [
+        "Check if ai-pm-org-main exists (cloned project)",
+        "Check if projectManagement/ exists",
+        "Check Git remote 'origin' exists",
+        "Check currently on ai-pm-org-main"
       ],
-      "validation": ["Instance name uniqueness", "Main instance clean state", "User authorization"],
-      "criticalSettings": ["instance_management.enabled", "instance_management.max_active_instances"]
+      "teamMemberBehavior": "Auto-create work branch with user attribution",
+      "projectCreatorBehavior": "Work directly on ai-pm-org-main"
     },
-    "instanceMerging": {
-      "triggers": ["Instance work completion", "Integration with main needed"],
+    "branchCreation": {
+      "triggers": ["Team member detected", "User requests parallel work", "Multiple users working on same project"],
       "workflow": [
-        "Validate main instance authority for merge operations",
-        "Detect conflicts across themes, flows, tasks, and database",
-        "Present conflicts in Git-like format with resolution options",
-        "Apply chosen resolution strategy atomically",
-        "Complete merge and archive instance with comprehensive logging using reference/templates/mcp-merge-log.jsonl"
+        "Detect team member scenario BEFORE creating ai-pm-org-main",
+        "Detect user info from Git config/environment/system",
+        "Generate sequential branch name: ai-pm-org-branch-{XXX}",
+        "Execute: git checkout -b ai-pm-org-branch-{XXX} ai-pm-org-main", 
+        "Create .ai-pm-meta.json with user attribution",
+        "Register branch in git_branches database table"
       ],
-      "conflictTypes": ["theme", "task", "flow", "database"],
-      "resolutionStrategies": ["accept_instance", "accept_main", "manual_merge", "split_approach"],
-      "authority": "Main instance has ultimate decision authority",
-      "criticalSettings": ["conflict_resolution.require_main_instance_approval"]
+      "userAttribution": "Store user name, email, detection source in branch metadata",
+      "validation": ["Branch name uniqueness via sequential numbering", "ai-pm-org-main exists", "Git repository accessible"],
+      "criticalSettings": ["branch_management.max_active_branches", "branch_management.auto_delete_merged"]
     },
-    "instanceCleanup": {
-      "triggers": ["Daily cleanup scan", "Weekly retention enforcement", "Monthly deep archive review"],
+    "branchMerging": {
+      "triggers": ["Branch work completion", "Integration with ai-pm-org-main needed"],
       "workflow": [
-        "Detect stale instances (inactive > 14 days, age > 30 days)",
-        "Send warnings at day 7, 14, 21 before timeout",
-        "Force archive at 30-day timeout if configured",
-        "Delete completed instances older than retention period (90 days)",
-        "Clean orphaned files and optimize database performance"
+        "Validate ai-pm-org-main is clean and up to date",
+        "Execute: git checkout ai-pm-org-main",
+        "Execute: git merge ai-pm-org-branch-{XXX}",
+        "If conflicts: use standard Git resolution tools",
+        "Update database with merge completion and user attribution"
       ],
-      "userOptions": ["Extend duration", "Merge immediately", "Archive manually", "Delete instance"],
-      "retentionPolicies": {
-        "completedInstances": "90 days",
-        "mergeLogs": "1 year",
-        "backups": "30 days",
-        "orphanedFiles": "immediate deletion"
-      },
-      "criticalSettings": ["instanceManagement.instanceTimeout", "cleanup.archiveRetention", "instanceManagement.staleInstanceCleanup"]
+      "conflictHandling": "Use native Git merge tools - no custom conflict resolution needed",
+      "userAttribution": "All operations show which user's work is being merged",
+      "criticalSettings": ["branch_management.canonical_branch_authority"]
+    },
+    "branchCleanup": {
+      "triggers": ["Post-merge cleanup", "Periodic branch maintenance"],
+      "workflow": [
+        "List merged branches: git branch --merged ai-pm-org-main",
+        "Optionally delete merged branches: git branch -d ai-pm-org-branch-{XXX}",
+        "Update database status to 'merged' or 'deleted'",
+        "Clean up stale branch metadata"
+      ],
+      "userOptions": ["Keep branch for reference", "Delete immediately after merge", "Set retention period"],
+      "simplicity": "Git handles all branch lifecycle - no complex coordination needed",
+      "criticalSettings": ["branch_management.auto_delete_merged"]
     }
   }
 }

@@ -1,6 +1,6 @@
 """
-Performance Optimizer for MCP Instance Management
-Handles optimization for large projects with many instances and complex organizational structures
+Performance Optimizer for MCP Git Branch Management
+Handles optimization for large projects with many branches and complex organizational structures
 """
 
 import os
@@ -14,7 +14,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 
 from ..database.db_manager import DatabaseManager
-from ..database.git_queries import GitQueries
 
 
 class PerformanceMetrics:
@@ -123,79 +122,16 @@ class ContentCache:
                 "unique_keys": len(self.access_counts),
                 "avg_access_per_key": sum(self.access_counts.values()) / len(self.access_counts) if self.access_counts else 0
             }
-        self.lock = threading.RLock()
-    
-    def get(self, key: str) -> Optional[Any]:
-        with self.lock:
-            if key not in self.cache:
-                return None
-            
-            # Check TTL
-            if datetime.now().timestamp() - self.access_times[key] > self.ttl_seconds:
-                del self.cache[key]
-                del self.access_times[key]
-                return None
-            
-            # Update access time
-            self.access_times[key] = datetime.now().timestamp()
-            return self.cache[key]
-    
-    def set(self, key: str, value: Any):
-        with self.lock:
-            # Evict oldest if at capacity
-            if len(self.cache) >= self.max_size and key not in self.cache:
-                oldest_key = min(self.access_times.keys(), key=lambda k: self.access_times[k])
-                del self.cache[oldest_key]
-                del self.access_times[oldest_key]
-            
-            self.cache[key] = value
-            self.access_times[key] = datetime.now().timestamp()
-    
-    def clear(self):
-        with self.lock:
-            self.cache.clear()
-            self.access_times.clear()
-    
-    def get_stats(self) -> Dict[str, Any]:
-        with self.lock:
-            return {
-                "size": len(self.cache),
-                "max_size": self.max_size,
-                "oldest_entry": min(self.access_times.values()) if self.access_times else None,
-                "newest_entry": max(self.access_times.values()) if self.access_times else None
-            }
 
 
 class ParallelProcessor:
-    """Parallel processing support for multiple instance operations"""
+    """Parallel processing support for multiple branch operations"""
     def __init__(self, max_workers: int = 4):
         self.max_workers = max_workers
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
     
-    def parallel_conflict_detection(self, instances: List[str], target: str, 
-                                  conflict_detector) -> Dict[str, Any]:
-        """Run conflict detection for multiple instances in parallel"""
-        futures = {}
-        
-        for instance in instances:
-            future = self.executor.submit(conflict_detector.detect_conflicts, instance, target)
-            futures[future] = instance
-        
-        results = {}
-        for future in as_completed(futures):
-            instance = futures[future]
-            try:
-                results[instance] = future.result()
-            except Exception as e:
-                results[instance] = {
-                    "error": True,
-                    "message": f"Error detecting conflicts for {instance}: {str(e)}"
-                }
-        
-        return results
-    
-    def parallel_workspace_operations(self, operations: List[Tuple[str, callable, tuple]]) -> Dict[str, Any]:
-        """Execute workspace operations in parallel"""
+    def parallel_branch_operations(self, operations: List[Tuple[str, callable, tuple]]) -> Dict[str, Any]:
+        """Execute branch operations in parallel"""
         futures = {}
         
         for op_id, func, args in operations:
@@ -263,16 +199,19 @@ class DatabaseOptimizer:
             
             # Get query plan statistics for key queries
             test_queries = [
-                "SELECT * FROM mcp_instances WHERE status = 'active'",
-                "SELECT * FROM git_project_state ORDER BY created_at DESC LIMIT 10",
-                "SELECT * FROM instance_merges WHERE merge_status = 'in-progress'"
+                "SELECT * FROM git_branches WHERE status = 'active'",
+                "SELECT * FROM git_project_state ORDER BY created_at DESC LIMIT 10"
             ]
             
             query_plans = {}
             for query in test_queries:
-                cursor.execute(f"EXPLAIN QUERY PLAN {query}")
-                plan = cursor.fetchall()
-                query_plans[query] = plan
+                try:
+                    cursor.execute(f"EXPLAIN QUERY PLAN {query}")
+                    plan = cursor.fetchall()
+                    query_plans[query] = plan
+                except Exception:
+                    # Skip queries for tables that don't exist
+                    continue
             
             optimization_results["query_plans"] = query_plans
             
@@ -292,13 +231,10 @@ class DatabaseOptimizer:
         try:
             cursor = self.db_manager.connection.cursor()
             
-            # Additional performance indexes
+            # Performance indexes for branch-based system
             performance_indexes = [
-                "CREATE INDEX IF NOT EXISTS idx_git_project_state_reconciliation ON git_project_state(reconciliation_status, created_at)",
-                "CREATE INDEX IF NOT EXISTS idx_mcp_instances_themes ON mcp_instances(primary_themes, status)",
-                "CREATE INDEX IF NOT EXISTS idx_instance_merges_timeline ON instance_merges(started_at, merge_status)",
-                "CREATE INDEX IF NOT EXISTS idx_git_change_impacts_severity ON git_change_impacts(impact_severity, reconciliation_status)",
-                "CREATE INDEX IF NOT EXISTS idx_instance_workspace_files_merge ON instance_workspace_files(merge_status, modification_timestamp)"
+                "CREATE INDEX IF NOT EXISTS idx_git_project_state_branch ON git_project_state(current_branch, current_git_hash)",
+                "CREATE INDEX IF NOT EXISTS idx_git_branches_number ON git_branches(branch_number, status)"
             ]
             
             created_indexes = []
@@ -325,11 +261,10 @@ class DatabaseOptimizer:
 
 
 class LargeProjectOptimizer:
-    """Main optimizer for large project performance"""
+    """Main optimizer for large project performance - adapted for Git branches"""
     def __init__(self, project_root: Path, db_manager: DatabaseManager):
         self.project_root = Path(project_root)
         self.db_manager = db_manager
-        self.git_queries = GitQueries(db_manager)
         
         # Performance components
         self.metrics = PerformanceMetrics()
@@ -338,19 +273,24 @@ class LargeProjectOptimizer:
         self.db_optimizer = DatabaseOptimizer(db_manager)
         
         # Configuration
-        self.large_project_threshold = 100  # Number of instances
+        self.large_project_threshold = 50   # Number of branches (reduced from instances)
         self.optimization_interval = 3600   # 1 hour in seconds
         self.last_optimization = datetime.now()
     
     def is_large_project(self) -> bool:
         """Determine if this is a large project requiring optimization"""
         try:
-            active_instances = self.git_queries.list_active_instances()
-            total_instances = len(active_instances)
+            # Check Git branches instead of instances
+            import subprocess
+            result = subprocess.run(['git', 'branch', '--list', 'ai-pm-org-*'], 
+                                  capture_output=True, text=True, cwd=self.project_root)
             
-            # Check various large project indicators
-            if total_instances > self.large_project_threshold:
-                return True
+            if result.returncode == 0:
+                branches = [line.strip() for line in result.stdout.split('\n') if line.strip()]
+                total_branches = len(branches)
+                
+                if total_branches > self.large_project_threshold:
+                    return True
             
             # Check project file count
             project_files = list(self.project_root.rglob("*"))
@@ -414,13 +354,7 @@ class LargeProjectOptimizer:
             optimization_results["optimizations_applied"].append("cache_optimization")
             optimization_results["performance_improvements"]["cache"] = cache_results
             
-            # 6. Instance workspace cleanup
-            cleanup_results = self._cleanup_inactive_instances()
-            if cleanup_results.get("cleaned_count", 0) > 0:
-                optimization_results["optimizations_applied"].append("workspace_cleanup")
-                optimization_results["performance_improvements"]["cleanup"] = cleanup_results
-            
-            # 7. Memory optimization
+            # 6. Memory optimization
             memory_results = self._optimize_memory_usage()
             optimization_results["optimizations_applied"].append("memory_optimization")
             optimization_results["performance_improvements"]["memory"] = memory_results
@@ -603,78 +537,22 @@ class LargeProjectOptimizer:
             "current_utilization": len(self.cache.cache) / self.cache.max_size
         }
     
-    def _cleanup_inactive_instances(self) -> Dict[str, Any]:
-        """Clean up inactive or stale instances"""
-        try:
-            instances_dir = self.project_root / ".mcp-instances" / "active"
-            if not instances_dir.exists():
-                return {"cleaned_count": 0, "reason": "No active instances directory"}
-            
-            cleaned_count = 0
-            cleanup_details = []
-            
-            for instance_dir in instances_dir.iterdir():
-                if not instance_dir.is_dir():
-                    continue
-                
-                # Check instance metadata
-                metadata_file = instance_dir / ".mcp-branch-info.json"
-                if not metadata_file.exists():
-                    continue
-                
-                try:
-                    with open(metadata_file, 'r') as f:
-                        metadata = json.load(f)
-                    
-                    # Check if instance is stale (inactive for more than 7 days)
-                    created_at = datetime.fromisoformat(metadata.get("createdAt", ""))
-                    if datetime.now() - created_at > timedelta(days=7):
-                        # Check for recent activity
-                        workspace_path = instance_dir / "projectManagement"
-                        if workspace_path.exists():
-                            # Check modification times of key files
-                            recent_activity = False
-                            for file_path in workspace_path.rglob("*.json"):
-                                if file_path.stat().st_mtime > (datetime.now() - timedelta(days=1)).timestamp():
-                                    recent_activity = True
-                                    break
-                            
-                            if not recent_activity:
-                                # Archive stale instance
-                                archive_dir = self.project_root / ".mcp-instances" / "completed"
-                                archive_dir.mkdir(exist_ok=True)
-                                
-                                import shutil
-                                shutil.move(str(instance_dir), str(archive_dir / instance_dir.name))
-                                
-                                cleaned_count += 1
-                                cleanup_details.append({
-                                    "instance": instance_dir.name,
-                                    "reason": "inactive_for_7_days",
-                                    "created_at": metadata.get("createdAt")
-                                })
-                
-                except Exception as e:
-                    print(f"Error processing instance {instance_dir.name}: {e}")
-            
-            return {
-                "cleaned_count": cleaned_count,
-                "cleanup_details": cleanup_details
-            }
-            
-        except Exception as e:
-            return {"cleaned_count": 0, "error": str(e)}
-    
     def _optimize_memory_usage(self) -> Dict[str, Any]:
         """Optimize memory usage for large projects"""
         try:
             import gc
-            import psutil
-            import os
             
-            # Get current memory usage
-            process = psutil.Process(os.getpid())
-            memory_before = process.memory_info().rss / 1024 / 1024  # MB
+            # Get current memory usage if psutil available
+            memory_before = 0
+            memory_after = 0
+            
+            try:
+                import psutil
+                import os
+                process = psutil.Process(os.getpid())
+                memory_before = process.memory_info().rss / 1024 / 1024  # MB
+            except ImportError:
+                pass
             
             # Force garbage collection
             collected = gc.collect()
@@ -683,7 +561,12 @@ class LargeProjectOptimizer:
             self.cache.clear()
             
             # Get memory usage after optimization
-            memory_after = process.memory_info().rss / 1024 / 1024  # MB
+            if memory_before > 0:
+                try:
+                    memory_after = process.memory_info().rss / 1024 / 1024  # MB
+                except:
+                    pass
+            
             memory_saved = memory_before - memory_after
             
             return {
@@ -694,11 +577,6 @@ class LargeProjectOptimizer:
                 "cache_cleared": True
             }
             
-        except ImportError:
-            return {
-                "error": "psutil not available for memory monitoring",
-                "garbage_collected": gc.collect() if 'gc' in locals() else 0
-            }
         except Exception as e:
             return {"error": f"Memory optimization failed: {str(e)}"}
     
@@ -750,147 +628,6 @@ class LargeProjectOptimizer:
         
         return recommendations
     
-    def cleanup(self):
-        """Clean up resources"""
-        self.parallel_processor.shutdown()
-        self.cache.clear()
-            
-            # Check various size metrics
-            project_size = self._calculate_project_size()
-            merge_history = self.git_queries.get_merge_history(100)
-            
-            return (
-                total_instances >= self.large_project_threshold or
-                project_size > 1000000000 or  # > 1GB
-                len(merge_history) > 200
-            )
-            
-        except Exception:
-            return False
-    
-    def _calculate_project_size(self) -> int:
-        """Calculate total project size in bytes"""
-        total_size = 0
-        try:
-            for root, dirs, files in os.walk(self.project_root):
-                for file in files:
-                    file_path = Path(root) / file
-                    try:
-                        total_size += file_path.stat().st_size
-                    except (OSError, FileNotFoundError):
-                        continue
-        except Exception:
-            pass
-        return total_size
-    
-    def optimize_for_large_project(self) -> Dict[str, Any]:
-        """Run comprehensive optimization for large projects"""
-        optimization_report = {
-            "timestamp": datetime.now().isoformat(),
-            "project_size": self._calculate_project_size(),
-            "is_large_project": self.is_large_project(),
-            "optimizations_applied": []
-        }
-        
-        try:
-            # Database optimization
-            db_result = self.db_optimizer.optimize_database()
-            if db_result["success"]:
-                optimization_report["optimizations_applied"].append("database_optimization")
-                optimization_report["database_optimization"] = db_result["optimization_results"]
-            
-            # Performance index creation
-            index_result = self.db_optimizer.create_performance_indexes()
-            if index_result["success"]:
-                optimization_report["optimizations_applied"].append("performance_indexes")
-                optimization_report["performance_indexes"] = index_result
-            
-            # Cache optimization
-            cache_stats = self.cache.get_stats()
-            optimization_report["cache_stats"] = cache_stats
-            
-            # Clear old cache entries
-            self.cache.clear()
-            optimization_report["optimizations_applied"].append("cache_cleared")
-            
-            # Performance metrics summary
-            optimization_report["performance_metrics"] = {
-                "cache_hit_rate": self.metrics.get_cache_hit_rate(),
-                "average_operation_times": {
-                    op: self.metrics.get_average_time(op) 
-                    for op in self.metrics.operation_times.keys()
-                },
-                "total_database_queries": self.metrics.database_queries,
-                "total_file_operations": self.metrics.file_operations
-            }
-            
-            # Update last optimization time
-            self.last_optimization = datetime.now()
-            
-            return {
-                "success": True,
-                "optimization_report": optimization_report
-            }
-            
-        except Exception as e:
-            return {
-                "success": False,
-                "error": f"Large project optimization failed: {str(e)}",
-                "partial_report": optimization_report
-            }
-    
-    def optimize_instance_operations(self, instance_ids: List[str]) -> Dict[str, Any]:
-        """Optimize operations across multiple instances"""
-        try:
-            if not instance_ids:
-                return {"success": True, "message": "No instances to optimize"}
-            
-            # Parallel processing for multiple instances
-            if len(instance_ids) > 1:
-                # Pre-load frequently accessed data
-                self._preload_instance_data(instance_ids)
-                
-                # Use parallel processing for conflict detection
-                results = {
-                    "parallel_processing_used": True,
-                    "instances_processed": len(instance_ids),
-                    "processing_time_saved": "estimated 60-80%"
-                }
-            else:
-                results = {
-                    "parallel_processing_used": False,
-                    "instances_processed": 1,
-                    "single_instance_optimization": True
-                }
-            
-            return {
-                "success": True,
-                "optimization_results": results
-            }
-            
-        except Exception as e:
-            return {
-                "success": False,
-                "error": f"Instance operation optimization failed: {str(e)}"
-            }
-    
-    def _preload_instance_data(self, instance_ids: List[str]):
-        """Preload frequently accessed instance data into cache"""
-        for instance_id in instance_ids:
-            try:
-                # Cache instance data
-                instance_data = self.git_queries.get_mcp_instance(instance_id)
-                if instance_data:
-                    self.cache.set(f"instance:{instance_id}", instance_data)
-                
-                # Cache workspace file list if exists
-                workspace_files = self.git_queries.get_instance_file_changes(instance_id)
-                if workspace_files:
-                    self.cache.set(f"files:{instance_id}", workspace_files)
-                    
-            except Exception as e:
-                print(f"Warning: Could not preload data for {instance_id}: {e}")
-    
     def get_optimization_recommendations(self) -> Dict[str, Any]:
         """Analyze project and provide optimization recommendations"""
         recommendations = []
@@ -925,23 +662,28 @@ class LargeProjectOptimizer:
                     "action": "Increase cache size or adjust TTL"
                 })
             
-            # Check active instances count
-            active_instances = self.git_queries.list_active_instances()
-            if len(active_instances) > 20:
-                recommendations.append({
-                    "type": "instance_cleanup",
-                    "priority": "medium",
-                    "description": f"{len(active_instances)} active instances detected",
-                    "action": "Consider archiving completed instances"
-                })
+            # Check active branches count
+            try:
+                import subprocess
+                result = subprocess.run(['git', 'branch', '--list', 'ai-pm-org-*'], 
+                                      capture_output=True, text=True, cwd=self.project_root)
+                if result.returncode == 0:
+                    branches = [line.strip() for line in result.stdout.split('\n') if line.strip()]
+                    if len(branches) > 20:
+                        recommendations.append({
+                            "type": "branch_cleanup",
+                            "priority": "medium",
+                            "description": f"{len(branches)} AI branches detected",
+                            "action": "Consider cleaning up completed branches"
+                        })
+            except Exception:
+                pass
             
             return {
                 "success": True,
                 "recommendations": recommendations,
                 "project_metrics": {
                     "is_large_project": self.is_large_project(),
-                    "project_size": self._calculate_project_size(),
-                    "active_instances": len(active_instances),
                     "cache_hit_rate": cache_hit_rate,
                     "last_optimization": self.last_optimization.isoformat()
                 }

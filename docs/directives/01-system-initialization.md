@@ -88,26 +88,24 @@ This directive ensures proper system initialization with Git integration, instan
 **Git Repository Detection**:
 1. Check if project root has existing Git repository (.git/ directory)
 2. Verify Git repository integrity if found
-3. Check Git configuration compatibility with MCP instance management
+3. Check Git configuration compatibility with MCP branch management
 
 **Git Repository Initialization** (if needed and `git.auto_init_repo=true`):
 1. Run `git init` in project root
-2. Set up initial .gitignore for MCP instance management
+2. Set up initial .gitignore for MCP branch management
 3. Create initial commit with project structure
 
 **Git Configuration for MCP**:
 Update .gitignore with MCP-specific rules:
 ```gitignore
-# MCP Instance Management - Track Structure, Not Content
-.mcp-instances/active/*/projectManagement/UserSettings/
-.mcp-instances/active/*/projectManagement/database/backups/
-.mcp-instances/*/logs/
-.mcp-instances/*/temp/
-
-# Project Management - Track Organizational State  
+# Project Management - Track Organizational State, Not User Data
 projectManagement/UserSettings/
 projectManagement/database/backups/
 projectManagement/.mcp-session-*
+
+# Temporary Files
+*.tmp
+.ai-pm-temp/
 ```
 
 **Git State Recording**:
@@ -227,7 +225,7 @@ This directive integrates with:
 - **03-session-management**: Git-aware session boot
 - **13-metadata-management**: Compatibility verification  
 - **14-instance-management**: Instance authority establishment
-- **16-git-integration**: Repository configuration
+- **15-git-integration**: Repository configuration
 - **database-integration**: Hybrid architecture setup
 
 ## User Communication Guidelines

@@ -1,6 +1,6 @@
 """
-Error Recovery and Rollback System for MCP Instance Management
-Provides comprehensive error recovery, rollback capabilities, and failure handling
+Error Recovery and Rollback System for MCP Git Branch Management
+Provides comprehensive error recovery, rollback capabilities, and failure handling adapted for Git branches
 """
 
 import os
@@ -14,7 +14,6 @@ from enum import Enum
 import traceback
 
 from ..database.db_manager import DatabaseManager
-from ..database.git_queries import GitQueries
 
 
 class RecoveryLevel(Enum):
@@ -25,12 +24,14 @@ class RecoveryLevel(Enum):
 
 
 class OperationType(Enum):
-    """Types of operations that can be rolled back"""
-    INSTANCE_CREATION = "instance_creation"
-    INSTANCE_MERGE = "instance_merge"
+    """Types of operations that can be rolled back - adapted for Git branches"""
+    BRANCH_CREATION = "branch_creation"
+    BRANCH_MERGE = "branch_merge"
     CONFLICT_RESOLUTION = "conflict_resolution"
     DATABASE_OPERATION = "database_operation"
     FILE_OPERATION = "file_operation"
+    THEME_MODIFICATION = "theme_modification"
+    FLOW_MODIFICATION = "flow_modification"
 
 
 class RecoveryPoint:
@@ -68,10 +69,11 @@ class RecoveryPoint:
 
 
 class BackupManager:
-    """Manages backups for rollback operations"""
+    """Manages backups for rollback operations - adapted for Git branch system"""
     def __init__(self, project_root: Path):
         self.project_root = Path(project_root)
-        self.backup_dir = self.project_root / ".mcp-instances" / "backups"
+        # Use project management directory instead of .mcp-instances
+        self.backup_dir = self.project_root / "projectManagement" / "backups"
         self.backup_dir.mkdir(parents=True, exist_ok=True)
     
     def create_backup(self, backup_id: str, paths: List[Path]) -> Dict[str, Any]:
@@ -230,19 +232,19 @@ class BackupManager:
 
 
 class ErrorRecoveryManager:
-    """Main error recovery and rollback system"""
+    """Main error recovery and rollback system adapted for Git branches"""
     def __init__(self, project_root: Path, db_manager: DatabaseManager):
         self.project_root = Path(project_root)
         self.db_manager = db_manager
-        self.git_queries = GitQueries(db_manager)
         
         # Recovery components
         self.backup_manager = BackupManager(project_root)
         self.recovery_points = []
-        self.recovery_log_file = self.project_root / ".mcp-instances" / ".recovery_log.jsonl"
         
-        # Ensure recovery log directory exists
-        self.recovery_log_file.parent.mkdir(parents=True, exist_ok=True)
+        # Use project management directory for recovery log
+        recovery_dir = self.project_root / "projectManagement" / "recovery"
+        recovery_dir.mkdir(parents=True, exist_ok=True)
+        self.recovery_log_file = recovery_dir / "recovery_log.jsonl"
     
     def create_recovery_point(self, operation_type: OperationType, 
                             description: str, context_data: Dict[str, Any]) -> str:
@@ -289,31 +291,37 @@ class ErrorRecoveryManager:
     
     def _get_backup_paths_for_operation(self, operation_type: OperationType, 
                                       context_data: Dict[str, Any]) -> List[Path]:
-        """Determine what paths need backup for different operation types"""
+        """Determine what paths need backup for different operation types - adapted for Git branches"""
         backup_paths = []
         
-        if operation_type == OperationType.INSTANCE_CREATION:
-            # Backup main instance and instances directory
+        if operation_type == OperationType.BRANCH_CREATION:
+            # Backup main project management and git state
             backup_paths.extend([
                 self.project_root / "projectManagement",
-                self.project_root / ".mcp-instances"
+                self.project_root / ".git" / "refs" / "heads",
+                self.project_root / ".git" / "index"
             ])
         
-        elif operation_type == OperationType.INSTANCE_MERGE:
-            # Backup main instance, source instance, and merge records
-            backup_paths.append(self.project_root / "projectManagement")
-            
-            source_instance = context_data.get("source_instance")
-            if source_instance:
-                source_path = self.project_root / ".mcp-instances" / "active" / source_instance
-                if source_path.exists():
-                    backup_paths.append(source_path)
-        
-        elif operation_type == OperationType.CONFLICT_RESOLUTION:
-            # Backup main instance and conflict workspace
+        elif operation_type == OperationType.BRANCH_MERGE:
+            # Backup main project management and git state
             backup_paths.extend([
                 self.project_root / "projectManagement",
-                self.project_root / ".mcp-instances" / "conflicts"
+                self.project_root / ".git" / "refs" / "heads",
+                self.project_root / ".git" / "index"
+            ])
+            
+            # Include specific branch if mentioned
+            branch_name = context_data.get("branch_name")
+            if branch_name:
+                branch_ref = self.project_root / ".git" / "refs" / "heads" / branch_name
+                if branch_ref.exists():
+                    backup_paths.append(branch_ref)
+        
+        elif operation_type == OperationType.CONFLICT_RESOLUTION:
+            # Backup main project management and any conflict workspace
+            backup_paths.extend([
+                self.project_root / "projectManagement",
+                self.project_root / "projectManagement" / "conflicts"
             ])
         
         elif operation_type == OperationType.DATABASE_OPERATION:
@@ -329,6 +337,18 @@ class ErrorRecoveryManager:
                 path = Path(file_path)
                 if path.exists():
                     backup_paths.append(path)
+        
+        elif operation_type == OperationType.THEME_MODIFICATION:
+            # Backup themes directory
+            themes_dir = self.project_root / "projectManagement" / "Themes"
+            if themes_dir.exists():
+                backup_paths.append(themes_dir)
+        
+        elif operation_type == OperationType.FLOW_MODIFICATION:
+            # Backup flows directory
+            flows_dir = self.project_root / "projectManagement" / "ProjectFlow"
+            if flows_dir.exists():
+                backup_paths.append(flows_dir)
         
         return backup_paths
     
@@ -398,25 +418,25 @@ class ErrorRecoveryManager:
             }
     
     def _rollback_database_changes(self, recovery_point: RecoveryPoint) -> Dict[str, Any]:
-        """Rollback database changes"""
+        """Rollback database changes - adapted for Git branch system"""
         try:
             # This is a simplified database rollback
             # In a real implementation, this would use database transactions or more sophisticated rollback
             
-            if recovery_point.operation_type == OperationType.INSTANCE_CREATION:
-                # Remove instance from database
-                instance_id = recovery_point.data.get("instance_id")
-                if instance_id:
+            if recovery_point.operation_type == OperationType.BRANCH_CREATION:
+                # Remove branch record from database
+                branch_name = recovery_point.data.get("branch_name")
+                if branch_name:
                     cursor = self.db_manager.connection.cursor()
-                    cursor.execute("DELETE FROM mcp_instances WHERE instance_id = ?", (instance_id,))
+                    cursor.execute("DELETE FROM git_branches WHERE branch_name = ?", (branch_name,))
                     self.db_manager.connection.commit()
             
-            elif recovery_point.operation_type == OperationType.INSTANCE_MERGE:
+            elif recovery_point.operation_type == OperationType.BRANCH_MERGE:
                 # Rollback merge record
                 merge_id = recovery_point.data.get("merge_id")
                 if merge_id:
                     cursor = self.db_manager.connection.cursor()
-                    cursor.execute("DELETE FROM instance_merges WHERE merge_id = ?", (merge_id,))
+                    cursor.execute("DELETE FROM branch_merges WHERE merge_id = ?", (merge_id,))
                     self.db_manager.connection.commit()
             
             return {"success": True}
@@ -426,27 +446,42 @@ class ErrorRecoveryManager:
     
     def _rollback_operation_specific(self, recovery_point: RecoveryPoint, 
                                    level: RecoveryLevel) -> Dict[str, Any]:
-        """Handle operation-specific rollback logic"""
+        """Handle operation-specific rollback logic - adapted for Git branches"""
         actions = []
         
         try:
-            if recovery_point.operation_type == OperationType.INSTANCE_CREATION:
-                # Clean up instance workspace
-                instance_id = recovery_point.data.get("instance_id")
-                if instance_id:
-                    workspace_path = self.project_root / ".mcp-instances" / "active" / instance_id
-                    if workspace_path.exists():
-                        shutil.rmtree(workspace_path)
-                        actions.append(f"Removed instance workspace: {instance_id}")
+            if recovery_point.operation_type == OperationType.BRANCH_CREATION:
+                # Clean up Git branch if it was created
+                branch_name = recovery_point.data.get("branch_name")
+                if branch_name:
+                    try:
+                        import subprocess
+                        result = subprocess.run(['git', 'branch', '-D', branch_name], 
+                                              capture_output=True, text=True, cwd=self.project_root)
+                        if result.returncode == 0:
+                            actions.append(f"Removed Git branch: {branch_name}")
+                    except Exception as e:
+                        actions.append(f"Could not remove Git branch {branch_name}: {str(e)}")
             
-            elif recovery_point.operation_type == OperationType.INSTANCE_MERGE:
-                # Clean up merge artifacts
+            elif recovery_point.operation_type == OperationType.BRANCH_MERGE:
+                # Reset Git state if merge was in progress
                 merge_id = recovery_point.data.get("merge_id")
                 if merge_id:
-                    conflict_workspace = self.project_root / ".mcp-instances" / "conflicts" / merge_id
-                    if conflict_workspace.exists():
-                        shutil.rmtree(conflict_workspace)
-                        actions.append(f"Removed merge conflict workspace: {merge_id}")
+                    try:
+                        import subprocess
+                        # Reset any ongoing merge
+                        subprocess.run(['git', 'merge', '--abort'], 
+                                     capture_output=True, cwd=self.project_root)
+                        actions.append(f"Aborted merge operation: {merge_id}")
+                    except Exception:
+                        pass  # Merge abort might fail if no merge in progress
+            
+            elif recovery_point.operation_type == OperationType.CONFLICT_RESOLUTION:
+                # Clean up conflict workspace
+                conflict_dir = self.project_root / "projectManagement" / "conflicts"
+                if conflict_dir.exists():
+                    shutil.rmtree(conflict_dir)
+                    actions.append("Cleaned up conflict resolution workspace")
             
             return {"success": True, "actions": actions}
             
@@ -514,41 +549,54 @@ class ErrorRecoveryManager:
     
     def _cleanup_failed_operation(self, operation_type: OperationType, 
                                 context: Dict[str, Any]) -> Dict[str, Any]:
-        """Cleanup artifacts from failed operations"""
+        """Cleanup artifacts from failed operations - adapted for Git branches"""
         actions = []
         
         try:
-            if operation_type == OperationType.INSTANCE_CREATION:
-                # Clean up partial instance creation
-                instance_id = context.get("instance_id")
-                if instance_id:
-                    # Remove partial workspace
-                    workspace_path = self.project_root / ".mcp-instances" / "active" / instance_id
-                    if workspace_path.exists():
-                        shutil.rmtree(workspace_path)
-                        actions.append(f"Cleaned up partial workspace: {instance_id}")
+            if operation_type == OperationType.BRANCH_CREATION:
+                # Clean up partial branch creation
+                branch_name = context.get("branch_name")
+                if branch_name:
+                    # Remove Git branch if it was created
+                    try:
+                        import subprocess
+                        result = subprocess.run(['git', 'branch', '-D', branch_name], 
+                                              capture_output=True, text=True, cwd=self.project_root)
+                        if result.returncode == 0:
+                            actions.append(f"Cleaned up partial branch: {branch_name}")
+                    except Exception:
+                        pass
                     
                     # Remove database record if created
                     try:
                         cursor = self.db_manager.connection.cursor()
-                        cursor.execute("DELETE FROM mcp_instances WHERE instance_id = ?", (instance_id,))
+                        cursor.execute("DELETE FROM git_branches WHERE branch_name = ?", (branch_name,))
                         if cursor.rowcount > 0:
                             self.db_manager.connection.commit()
-                            actions.append(f"Removed database record: {instance_id}")
+                            actions.append(f"Removed database record: {branch_name}")
                     except Exception:
                         pass
             
-            elif operation_type == OperationType.INSTANCE_MERGE:
+            elif operation_type == OperationType.BRANCH_MERGE:
                 # Clean up partial merge
                 merge_id = context.get("merge_id")
                 if merge_id:
                     # Remove merge record
                     try:
                         cursor = self.db_manager.connection.cursor()
-                        cursor.execute("DELETE FROM instance_merges WHERE merge_id = ?", (merge_id,))
+                        cursor.execute("DELETE FROM branch_merges WHERE merge_id = ?", (merge_id,))
                         if cursor.rowcount > 0:
                             self.db_manager.connection.commit()
                             actions.append(f"Removed partial merge record: {merge_id}")
+                    except Exception:
+                        pass
+                    
+                    # Abort Git merge if in progress
+                    try:
+                        import subprocess
+                        subprocess.run(['git', 'merge', '--abort'], 
+                                     capture_output=True, cwd=self.project_root)
+                        actions.append("Aborted partial Git merge")
                     except Exception:
                         pass
             
@@ -630,6 +678,7 @@ class ErrorRecoveryManager:
             cleanup_results = []
             
             # Clean up old recovery points
+            from datetime import timedelta
             cutoff_date = datetime.now() - timedelta(days=keep_days)
             old_points = [p for p in self.recovery_points if p.timestamp < cutoff_date]
             

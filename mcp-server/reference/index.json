@@ -37,12 +37,12 @@
           "keyWorkflows": ["hybridArchitecture", "realTimeStateSynchronization", "sessionPersistence"],
           "criticalSettings": ["database.enabled", "synchronization.atomicOperations"]
         },
-        "16-git-integration": {
-          "file": "reference/directives/16-git-integration.json",
-          "purpose": "Root-level Git tracking and code change detection with instance management",
+        "15-git-integration": {
+          "file": "reference/directives/15-git-integration.json",
+          "purpose": "Root-level Git tracking and code change detection with branch management",
           "triggers": ["Session boot with project code changes", "Git repository state detection needed", "External code modifications detected"],
-          "keyWorkflows": ["sessionBootGitDetection", "organizationalReconciliation", "gitStateTracking", "instanceGitIntegration"],
-          "criticalSettings": ["git.enabled", "git.auto_init_repo", "git.code_change_detection", "instance_management.enabled"]
+          "keyWorkflows": ["sessionBootGitDetection", "organizationalReconciliation", "gitStateTracking", "branchGitIntegration"],
+          "criticalSettings": ["git.enabled", "git.auto_init_repo", "git.code_change_detection", "branch_management.enabled"]
         }
       },
       "keyDecisionPoints": [
@@ -166,19 +166,12 @@
           "keyWorkflows": ["testingProtocol", "validationRequirements", "codeQualityStandards"],
           "criticalSettings": ["validation.enforceTaskMilestoneReference", "validation.validateJsonSchemas"]
         },
-        "14-instance-management": {
-          "file": "reference/directives/14-instance-management.json",
-          "purpose": "Git-like instance lifecycle management",
-          "triggers": ["Instance creation request", "Multiple developer scenario", "Parallel development needed", "Instance merge operations"],
-          "keyWorkflows": ["instanceCreation", "instanceIsolation", "instanceMerging", "instanceManagement"],
-          "criticalSettings": ["instance_management.enabled", "instance_management.main_instance_authority", "instance_management.max_active_instances"]
-        },
-        "15-conflict-resolution": {
-          "file": "reference/directives/15-conflict-resolution.json",
-          "purpose": "Git-like conflict detection and resolution protocols",
-          "triggers": ["Instance merge conflicts detected", "Organizational state divergence", "Database conflicts during merge"],
-          "keyWorkflows": ["conflictDetection", "conflictPresentation", "themeConflictResolution", "flowConflictResolution", "taskConflictResolution", "databaseConflictResolution", "mergeCompletion"],
-          "criticalSettings": ["conflict_resolution.resolution_strategies", "conflict_resolution.require_main_instance_approval"]
+        "14-branch-management": {
+          "file": "reference/directives/14-branch-management.json",
+          "purpose": "Git branch lifecycle management with user attribution",
+          "triggers": ["Branch creation request", "Multiple developer scenario", "Parallel development needed", "Branch merge operations"],
+          "keyWorkflows": ["branchCreation", "branchIsolation", "branchMerging", "branchManagement"],
+          "criticalSettings": ["branch_management.enabled", "branch_management.canonical_branch_authority", "branch_management.max_active_branches"]
         }
       },
       "keyDecisionPoints": [
@@ -327,9 +320,8 @@
     "projectCompletion": "phase6.06-task-management",
     "logging": "phase5.09-logging-documentation",
     "flowIndexManagement": "phase5.08-project-management",
-    "gitIntegration": "phase1.16-git-integration",
-    "instanceManagement": "phase4.14-instance-management",
-    "conflictResolution": "phase4.15-conflict-resolution"
+    "gitIntegration": "phase1.15-git-integration",
+    "branchManagement": "phase4.14-branch-management"
   },
   "configurationHierarchy": {
     "critical": [
@@ -340,8 +332,8 @@
       "git.enabled",
       "git.auto_init_repo",
       "git.code_change_detection",
-      "instance_management.enabled",
-      "instance_management.main_instance_authority"
+      "branch_management.enabled",
+      "branch_management.canonical_branch_authority"
     ],
     "important": [
       "tasks.maxActiveSidequests",
@@ -351,9 +343,9 @@
       "validation.requireApprovalForStructureChanges",
       "git.auto_init_repo",
       "git.code_change_detection",
-      "instance_management.max_active_instances",
-      "conflict_resolution.resolution_strategies",
-      "conflict_resolution.require_main_instance_approval"
+      "branch_management.max_active_branches",
+      "branch_management.branch_naming_validation",
+      "branch_management.auto_delete_merged"
     ],
     "optional": [
       "archiving.deleteArchivesOlderThan",

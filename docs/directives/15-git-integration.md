@@ -295,20 +295,23 @@ WHERE instance_id = ?
 **Expected structure for optimal Git integration**:
 ```
 /projectRoot/
-├── .git/                              # Root-level Git repository
-├── [project source files...]          # All tracked source code
-├── projectManagement/                 # MAIN instance (tracked)
-├── .mcp-instances/                    # Instance management (tracked structure)
-└── .gitignore                        # Updated for MCP
+├── .git/
+│   ├── main                               # User's project code (untouched)
+│   ├── ai-pm-org-main                    # Canonical AI organizational state
+│   ├── ai-pm-org-branch-{XXX}
+│   ├── ai-pm-org-branch-{XXX}
+│   └── ai-pm-org-branch-{XXX}
+├── [project source files...]             # All tracked source code
+├── projectManagement/                    # AI organizational state (on current branch)
+└── .gitignore                           # Updated for MCP
 ```
 
 ### .gitignore Configuration
 **Tracked in Git**:
 - All project source code (existing behavior)
-- Main `projectManagement/` organizational state
-- Instance management structure (`.mcp-instances/`)
-- Merge history and conflict resolution logs
-- Instance metadata and branch information
+- AI organizational state (`projectManagement/`) on all branches
+- Branch metadata (`.ai-pm-meta.json` on work branches)
+- Git merge history (native Git log)
 
 **NOT Tracked**:
 - User-specific settings (`projectManagement/UserSettings/`)
@@ -318,16 +321,14 @@ WHERE instance_id = ?
 
 **Updated .gitignore**:
 ```gitignore
-# MCP Instance Management - Track Structure, Not Content
-.mcp-instances/active/*/projectManagement/UserSettings/
-.mcp-instances/active/*/projectManagement/database/backups/
-.mcp-instances/*/logs/
-.mcp-instances/*/temp/
-
-# Project Management - Track Organizational State
+# Project Management - Track Organizational State, Not User Data
 projectManagement/UserSettings/
 projectManagement/database/backups/
 projectManagement/.mcp-session-*
+
+# Temporary Files
+*.tmp
+.ai-pm-temp/
 ```
 
 ## Reconciliation Strategies

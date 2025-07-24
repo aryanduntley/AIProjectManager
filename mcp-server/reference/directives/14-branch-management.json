@@ -1,0 +1,442 @@
+{
+  "metadata": {
+    "id": "14-branch-management",
+    "title": "Git Branch-Based Management Directives",
+    "priority": "high",
+    "frequency": "branch-operations",
+    "version": "1.0.0",
+    "humanReadable": "../docs/directives/14-branch-management.md"
+  },
+  "triggers": [
+    "Branch creation request",
+    "Multiple developer scenario", 
+    "Parallel development needed",
+    "Branch merge operations",
+    "User identification needed"
+  ],
+  "workflows": {
+    "aiMainBranchSetup": {
+      "directive": "Initialize ai-pm-org-main branch (done once per project)",
+      "when": "Project initialization or first branch creation",
+      "steps": [
+        {
+          "action": "ensureAiMainBranchExists",
+          "description": "Create ai-pm-org-main branch if it doesn't exist",
+          "required": true,
+          "process": [
+            "Check if ai-pm-org-main branch exists: git branch --list ai-pm-org-main",
+            "If not exists: git checkout -b ai-pm-org-main main",
+            "Initialize AI organizational structure on branch",
+            "Commit initial organizational state"
+          ]
+        },
+        {
+          "action": "initializeBranchMetadata",
+          "description": "Set up minimal branch tracking in database",
+          "required": true,
+          "process": [
+            "Initialize ai_instance_branches table",
+            "Record ai-pm-org-main as canonical branch",
+            "Set up Git state tracking in git_project_state table"
+          ]
+        }
+      ]
+    },
+    "branchCreation": {
+      "directive": "Create Git branches for parallel development with automatic user identification",
+      "steps": [
+        {
+          "action": "detectTeamMember",
+          "description": "Detect if this is a team member joining existing project",
+          "required": true,
+          "detection_criteria": [
+            "ai-pm-org-main branch exists (from clone)",
+            "projectManagement/ structure exists (cloned project)",
+            "Git remote 'origin' exists (cloned from remote)",
+            "Currently on ai-pm-org-main (team members shouldn't work directly on main)"
+          ],
+          "team_member_behavior": "Automatically create work branch for team members",
+          "main_contributor_behavior": "Allow direct work on ai-pm-org-main"
+        },
+        {
+          "action": "identifyUser",
+          "description": "Automatically detect user information for branch attribution",
+          "required": true,
+          "detection_order": [
+            "Git config user.name and user.email",
+            "Environment variables (USER, USERNAME)",
+            "System username (getpass.getuser())",
+            "Default fallback: 'ai-user'"
+          ],
+          "user_metadata": {
+            "name": "User identifier for branch attribution",
+            "email": "Email from Git config if available",
+            "detection_source": "Track how user was detected (git_config, environment, system, fallback)"
+          }
+        },
+        {
+          "action": "generateBranchName", 
+          "description": "Generate sequential branch name: ai-pm-org-branch-{XXX}",
+          "required": true,
+          "format": "ai-pm-org-branch-{XXX}",
+          "examples": [
+            "ai-pm-org-branch-{001}",
+            "ai-pm-org-branch-{002}",
+            "ai-pm-org-branch-{003}"
+          ],
+          "conflict_resolution": "Sequential numbering prevents conflicts - no additional logic needed"
+        },
+        {
+          "action": "createBranch",
+          "description": "Pure Git operation to create branch with inherited state",
+          "required": true,
+          "process": [
+            "Validate ai-pm-org-main branch is clean",
+            "Execute: git checkout -b {branch-name} ai-pm-org-main",
+            "Branch inherits complete organizational state naturally",
+            "Create .ai-pm-meta.json with branch metadata"
+          ]
+        },
+        {
+          "action": "registerBranch",
+          "description": "Register branch in database for tracking",
+          "required": true,
+          "database_operations": [
+            "Insert into ai_instance_branches table",
+            "Record branch number and metadata in .ai-pm-meta.json",
+            "Set status to 'active'",
+            "Track creation timestamp"
+          ]
+        }
+      ]
+    },
+    "branchIsolation": {
+      "directive": "Git provides natural isolation - no custom logic needed",
+      "steps": [
+        {
+          "action": "naturalGitIsolation",
+          "description": "Git branches provide complete isolation automatically",
+          "required": false,
+          "git_benefits": [
+            "Each branch has complete independent state",
+            "No file copying or workspace duplication needed",
+            "Changes tracked in Git history naturally",
+            "Multiple branches provide independent development environments"
+          ]
+        },
+        {
+          "action": "branchSwitching",
+          "description": "Switch between branches for different work",
+          "required": true,
+          "process": [
+            "Use: git checkout {branch-name} to switch contexts",
+            "All organizational state switches automatically",
+            "Database and files are branch-specific",
+            "No manual context preservation needed"
+          ]
+        }
+      ]
+    },
+    "branchMerging": {
+      "directive": "Use standard Git merge operations with user attribution",
+      "steps": [
+        {
+          "action": "preMergeValidation",
+          "description": "Validate branch and main state before merge",
+          "required": true,
+          "validation": [
+            "ai-pm-org-main is in clean state",
+            "Branch has committed all changes", 
+            "Check for external user code changes",
+            "Identify whose work is being merged"
+          ]
+        },
+        {
+          "action": "executeGitMerge",
+          "description": "Standard Git merge with conflict detection",
+          "required": true,
+          "process": [
+            "Switch to ai-pm-org-main: git checkout ai-pm-org-main",
+            "Execute merge: git merge {branch-name}",
+            "Git handles all conflict detection automatically",
+            "Show which user's work is being merged"
+          ],
+          "conflict_handling": "If conflicts occur, use standard Git resolution tools (git mergetool, manual editing)"
+        },
+        {
+          "action": "postMergeCleanup",
+          "description": "Update database and optionally delete branch",
+          "required": true,
+          "cleanup": [
+            "Update ai_instance_branches table with merge timestamp",
+            "Optionally delete branch: git branch -d {branch-name}",
+            "Update Git state tracking",
+            "Report successful merge with user attribution"
+          ]
+        }
+      ]
+    },
+    "branchManagement": {
+      "directive": "Simple branch lifecycle management",
+      "steps": [
+        {
+          "action": "listActiveBranches",
+          "description": "Show all AI organizational branches with sequential numbering",
+          "required": false,
+          "process": [
+            "Execute: git branch --list 'ai-pm-org-*'",
+            "Parse branch names to extract sequential numbers",
+            "Show current branch with indicator",
+            "Display last activity from database"
+          ]
+        },
+        {
+          "action": "getBranchStatus",
+          "description": "Get status of specific branch with user context",
+          "required": false,
+          "status_info": [
+            "Extract branch number and check .ai-pm-meta.json for details",
+            "Show Git status: ahead/behind ai-pm-org-main",
+            "Show uncommitted changes",
+            "Display branch creation date and activity"
+          ]
+        },
+        {
+          "action": "deleteBranch",
+          "description": "Delete completed branch after merge",
+          "required": false,
+          "process": [
+            "Verify branch is merged or force delete if needed",
+            "Execute: git branch -d {branch-name}",
+            "Update database status to 'deleted'",
+            "Report which user's branch was deleted"
+          ]
+        }
+      ]
+    }
+  },
+  "branchNamingConventions": {
+    "format": "ai-pm-org-branch-{XXX}",
+    "examples": [
+      "ai-pm-org-branch-{001}",
+      "ai-pm-org-branch-{002}",
+      "ai-pm-org-branch-{003}"
+    ],
+    "validation": [
+      "Must start with 'ai-pm-org-branch-' prefix", 
+      "Sequential numbering prevents naming conflicts",
+      "Zero-padded 3 digits (001, 002, 003...)",
+      "No user input required for naming",
+      "Fully automated branch creation"
+    ],
+    "sequentialNumbering": {
+      "automatic": true,
+      "source": "Existing branch analysis",
+      "format": "Zero-padded 3 digits", 
+      "collision_prevention": "Sequential numbering eliminates conflicts"
+    }
+  },
+  "gitIntegration": {
+    "principle": "Leverage native Git capabilities instead of custom logic",
+    "benefits": [
+      "Zero file copying or database duplication",
+      "Native Git conflict resolution tools",
+      "Standard Git history and tracking",
+      "Familiar Git mental model for users",
+      "Multiple branches can work on different approaches independently"
+    ],
+    "branchStructure": {
+      "main": "User's original project code (untouched)",
+      "ai-pm-org-main": "Canonical AI organizational state",
+      "ai-pm-org-branch-{XXX}": "Sequential numbered work branches"
+    }
+  },
+  "branchIdentification": {
+    "directive": "All operations use sequential branch numbering for clear identification",
+    "identification": [
+      "Branch creation shows generated sequential number",
+      "Branch listing shows number and creation timestamp",
+      "Merge operations identify which branch number is being merged",
+      "Multiple branches can work on different approaches simultaneously"
+    ],
+    "parallelDevelopment": {
+      "enabled": true,
+      "sequentialNumbers": "Multiple branches: ai-pm-org-branch-001, ai-pm-org-branch-002, etc.",
+      "parallelWork": "Complete independence through Git branch isolation",
+      "mergeHandling": "Each branch merged independently by number"
+    }
+  },
+  "templateUsage": {
+    "directive": "Minimal metadata files only - Git handles the rest",
+    "requiredTemplates": {
+      ".ai-pm-meta.json": {
+        "purpose": "Minimal branch metadata (replaces complex instance files)",
+        "location": "Created in branch root when branch is created",
+        "content": {
+          "branchName": "ai-pm-org-branch-{XXX}",
+          "branchNumber": "Sequential number (integer)",
+          "createdAt": "ISO timestamp",
+          "baseBranch": "ai-pm-org-main", 
+          "status": "active",
+          "created_by": {
+            "name": "User identifier (from detection)",
+            "email": "User email (if available from Git config)",
+            "detection_source": "How user was detected (git_config, environment, system, fallback)"
+          }
+        },
+        "statusValues": ["active", "merged", "deleted"],
+        "statusDescription": {
+          "active": "Branch is currently in use for development",
+          "merged": "Branch has been merged into ai-pm-org-main",
+          "deleted": "Branch has been deleted after merge completion"
+        }
+      }
+    },
+    "removedComplexity": [
+      "No .mcp-branch-info.json (replaced by sequential numbering)",
+      "No .mcp-work-summary.md (Git history provides this)",
+      "No .mcp-instances/ directory structure",
+      "No workspace copying or duplication",
+      "No complex merge logging (Git history provides this)"
+    ]
+  },
+  "simplificationBenefits": {
+    "codeReduction": "97% reduction from 15,000+ lines to ~700 lines",
+    "databaseSimplification": "83% table reduction (12 tables → 2 tables)",
+    "toolSimplification": "Simple Git operations instead of complex coordination",
+    "familiarWorkflow": "Standard Git branching/merging patterns",
+    "zeroFileduplication": "Git handles all state inheritance naturally",
+    "nativeConflictResolution": "Use standard Git tools instead of custom system"
+  },
+  "teamCollaboration": {
+    "directive": "Automatic team member detection and branch creation for collaborative projects",
+    "workflow": {
+      "projectCreator": {
+        "description": "First user to initialize AI Project Manager on a project",
+        "behavior": [
+          "Creates ai-pm-org-main branch from user's main branch",
+          "Initializes projectManagement/ structure",
+          "Works directly on ai-pm-org-main (single user mode)"
+        ]
+      },
+      "teamMember": {
+        "description": "Additional users who clone the repository and install MCP server",
+        "detection": [
+          "ai-pm-org-main branch already exists (from clone)",
+          "projectManagement/ structure exists", 
+          "Git remote 'origin' is configured",
+          "Currently on ai-pm-org-main branch"
+        ],
+        "automaticBehavior": [
+          "Detects team collaboration scenario",
+          "Automatically creates work branch with sequential numbering",
+          "Includes user attribution in branch metadata",
+          "Switches to work branch for development"
+        ]
+      }
+    },
+    "userDetection": {
+      "sources": [
+        {
+          "priority": 1,
+          "source": "git_config",
+          "method": "git config user.name and user.email",
+          "reliability": "high"
+        },
+        {
+          "priority": 2,
+          "source": "environment", 
+          "method": "USER or USERNAME environment variables",
+          "reliability": "medium"
+        },
+        {
+          "priority": 3,
+          "source": "system",
+          "method": "getpass.getuser() system call",
+          "reliability": "medium"
+        },
+        {
+          "priority": 4,
+          "source": "fallback",
+          "method": "Default to 'ai-user'",
+          "reliability": "low"
+        }
+      ],
+      "attribution": {
+        "branchMetadata": "User info stored in .ai-pm-meta.json created_by field",
+        "gitCommits": "User attribution in branch initialization commits",
+        "logging": "User detection logged for debugging"
+      }
+    }
+  },
+  "errorHandling": {
+    "branchCreationFailure": "Report Git error and suggest alternative branch name",
+    "mergeConflicts": "Use standard Git conflict resolution - no custom logic needed", 
+    "userDetectionFailure": "Fall back to 'ai-user' and inform user they can configure Git",
+    "branchNameConflicts": "Automatically append timestamp or prompt for alternative"
+  },
+  "dependencies": [
+    "Git repository at project root",
+    "ai-pm-org-main branch exists",
+    "ai_instance_branches database table",
+    "git_project_state database table",
+    "User identification system"
+  ],
+  "configurationSettings": {
+    "directive": "Limited branch management configuration - most settings are hardcoded system requirements",
+    "configurableSettings": {
+      "max_active_branches": {
+        "default": 10,
+        "type": "number",
+        "description": "Maximum number of active AI organizational branches",
+        "enforcement": "Prevent new branch creation when limit reached",
+        "configLocation": ["config.json:branchManagement.maxActiveBranches"]
+      },
+      "auto_delete_merged": {
+        "default": false,
+        "type": "boolean", 
+        "description": "Automatically delete branches after successful merge",
+        "when": "After successful merge operation completes",
+        "configLocation": ["config.json:branchManagement.autoDeleteMerged"]
+      },
+      "enabled": {
+        "default": true,
+        "type": "boolean",
+        "description": "Enable/disable entire branch management system",
+        "warning": "Setting to false disables all branch operations",
+        "configLocation": ["config.json:branchManagement.enabled"]
+      }
+    },
+    "hardcodedBehaviors": {
+      "branchNaming": "ai-pm-org-branch-{XXX} format is enforced - not configurable",
+      "gitNativeMerge": "Always uses native 'git merge' commands - no custom logic",
+      "mainBranchAuthority": "ai-pm-org-main always has merge authority - not configurable", 
+      "sequentialNumbering": "Sequential numbering is hardcoded system requirement",
+      "branchNamingValidation": "Branch naming validation always enforced"
+    },
+    "usage": {
+      "whenToCheck": [
+        "Before branch creation operations (check maxActiveBranches)",
+        "After merge operations (check autoDeleteMerged)",
+        "On system initialization (check enabled)"
+      ],
+      "howToAccess": [
+        "Read from config.json branchManagement section only",
+        "Use system defaults if configuration missing",
+        "Do not check organization.json or README.md for branch settings"
+      ],
+      "fallbackBehavior": {
+        "enabled_missing": "Default to true (branch management enabled)",
+        "maxActiveBranches_missing": "Default to 10 branches",
+        "autoDeleteMerged_missing": "Default to false (manual deletion)"
+      }
+    }
+  },
+  "integrationPoints": {
+    "gitIntegration": "Core dependency - all operations are Git operations",
+    "auditSystem": "Log branch operations for tracking", 
+    "performanceOptimizer": "Optimized for many branches instead of directories",
+    "userSystem": "Automatic user detection and attribution",
+    "configurationSystem": "Respects branch management settings from organization.json and README.md"
+  }
+}

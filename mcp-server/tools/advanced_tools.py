@@ -1,6 +1,7 @@
 """
 Advanced Integration Tools for AI Project Manager MCP Server
-Phase 4 tools providing performance optimization, error recovery, and audit capabilities
+Advanced tools providing performance optimization, error recovery, and audit capabilities
+Adapted for Git branch-based management instead of instance-based management
 """
 
 import json
@@ -9,17 +10,17 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 
-from core.mcp_api import ToolDefinition
-from core.performance_optimizer import LargeProjectOptimizer
-from core.error_recovery import ErrorRecoveryManager, RecoveryLevel, OperationType
-from core.audit_system import AuditTrail, AuditLevel, AuditEventType
-from database.db_manager import DatabaseManager
+from ..core.mcp_api import ToolDefinition
+from ..core.performance_optimizer import LargeProjectOptimizer
+from ..core.error_recovery import ErrorRecoveryManager, RecoveryLevel, OperationType
+from ..core.audit_system import AuditTrail, AuditLevel, AuditEventType
+from ..database.db_manager import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
 
 class AdvancedTools:
-    """Advanced integration tools for Phase 4 features."""
+    """Advanced integration tools for enhanced system capabilities."""
     
     def __init__(self, db_manager: Optional[DatabaseManager] = None):
         self.db_manager = db_manager
@@ -30,7 +31,7 @@ class AdvancedTools:
             # Performance Optimization Tools
             ToolDefinition(
                 name="system_optimize_performance",
-                description="Run comprehensive performance optimization for large projects",
+                description="Run comprehensive performance optimization for large projects with Git branches",
                 input_schema={
                     "type": "object",
                     "properties": {
@@ -51,7 +52,7 @@ class AdvancedTools:
             ),
             ToolDefinition(
                 name="system_get_performance_recommendations",
-                description="Get performance optimization recommendations for the project",
+                description="Get performance optimization recommendations for the Git branch-based project",
                 input_schema={
                     "type": "object",
                     "properties": {
@@ -68,7 +69,7 @@ class AdvancedTools:
             # Error Recovery Tools
             ToolDefinition(
                 name="recovery_create_checkpoint",
-                description="Create a recovery checkpoint before critical operations",
+                description="Create a recovery checkpoint before critical Git branch operations",
                 input_schema={
                     "type": "object",
                     "properties": {
@@ -78,7 +79,7 @@ class AdvancedTools:
                         },
                         "operation_type": {
                             "type": "string",
-                            "enum": ["instance_creation", "instance_merge", "conflict_resolution", "database_operation", "file_operation"],
+                            "enum": ["branch_creation", "branch_merge", "conflict_resolution", "database_operation", "file_operation", "theme_modification", "flow_modification"],
                             "description": "Type of operation this checkpoint is for"
                         },
                         "description": {
@@ -139,7 +140,7 @@ class AdvancedTools:
             # Audit System Tools
             ToolDefinition(
                 name="audit_generate_report",
-                description="Generate comprehensive audit report for specified time period",
+                description="Generate comprehensive audit report for Git branch operations in specified time period",
                 input_schema={
                     "type": "object",
                     "properties": {
@@ -170,7 +171,7 @@ class AdvancedTools:
             ),
             ToolDefinition(
                 name="audit_search_events",
-                description="Search audit events with specific criteria",
+                description="Search audit events with specific criteria for Git branch operations",
                 input_schema={
                     "type": "object",
                     "properties": {
@@ -180,7 +181,7 @@ class AdvancedTools:
                         },
                         "event_type": {
                             "type": "string",
-                            "description": "Filter by event type"
+                            "description": "Filter by event type (e.g., branch_created, branch_merged, etc.)"
                         },
                         "actor": {
                             "type": "string",
@@ -208,7 +209,7 @@ class AdvancedTools:
             ),
             ToolDefinition(
                 name="audit_system_status",
-                description="Get status and health of the audit system",
+                description="Get status and health of the audit system for Git branch operations",
                 input_schema={
                     "type": "object",
                     "properties": {
@@ -225,7 +226,7 @@ class AdvancedTools:
             # System Health and Diagnostics
             ToolDefinition(
                 name="system_health_check",
-                description="Run comprehensive system health check across all components",
+                description="Run comprehensive system health check across all Git branch management components",
                 input_schema={
                     "type": "object",
                     "properties": {
@@ -277,49 +278,49 @@ class AdvancedTools:
             elif optimization_level == "aggressive":
                 # Comprehensive optimization plus additional tuning
                 result = optimizer.optimize_for_large_project()
-                if result["success"]:
+                if result.get("optimizations_applied"):
                     # Additional aggressive optimizations
                     index_result = optimizer.db_optimizer.create_performance_indexes()
-                    result["optimization_report"]["additional_indexes"] = index_result
+                    result["additional_indexes"] = index_result
             
-            if result["success"]:
-                report = result.get("optimization_report", {})
-                
+            if result.get("optimizations_applied"):
                 response = f"""🚀 Performance Optimization Complete!
 
 Optimization Level: {optimization_level.upper()}
-Project Size: {report.get('project_size', 0):,} bytes
-Large Project: {'Yes' if report.get('is_large_project', False) else 'No'}
+Large Project: {'Yes' if optimizer.is_large_project() else 'No'}
 
 Optimizations Applied:
 """
                 
-                for optimization in report.get("optimizations_applied", []):
+                for optimization in result.get("optimizations_applied", []):
                     response += f"• {optimization.replace('_', ' ').title()}\n"
                 
-                if "database_optimization" in report:
-                    db_info = report["database_optimization"]
-                    response += f"""
+                if "performance_improvements" in result:
+                    improvements = result["performance_improvements"]
+                    
+                    if "database" in improvements:
+                        db_info = improvements["database"]["optimization_results"]
+                        response += f"""
 Database Optimization:
 • Database Size: {db_info.get('database_size', 0):,} bytes
 • Indexes: {db_info.get('indexes_count', 0)} active indexes
 • Operations: VACUUM, ANALYZE, OPTIMIZE completed
 """
-                
-                if "performance_indexes" in report:
-                    idx_info = report["performance_indexes"]
-                    response += f"""
+                    
+                    if "indexes" in improvements:
+                        idx_info = improvements["indexes"]
+                        response += f"""
 Performance Indexes:
 • Created {idx_info.get('total_indexes', 0)} new performance indexes
 """
-                
-                if "performance_metrics" in report:
-                    metrics = report["performance_metrics"]
-                    response += f"""
-Performance Metrics:
-• Cache Hit Rate: {metrics.get('cache_hit_rate', 0):.2%}
-• Database Queries: {metrics.get('total_database_queries', 0)}
-• File Operations: {metrics.get('total_file_operations', 0)}
+                    
+                    if "cache" in improvements:
+                        cache_info = improvements["cache"]
+                        response += f"""
+Cache Optimization:
+• Cache Size: {cache_info.get('cache_size', 0)}
+• TTL: {cache_info.get('ttl_seconds', 0)} seconds
+• Utilization: {cache_info.get('current_utilization', 0):.1%}
 """
                 
                 return response
@@ -349,8 +350,6 @@ Performance Metrics:
 
 Project Metrics:
 • Large Project: {'Yes' if metrics.get('is_large_project', False) else 'No'}
-• Project Size: {metrics.get('project_size', 0):,} bytes
-• Active Instances: {metrics.get('active_instances', 0)}
 • Cache Hit Rate: {metrics.get('cache_hit_rate', 0):.2%}
 • Last Optimization: {metrics.get('last_optimization', 'Never')[:19]}
 

@@ -144,6 +144,10 @@ class MCPToolRegistry:
             from tools.config_tools import ConfigTools
             await self._register_tool_module(ConfigTools())
             
+            # Import branch tools for simplified Git branch management
+            from tools.branch_tools import BranchTools
+            await self._register_tool_module(BranchTools())
+            
         except ImportError as e:
             logger.warning(f"Some tool modules not available yet: {e}")
             # For now, register basic tools manually

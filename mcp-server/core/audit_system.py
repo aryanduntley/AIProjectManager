@@ -1,5 +1,5 @@
 """
-Comprehensive Audit System for MCP Instance Management
+Comprehensive Audit System for MCP Git Branch Management
 Provides detailed audit trails, compliance logging, and forensic analysis capabilities
 """
 
@@ -12,7 +12,6 @@ from enum import Enum
 import uuid
 
 from ..database.db_manager import DatabaseManager
-from ..database.git_queries import GitQueries
 
 
 class AuditLevel(Enum):
@@ -24,13 +23,10 @@ class AuditLevel(Enum):
 
 
 class AuditEventType(Enum):
-    """Types of events that can be audited"""
-    INSTANCE_CREATED = "instance_created"
-    INSTANCE_ARCHIVED = "instance_archived"
-    MERGE_INITIATED = "merge_initiated"
-    MERGE_COMPLETED = "merge_completed"
-    CONFLICT_DETECTED = "conflict_detected"
-    CONFLICT_RESOLVED = "conflict_resolved"
+    """Types of events that can be audited - adapted for Git branches"""
+    BRANCH_CREATED = "branch_created"
+    BRANCH_MERGED = "branch_merged"
+    BRANCH_DELETED = "branch_deleted"
     GIT_CHANGE_DETECTED = "git_change_detected"
     DATABASE_MODIFIED = "database_modified"
     FILE_MODIFIED = "file_modified"
@@ -38,6 +34,10 @@ class AuditEventType(Enum):
     SYSTEM_ERROR = "system_error"
     RECOVERY_EXECUTED = "recovery_executed"
     PERFORMANCE_OPTIMIZATION = "performance_optimization"
+    THEME_MODIFIED = "theme_modified"
+    FLOW_MODIFIED = "flow_modified"
+    TASK_CREATED = "task_created"
+    TASK_COMPLETED = "task_completed"
 
 
 class AuditEvent:
@@ -82,7 +82,7 @@ class ComplianceTracker:
         self.compliance_rules = {
             "data_retention": {
                 "audit_logs": 90,  # days
-                "merge_history": 365,  # days
+                "branch_history": 365,  # days
                 "recovery_points": 30  # days
             },
             "access_control": {
@@ -91,8 +91,8 @@ class ComplianceTracker:
                 "log_file_access": True
             },
             "change_management": {
-                "require_merge_approval": True,
-                "log_conflict_resolutions": True,
+                "require_branch_approval": True,
+                "log_branch_operations": True,
                 "track_organizational_changes": True
             }
         }
@@ -168,37 +168,28 @@ class ComplianceTracker:
         """Check change management compliance"""
         change_report = {"violations": [], "warnings": [], "metrics": {}}
         
-        # Check merge operations have proper approval trail
-        merge_events = [e for e in audit_events if e.event_type == AuditEventType.MERGE_COMPLETED]
-        conflict_events = [e for e in audit_events if e.event_type == AuditEventType.CONFLICT_RESOLVED]
+        # Check branch operations have proper logging
+        branch_events = [e for e in audit_events if e.event_type in [
+            AuditEventType.BRANCH_CREATED, AuditEventType.BRANCH_MERGED, AuditEventType.BRANCH_DELETED
+        ]]
         
-        change_report["metrics"]["merge_operations"] = len(merge_events)
-        change_report["metrics"]["conflict_resolutions"] = len(conflict_events)
-        
-        # Check for merges without conflict resolution records
-        merge_ids = {e.data.get("merge_id") for e in merge_events if e.data.get("merge_id")}
-        resolved_merge_ids = {e.data.get("merge_id") for e in conflict_events if e.data.get("merge_id")}
-        
-        unresolved_merges = merge_ids - resolved_merge_ids
-        if unresolved_merges:
-            change_report["warnings"].append(f"{len(unresolved_merges)} merges lack conflict resolution records")
+        change_report["metrics"]["branch_operations"] = len(branch_events)
         
         return change_report
 
 
 class AuditTrail:
-    """Main audit trail management system"""
+    """Main audit trail management system - adapted for Git branches"""
     def __init__(self, project_root: Path, db_manager: DatabaseManager):
         self.project_root = Path(project_root)
         self.db_manager = db_manager
-        self.git_queries = GitQueries(db_manager)
         
         # Audit configuration
         self.audit_level = AuditLevel.STANDARD
         self.compliance_tracker = ComplianceTracker()
         
-        # Audit storage
-        self.audit_dir = self.project_root / ".mcp-instances" / "audit"
+        # Audit storage - use project management directory instead of instances
+        self.audit_dir = self.project_root / "projectManagement" / "audit"
         self.audit_dir.mkdir(parents=True, exist_ok=True)
         
         self.main_audit_log = self.audit_dir / "audit.jsonl"
@@ -269,11 +260,10 @@ class AuditTrail:
         
         # Write to compliance log for compliance-relevant events
         compliance_events = {
-            AuditEventType.MERGE_COMPLETED,
-            AuditEventType.CONFLICT_RESOLVED,
+            AuditEventType.BRANCH_MERGED,
             AuditEventType.DATABASE_MODIFIED,
-            AuditEventType.INSTANCE_CREATED,
-            AuditEventType.INSTANCE_ARCHIVED
+            AuditEventType.BRANCH_CREATED,
+            AuditEventType.BRANCH_DELETED
         }
         
         if event.event_type in compliance_events:

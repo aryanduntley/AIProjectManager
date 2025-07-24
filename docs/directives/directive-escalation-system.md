@@ -12,7 +12,7 @@ The directive escalation system enables AI to access progressively more detailed
 Enable AI to resolve directive ambiguity and handle complex workflows without over-loading context or under-serving user needs.
 
 ### Critical For
-- **Complex workflow execution** - First-time sidequests, instance management, conflict resolution
+- **Complex workflow execution** - First-time sidequests, branch management, Git operations
 - **User communication protocols** - When specific messaging templates and procedures needed  
 - **Edge case handling** - Unusual situations not covered by basic workflows
 - **Configuration limit management** - When configurable limits reached and user options needed
@@ -21,9 +21,9 @@ Enable AI to resolve directive ambiguity and handle complex workflows without ov
 
 ### Forced Escalation Operations
 **Always Skip Compressed, Start with JSON**:
-- **Git operations**: 01-system-initialization, 16-git-integration  
+- **Git operations**: 01-system-initialization, 15-git-integration  
 - **Session management**: 03-session-management (session start/end)
-- **Instance operations**: 14-instance-management, 15-conflict-resolution
+- **Branch operations**: 14-branch-management
 - **Database operations**: database-integration
 - **Logging/Documentation**: 09-logging-documentation
 - **Theme discovery/changes**: 04-theme-management
@@ -269,9 +269,8 @@ These directives frequently need MD escalation for user interaction:
 | 11-quality-assurance | ✅ | ✅ | ✅ |
 | 12-user-interaction | ✅ | ✅ | ✅ |
 | 13-metadata-management | ✅ | ✅ | ✅ |
-| 14-instance-management | ✅ | ✅ | ✅ |
-| 15-conflict-resolution | ✅ | ✅ | ✅ |
-| 16-git-integration | ✅ | ✅ | ✅ |
+| 14-branch-management | ✅ | ✅ | ✅ |
+| 15-git-integration | ✅ | ✅ | ✅ |
 | database-integration | ✅ | ✅ | ❌ |
 | context-escalation-system | ✅ | ✅ | ✅ |
 

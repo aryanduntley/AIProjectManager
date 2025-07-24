@@ -35,7 +35,7 @@ async def test_directive_escalation():
             "description": "Session management should force JSON"
         },
         {
-            "directive_id": "16-git-integration", 
+            "directive_id": "15-git-integration", 
             "operation_context": "git repository detection",
             "expected_level": "json",
             "description": "Git integration should force JSON"

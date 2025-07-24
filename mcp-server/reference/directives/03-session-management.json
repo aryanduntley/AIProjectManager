@@ -33,9 +33,9 @@
         "Ensure proposed updates are confirmed by user before changing anything"
       ],
       "detailedBootSequence": [
-        "1. Identify instance type (main vs branch) and establish authority",
+        "1. Identify branch type (ai-pm-org-main vs work branch) and establish authority",
         "2. Initialize database connection and restore session context from project.db",
-        "3. [MAIN INSTANCE ONLY] Detect Git changes and perform organizational reconciliation if needed",
+        "3. [AI-PM-ORG-MAIN ONLY] Detect Git changes and perform organizational reconciliation if needed",
         "4. Read ProjectBlueprint for project understanding",  
         "5. Read ProjectFlow (flow-index.json) for interaction understanding",
         "6. Read projectlogic.jsonl for reasoning history",
@@ -425,7 +425,7 @@
       },
       "conflictingTaskStates": {
         "basicResponse": "Warning: 'Inconsistent task states detected. Options: [1] Use database version [2] Use file version [3] Manual resolution'",
-        "escalationTrigger": "IF conflicts affect multiple tasks or critical workflows → ESCALATE for detailed conflict resolution procedures"
+        "escalationTrigger": "IF task state inconsistencies affect multiple tasks or critical workflows → ESCALATE for detailed state synchronization procedures"
       }
     },
     "generalEscalationTrigger": "WHEN edge case handling unclear or insufficient → ESCALATE to ../docs/directives/03-session-management.md for comprehensive edge case protocols"

@@ -11,49 +11,43 @@
         "files": [".git/", ".gitignore"],
         "purposes": {
           ".git/": "Root-level Git repository for project code and organizational state",
-          ".gitignore": "Updated for MCP instance management exclusions"
+          ".gitignore": "Updated for MCP branch management exclusions"
         },
         "approvalRequired": false,
         "format": "mixed",
-        "instanceManagement": {
-          "mainInstancePath": "projectManagement/",
-          "instanceDirectory": ".mcp-instances/",
-          "instanceNamingConvention": "{theme/area}-{purpose}-{user}",
+        "branchManagement": {
+          "mainBranchPath": "ai-pm-org-main",
+          "branchNamingConvention": "ai-pm-org-branch-{XXX}",
           "gitTracking": {
-            "tracked": ["organizational state", "instance structure", "merge history"],
+            "tracked": ["organizational state", "branch metadata", "merge history"],
             "notTracked": ["user settings", "database backups", "session files"]
           }
         }
       },
-      "InstanceManagement": {
-        "directories": [".mcp-instances/active/", ".mcp-instances/completed/", ".mcp-instances/conflicts/"],
-        "files": [".mcp-config.json", ".mcp-merge-log.jsonl"],
+      "BranchManagement": {
+        "gitBranches": ["ai-pm-org-main", "ai-pm-org-branch-{XXX}"],
+        "files": [".ai-pm-meta.json"],
         "purposes": {
-          ".mcp-instances/active/": "Active instance workspaces with isolated organizational state",
-          ".mcp-instances/completed/": "Archived completed instances",
-          ".mcp-instances/conflicts/": "Conflict resolution workspace and templates",
-          ".mcp-config.json": "Instance management configuration",
-          ".mcp-merge-log.jsonl": "Merge history and decisions log"
+          "ai-pm-org-main": "Canonical AI organizational state with merge authority",
+          "ai-pm-org-branch-{XXX}": "Sequential numbered work branches",
+          ".ai-pm-meta.json": "Minimal branch metadata for work branches only"
         },
         "approvalRequired": {
-          ".mcp-config.json": true,
-          "instance creation": false,
-          "merge operations": true
+          "branch creation": false,
+          "branch merge": true
         },
-        "format": "json+jsonl",
-        "instanceMetadata": {
-          "branchInfoFile": ".mcp-branch-info.json",
-          "workSummaryFile": ".mcp-work-summary.md",
-          "requiredFields": ["instanceId", "createdFrom", "purpose", "primaryThemes"],
-          "statusValues": ["active", "merging", "completed", "archived"]
+        "format": "git+json",
+        "branchMetadata": {
+          "metadataFile": ".ai-pm-meta.json",
+          "requiredFields": ["branchId", "createdFrom", "primaryThemes"],
+          "statusValues": ["active", "merging", "completed", "deleted"]
         }
       },
       "ProjectBlueprint": {
-        "files": ["blueprint.md", "metadata.json", ".mcp-instance-main"],
+        "files": ["blueprint.md", "metadata.json"],
         "purposes": {
           "blueprint.md": "High-level project summary (user-approved)",
-          "metadata.json": "Project metadata, tags, author, dates",
-          ".mcp-instance-main": "Main instance identification marker (canonical organizational state)"
+          "metadata.json": "Project metadata, tags, author, dates"
         },
         "approvalRequired": true,
         "format": "markdown+json"
@@ -168,7 +162,7 @@
         "files": ["project.db"],
         "directories": ["database/"],
         "purposes": {
-          "project.db": "SQLite database for persistent theme-flow relationships, session tracking, project analytics, and Git-like instance management",
+          "project.db": "SQLite database for persistent theme-flow relationships, session tracking, project analytics, and Git branch management",
           "database/": "Database management files for backup storage"
         },
         "databaseDirectory": {
@@ -188,17 +182,17 @@
           "eventAnalytics": "Real-time event tracking and pattern recognition for decision analysis",
           "projectIntelligence": "Comprehensive analytics and predictive insights for optimization",
           "gitIntegration": "Git state tracking and project code change detection",
-          "instanceManagement": "MCP instance lifecycle tracking and coordination",
-          "mergeHistory": "Conflict resolution decisions and merge operation logging"
+          "branchManagement": "Git branch lifecycle tracking and coordination",
+          "mergeHistory": "Merge operation tracking and decision logging"
         },
         "gitIntegrationSchema": {
-          "tables": ["git_project_state", "mcp_instances", "instance_merges"],
-          "capabilities": ["change detection", "instance isolation", "conflict resolution", "merge tracking"]
+          "tables": ["git_project_state", "ai_branch_registry"],
+          "capabilities": ["change detection", "branch isolation", "merge tracking"]
         },
-        "instanceIsolation": {
-          "databaseCopying": "Each instance gets isolated copy of main project.db",
-          "changeTracking": "Instance-specific changes tracked separately",
-          "mergeIntegration": "Database changes included in merge conflict detection"
+        "branchIsolation": {
+          "gitNative": "Git provides natural branch isolation without file copying",
+          "changeTracking": "Git tracks all changes within branch workspace",
+          "mergeIntegration": "Standard Git merge handles all change integration"
         }
       }
     }
@@ -305,34 +299,12 @@
       "description": "User settings and preferences",
       "schema": "reference/templates/config.json"
     },
-    ".mcp-branch-info.json": {
+    ".ai-pm-meta.json": {
       "format": "json",
       "approvalRequired": false,
-      "description": "Instance metadata and creation details",
-      "template": "reference/templates/mcp-branch-info.json",
-      "requiredFields": ["instanceId", "createdFrom", "createdAt", "purpose", "primaryThemes"],
-      "templateUsage": "mandatory"
-    },
-    ".mcp-work-summary.md": {
-      "format": "markdown",
-      "approvalRequired": false,
-      "description": "Human-readable work summary for instance",
-      "template": "reference/templates/mcp-work-summary.md",
-      "templateUsage": "mandatory"
-    },
-    ".mcp-config.json": {
-      "format": "json",
-      "approvalRequired": true,
-      "description": "Instance management configuration",
-      "template": "reference/templates/mcp-config.json",
-      "templateUsage": "recommended"
-    },
-    ".mcp-merge-log.jsonl": {
-      "format": "jsonl",
-      "approvalRequired": false,
-      "description": "Merge history and conflict resolution decisions",
-      "template": "reference/templates/mcp-merge-log.jsonl",
-      "templateUsage": "mandatory"
+      "description": "Minimal branch metadata for work branches",
+      "requiredFields": ["branchId", "createdFrom", "createdAt", "primaryThemes"],
+      "templateUsage": "auto-generated"
     }
   },
   "integrationRequirements": {
@@ -361,20 +333,19 @@
         "statusTransitionRules": "Enforce logical step and flow completion order"
       }
     },
-    "instanceManagement": {
-      "required": ["instanceId", "createdFrom", "purpose"],
-      "optional": ["createdBy", "expectedDuration", "relatedFlows"],
+    "branchManagement": {
+      "required": ["branchId", "createdFrom"],
+      "optional": ["expectedDuration", "relatedFlows"],
       "validation": {
-        "instanceId": "Must follow naming convention {theme/area}-{purpose}-{user}",
-        "createdFrom": "Must be 'main' or valid instance ID",
-        "purpose": "Must be descriptive and specific to work being done",
+        "branchId": "Must follow naming convention ai-pm-org-branch-{XXX}",
+        "createdFrom": "Must be 'ai-pm-org-main'",
         "primaryThemes": "Must exist in Themes/ directory"
       },
       "lifecycle": {
-        "creation": "Copy main projectManagement/ to instance workspace",
-        "isolation": "Instance operates independently with own database copy",
-        "merging": "Main instance authority for conflict resolution",
-        "completion": "Archive to .mcp-instances/completed/"
+        "creation": "Create Git branch from ai-pm-org-main with natural state inheritance",
+        "isolation": "Branch operates independently with full Git isolation",
+        "merging": "ai-pm-org-main has authority for merge decisions using standard Git merge",
+        "completion": "Git branch can be deleted after successful merge"
       }
     }
   },
@@ -493,8 +464,8 @@
   },
   "sessionManagement": {
     "bootSequence": [
-      "Identify current instance (main or branch instance)",
-      "Detect project code changes since last session (main instance only)",
+      "Identify current branch (ai-pm-org-main or work branch)",
+      "Detect project code changes since last session (ai-pm-org-main only)",
       "Read ProjectBlueprint for project understanding",
       "Read ProjectFlow for user experience context",
       "Read projectlogic.jsonl for decision history",
@@ -505,16 +476,16 @@
       "Load theme context for selected tasks",
       "Begin task execution"
     ],
-    "instanceAwareness": {
-      "mainInstance": {
-        "identification": "Presence of .mcp-instance-main file",
-        "responsibilities": ["Git change detection", "Merge conflict resolution", "Instance coordination"],
-        "authority": "Primary decision maker for all merge conflicts"
+    "branchAwareness": {
+      "mainBranch": {
+        "identification": "Branch name ai-pm-org-main",
+        "responsibilities": ["Git change detection", "Git merge operations", "Branch coordination"],
+        "authority": "Primary decision maker for all merge operations"
       },
-      "branchInstance": {
-        "identification": "Presence of .mcp-branch-info.json file",
+      "workBranch": {
+        "identification": "Branch name pattern ai-pm-org-branch-{XXX}",
         "responsibilities": ["Independent development", "Prepare for merge"],
-        "isolation": "Operates independently without affecting main or other instances"
+        "isolation": "Operates independently with full Git branch isolation"
       }
     },
     "stateFiles": {
@@ -522,8 +493,8 @@
       "implementation plans": "Strategic context for current milestone",
       "projectlogic.jsonl": "Decision history and reasoning",
       "noteworthy.json": "Recent noteworthy events",
-      "instance metadata": "Instance identification and purpose (branch instances)",
-      "merge history": "Conflict resolution decisions (.mcp-merge-log.jsonl)"
+      "branch metadata": "Branch identification and purpose (.ai-pm-meta.json)",
+      "merge history": "Git merge operations and decisions"
     }
   },
   "gitInstanceConfiguration": {
@@ -534,19 +505,13 @@
       "code_change_detection": true,
       "auto_reconcile_on_boot": true
     },
-    "instance_management": {
+    "branch_management": {
       "enabled": true,
-      "main_instance_authority": true,
-      "max_active_instances": 10,
-      "instance_naming_validation": true,
-      "auto_archive_completed": true,
-      "merge_conflict_resolution": "interactive"
-    },
-    "conflict_resolution": {
-      "resolution_strategies": ["accept_main", "accept_instance", "manual_merge"],
-      "auto_resolve_simple_conflicts": false,
-      "require_main_instance_approval": true,
-      "preserve_resolution_history": true
+      "main_branch_authority": true,
+      "max_active_branches": 10,
+      "branch_naming_validation": true,
+      "auto_delete_merged": false,
+      "git_native_merge": true
     }
   },
   "references": {

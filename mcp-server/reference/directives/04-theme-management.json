@@ -86,7 +86,7 @@
         "keywordMatching": "Use keyword matching, folder path structure, and import reference graphs to discover thematic relevance",
         "sharedFileHandling": "If a file clearly belongs to multiple themes, it may appear in both and be flagged as shared",
         "impactAssessment": "When AI modifies a shared file, it should assess impact on all listed themes before proceeding",
-        "gitIntegration": "Track theme changes in database for instance merge analysis"
+        "gitIntegration": "Track theme changes in database for Git merge analysis"
       }
     },
     "themePresentation": {
@@ -116,7 +116,7 @@
     },
     "gitReconciliation": {
       "directive": "Reconcile themes with Git changes detected during session boot",
-      "triggers": ["Main instance session boot", "Git changes detected affecting project structure"],
+      "triggers": ["ai-pm-org-main session boot", "Git changes detected affecting project structure"],
       "process": [
         "Analyze Git changes for theme impact using file path analysis",
         "Identify affected themes based on modified/added/deleted files",
@@ -131,19 +131,19 @@
         "Deletion impact assessment on theme completeness"
       ]
     },
-    "instanceMergeThemeConflicts": {
-      "directive": "Handle theme conflicts during instance merging (main instance authority)",
-      "authority": "Main instance has ultimate decision authority",
+    "branchMergeThemeConflicts": {
+      "directive": "Handle theme conflicts during Git branch merging (ai-pm-org-main authority)",
+      "authority": "ai-pm-org-main has ultimate decision authority",
       "process": [
-        "Detect theme conflicts between main and instance workspaces",
+        "Detect theme conflicts between ai-pm-org-main and work branch states",
         "Present conflicts in Git-like format with theme-specific context",
-        "Provide resolution options: accept_instance, accept_main, manual_merge, split_themes",
-        "Apply chosen resolution atomically to main instance themes",
-        "Update database tracking for merge history"
+        "Provide resolution options: accept_branch, accept_main, manual_merge, split_themes",
+        "Apply chosen resolution atomically to ai-pm-org-main themes",
+        "Update database tracking for Git merge history"
       ],
       "conflictTypes": [
         "Theme definition changes (paths, linkedThemes, descriptions)",
-        "New themes added in both instances",
+        "New themes added in both branches",
         "Theme deletions vs modifications",
         "Shared file reference conflicts"
       ]
@@ -171,9 +171,8 @@
     "05-context-loading",
     "11-quality-assurance",
     "13-metadata-management",
-    "14-instance-management",
-    "15-conflict-resolution",
-    "16-git-integration"
+    "14-branch-management",
+    "15-git-integration"
   ],
   "dependencies": [
     "Themes/ directory",
@@ -290,8 +289,8 @@
     "directive": "Handle common theme management issues with basic user communication and escalation awareness",
     "commonIssues": {
       "themeConflicts": {
-        "basicResponse": "Theme overlap detected between [THEME1] and [THEME2]. Shared files: [FILE_LIST]. Proceeding with conflict resolution.",
-        "escalationTrigger": "IF theme conflicts complex or affect multiple workflows → ESCALATE to ../docs/directives/04-theme-management.md for advanced conflict resolution"
+        "basicResponse": "Theme overlap detected between [THEME1] and [THEME2]. Shared files: [FILE_LIST]. Proceeding with theme separation and file organization.",
+        "escalationTrigger": "IF theme conflicts complex or affect multiple workflows → ESCALATE to ../docs/directives/04-theme-management.md for advanced theme organization strategies"
       },
       "autoDiscoveryUncertain": {
         "basicResponse": "Theme auto-discovery found [N] potential themes. Requires user review before proceeding.",

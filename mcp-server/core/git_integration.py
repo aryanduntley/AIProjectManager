@@ -674,3 +674,221 @@ __pycache__/
                 "exists": True,
                 "error": f"Could not get repository info: {str(e)}"
             }
+    
+    # ============================================================================
+    # AI BRANCH MANAGEMENT INTEGRATION
+    # ============================================================================
+    
+    def ensure_ai_main_branch_exists(self) -> Dict[str, Any]:
+        """
+        Ensure the ai-pm-org-main branch exists.
+        Creates it from user's main branch if it doesn't exist.
+        """
+        result = {
+            "success": False,
+            "action": "none",
+            "message": "",
+            "branch_created": False
+        }
+        
+        try:
+            ai_main_branch = "ai-pm-org-main"
+            user_main_branch = "main"
+            
+            # Check if ai-pm-org-main exists
+            if not self._branch_exists(ai_main_branch):
+                # Create ai-pm-org-main from main
+                subprocess.run([
+                    'git', 'checkout', '-b', ai_main_branch, user_main_branch
+                ], cwd=self.project_root, check=True, capture_output=True)
+                
+                result["success"] = True
+                result["action"] = "created"
+                result["message"] = f"Created {ai_main_branch} branch from {user_main_branch}"
+                result["branch_created"] = True
+                
+                # Initialize AI project management structure on this branch
+                self._initialize_ai_structure_on_branch()
+                
+            else:
+                result["success"] = True
+                result["action"] = "exists"
+                result["message"] = f"{ai_main_branch} already exists"
+                
+            return result
+            
+        except Exception as e:
+            result["message"] = f"Error ensuring AI main branch: {str(e)}"
+            return result
+    
+    def switch_to_ai_branch(self, branch_name: str = "ai-pm-org-main") -> Dict[str, Any]:
+        """Switch to AI main branch or specified AI branch for operations."""
+        result = {
+            "success": False,
+            "previous_branch": None,
+            "current_branch": None,
+            "message": ""
+        }
+        
+        try:
+            # Get current branch before switching
+            current_branch_result = subprocess.run([
+                'git', 'rev-parse', '--abbrev-ref', 'HEAD'
+            ], cwd=self.project_root, capture_output=True, text=True, check=True)
+            
+            result["previous_branch"] = current_branch_result.stdout.strip()
+            
+            # Switch to specified branch
+            subprocess.run([
+                'git', 'checkout', branch_name
+            ], cwd=self.project_root, check=True, capture_output=True)
+            
+            result["success"] = True
+            result["current_branch"] = branch_name
+            result["message"] = f"Switched to branch: {branch_name}"
+            
+            return result
+            
+        except Exception as e:
+            result["message"] = f"Error switching to branch {branch_name}: {str(e)}"
+            return result
+    
+    def get_user_code_changes(self, ai_main_branch: str = "ai-pm-org-main", user_main_branch: str = "main") -> Dict[str, Any]:
+        """
+        Compare user's main branch with ai-pm-org-main to see user changes.
+        Returns analysis of what the user has changed outside of AI management.
+        """
+        result = {
+            "success": False,
+            "changed_files": [],
+            "change_summary": "",
+            "themes_affected": [],
+            "message": ""
+        }
+        
+        try:
+            # Ensure both branches exist
+            if not self._branch_exists(ai_main_branch):
+                result["message"] = f"AI main branch {ai_main_branch} does not exist"
+                return result
+                
+            if not self._branch_exists(user_main_branch):
+                result["message"] = f"User main branch {user_main_branch} does not exist"
+                return result
+            
+            # Get diff between branches
+            diff_result = subprocess.run([
+                'git', 'diff', '--name-status',
+                f'{ai_main_branch}..{user_main_branch}'
+            ], cwd=self.project_root, capture_output=True, text=True, check=True)
+            
+            if not diff_result.stdout.strip():
+                result["success"] = True
+                result["message"] = "No changes detected between AI and user branches"
+                return result
+            
+            # Parse changed files
+            changed_files = []
+            for line in diff_result.stdout.strip().split('\n'):
+                if line.strip():
+                    parts = line.split('\t')
+                    if len(parts) >= 2:
+                        status = parts[0]
+                        file_path = parts[1]
+                        changed_files.append({
+                            "file": file_path,
+                            "status": self._get_change_type_from_status(status),
+                            "raw_status": status
+                        })
+            
+            result["changed_files"] = changed_files
+            
+            # Analyze theme impact
+            affected_themes = self._analyze_theme_impact(changed_files)
+            result["themes_affected"] = affected_themes
+            
+            # Generate summary
+            total_files = len(changed_files)
+            change_types = {}
+            for file in changed_files:
+                change_type = file["status"]
+                change_types[change_type] = change_types.get(change_type, 0) + 1
+            
+            result["change_summary"] = self._generate_change_summary(change_types, total_files, affected_themes)
+            result["success"] = True
+            result["message"] = f"Found {total_files} changed files affecting {len(affected_themes)} themes"
+            
+            return result
+            
+        except Exception as e:
+            result["message"] = f"Error comparing user code changes: {str(e)}"
+            return result
+    
+    def _branch_exists(self, branch_name: str) -> bool:
+        """Check if a branch exists."""
+        try:
+            result = subprocess.run([
+                'git', 'branch', '--list', branch_name
+            ], cwd=self.project_root, capture_output=True, text=True)
+            
+            return bool(result.stdout.strip())
+            
+        except Exception:
+            return False
+    
+    def _initialize_ai_structure_on_branch(self) -> None:
+        """Initialize the AI project management structure on current branch."""
+        try:
+            # Create projectManagement directory structure if it doesn't exist
+            proj_mgmt_dir = self.project_root / "projectManagement"
+            proj_mgmt_dir.mkdir(exist_ok=True)
+            
+            # Basic AI metadata file
+            ai_meta = {
+                "branch_type": "ai-pm-org-main",
+                "created_at": datetime.now().isoformat(),
+                "description": "Canonical AI Project Manager organizational state"
+            }
+            
+            with open(proj_mgmt_dir / ".ai-pm-meta.json", 'w') as f:
+                json.dump(ai_meta, f, indent=2)
+            
+            # Commit the initial structure if there are changes
+            status_result = subprocess.run([
+                'git', 'status', '--porcelain'
+            ], cwd=self.project_root, capture_output=True, text=True)
+            
+            if status_result.stdout.strip():
+                subprocess.run(['git', 'add', 'projectManagement/'], cwd=self.project_root)
+                subprocess.run([
+                    'git', 'commit', '-m', 'Initialize AI Project Manager structure'
+                ], cwd=self.project_root, capture_output=True)
+                
+        except Exception as e:
+            # Log error but don't fail the operation
+            print(f"Warning: Could not initialize AI structure: {e}")
+    
+    def sync_ai_branch_metadata(self, branch_name: str) -> None:
+        """Sync branch metadata with the simplified database."""
+        try:
+            # Extract branch number from name
+            branch_number = None
+            if branch_name.startswith('ai-pm-org-branch-'):
+                try:
+                    number_str = branch_name[17:]  # Remove 'ai-pm-org-branch-' prefix
+                    branch_number = int(number_str)
+                except ValueError:
+                    pass
+            
+            # Insert or update branch metadata in database
+            query = """
+                INSERT OR REPLACE INTO git_branches 
+                (branch_name, branch_number, created_at, status)
+                VALUES (?, ?, CURRENT_TIMESTAMP, 'active')
+            """
+            
+            self.db_manager.execute_query(query, (branch_name, branch_number))
+            
+        except Exception as e:
+            # Log error but don't fail the operation
+            print(f"Warning: Could not sync branch metadata: {e}")

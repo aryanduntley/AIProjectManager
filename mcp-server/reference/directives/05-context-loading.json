@@ -140,23 +140,23 @@
         ]
       }
     },
-    "instanceAwareContextLoading": {
-      "directive": "Ensure context loading respects instance isolation and merge considerations",
+    "branchAwareContextLoading": {
+      "directive": "Ensure context loading respects Git branch isolation and merge considerations",
       "process": [
-        "Load context from current instance workspace (main or branch)",
-        "Instance-specific theme files take precedence over global ones",
-        "Database queries include instance identification for proper context",
-        "Session context restoration includes instance workspace paths"
+        "Load context from current Git branch workspace (ai-pm-org-main or work branch)",
+        "Branch-specific organizational state takes precedence over shared files",
+        "Database queries include branch identification for proper context",
+        "Session context restoration includes branch workspace paths"
       ],
-      "instanceTypes": {
-        "mainInstance": {
+      "branchTypes": {
+        "ai-pm-org-main": {
           "authority": "Full access to all themes and contexts, Git reconciliation enabled",
-          "responsibilities": ["Git change impact analysis", "Cross-instance context coordination"]
+          "responsibilities": ["Git change impact analysis", "Cross-branch context coordination"]
         },
-        "branchInstance": {
-          "isolation": "Independent context loading from isolated workspace",
-          "limitations": ["No Git reconciliation", "No cross-instance access"],
-          "mergePreparation": "Track context changes for conflict analysis"
+        "workBranch": {
+          "isolation": "Independent context loading from isolated Git branch",
+          "limitations": ["No Git reconciliation", "No cross-branch access"],
+          "mergePreparation": "Track context changes for Git merge analysis"
         }
       }
     }
@@ -268,7 +268,7 @@
       },
       "conflictingThemes": {
         "basicResponse": "Conflicting theme requirements detected. Options: [1] Use primary theme only [2] Merge theme contexts [3] Request user priority'",
-        "escalationTrigger": "IF theme conflicts complex or affect workflow → ESCALATE for conflict resolution protocols"
+        "escalationTrigger": "IF theme conflicts complex or affect workflow → ESCALATE for theme context organization protocols"
       }
     },
     "generalEscalationTrigger": "WHEN context loading unclear or problematic → ESCALATE to ../docs/directives/05-context-loading.md for comprehensive context management protocols"

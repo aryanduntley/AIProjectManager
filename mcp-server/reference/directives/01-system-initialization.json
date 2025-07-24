@@ -41,13 +41,13 @@
             "theme_delete",
             "theme_get_context",
             "theme_validate",
-            "instance_create",
-            "instance_list",
-            "instance_status",
-            "instance_merge",
-            "instance_archive",
-            "detect_conflicts",
-            "resolve_conflicts",
+            "create_instance_branch",
+            "list_instance_branches",
+            "get_branch_status",
+            "merge_instance_branch",
+            "delete_instance_branch",
+            "switch_to_branch",
+            "get_current_user",
             "get_config",
             "read_file"
           ]
@@ -200,21 +200,19 @@
           "condition": "no .git/ directory and git.auto_init_repo=true",
           "initialization": [
             "Run git init in project root",
-            "Set up initial .gitignore for MCP instance management",
+            "Set up initial .gitignore for AI branch management",
             "Create initial commit with project structure"
           ]
         },
         {
           "action": "configureGitIgnore",
-          "description": "Set up .gitignore for MCP instance management",
+          "description": "Set up .gitignore for AI branch management",
           "required": true,
           "gitignoreAdditions": [
-            "# MCP Instance Management - Track Structure, Not Content",
-            ".mcp-instances/active/*/projectManagement/UserSettings/",
-            ".mcp-instances/active/*/projectManagement/database/backups/",
-            "# Project Management - Track Organizational State", 
+            "# AI Branch Management - Track Organizational State Only",
             "projectManagement/UserSettings/",
-            "projectManagement/database/backups/"
+            "projectManagement/database/backups/",
+            "projectManagement/.ai-pm-session-*"
           ]
         },
         {
@@ -229,46 +227,47 @@
         }
       ]
     },
-    "instanceIdentification": {
-      "directive": "Identify whether running in main instance or branch instance and establish authority",
+    "branchIdentification": {
+      "directive": "Identify current Git branch and establish branch context",
       "steps": [
         {
-          "action": "checkInstanceType",
-          "description": "Determine instance type from workspace location and markers",
+          "action": "checkCurrentBranch",
+          "description": "Determine current Git branch and branch type",
           "required": true,
           "identification": [
-            "Check for .mcp-instance-main file in projectManagement/",
-            "Check for .mcp-branch-info.json in workspace directory",
-            "Determine workspace path location"
+            "Execute: git branch --show-current",
+            "Check if on ai-pm-org-main (canonical branch)",
+            "Check if on ai-pm-org-branch-{XXX} (work branch)",
+            "Parse branch name to extract sequential number if applicable"
           ]
         },
         {
-          "action": "establishInstanceAuthority",
-          "description": "Set instance authority and capabilities based on type",
+          "action": "establishBranchContext",
+          "description": "Set branch context and capabilities based on branch type",
           "required": true,
-          "authority": {
-            "mainInstance": [
-              "Git repository change detection authority",
-              "Merge conflict resolution primary decision maker",
-              "Instance coordination and management",
+          "branchTypes": {
+            "ai-pm-org-main": [
+              "Canonical organizational state authority",
+              "Git repository change detection",
+              "Merge operations and conflict resolution",
               "Project code change impact assessment"
             ],
-            "branchInstance": [
-              "Independent development within isolated workspace",
-              "Prepare organizational changes for merge",
-              "Maintain instance metadata and work summaries"
+            "ai-pm-org-branch-{XXX}": [
+              "Independent development within Git branch isolation",
+              "Prepare organizational changes for merge", 
+              "Sequential numbered branch identification"
             ]
           }
         },
         {
-          "action": "validateInstanceConfiguration",
-          "description": "Ensure instance configuration is valid and consistent",
+          "action": "validateBranchConfiguration",
+          "description": "Ensure branch configuration is valid and consistent",
           "required": true,
           "validation": [
-            "Verify workspace isolation for branch instances",
-            "Check instance metadata completeness",
-            "Validate database isolation for branch instances",
-            "Confirm main instance authority if main"
+            "Verify ai-pm-org-main branch exists",
+            "Check branch naming convention compliance",
+            "Validate Git repository state",
+            "Confirm branch has proper organizational structure"
           ]
         }
       ]
@@ -354,34 +353,34 @@
         }
       }
     },
-    "instance_management": {
+    "branch_management": {
       "type": "object",
-      "description": "Instance management configuration",
+      "description": "Git branch management configuration",
       "properties": {
         "enabled": {
           "default": true,
           "type": "boolean",
-          "description": "Enable Git-like instance management"
+          "description": "Enable Git branch-based management"
         },
-        "main_instance_authority": {
+        "canonical_branch_authority": {
           "default": true,
           "type": "boolean",
-          "description": "Main instance has ultimate authority for conflict resolution"
+          "description": "ai-pm-org-main branch has ultimate authority for conflict resolution"
         },
-        "max_active_instances": {
-          "default": 10,
+        "max_active_branches": {
+          "default": 20,
           "type": "number",
-          "description": "Maximum number of active instances allowed"
+          "description": "Maximum number of active AI organizational branches"
         },
-        "instance_naming_validation": {
+        "branch_naming_validation": {
           "default": true,
           "type": "boolean",
-          "description": "Enforce instance naming conventions"
+          "description": "Enforce ai-pm-org-branch-{XXX} sequential naming conventions"
         },
-        "auto_archive_completed": {
-          "default": true,
+        "auto_delete_merged": {
+          "default": false,
           "type": "boolean",
-          "description": "Automatically archive completed instances"
+          "description": "Automatically delete branches after successful merge"
         }
       }
     },
@@ -419,8 +418,8 @@
     "02-project-initialization",
     "03-session-management",
     "13-metadata-management",
-    "14-instance-management",
-    "16-git-integration",
+    "14-branch-management",
+    "15-git-integration",
     "database-integration"
   ],
   "dependencies": [
@@ -429,7 +428,7 @@
     "ProjectBlueprint/metadata.json",
     "Git repository (optional, can be created)",
     "Database schema (mcp-server/database/schema.sql)",
-    "Instance management tools"
+    "Git branch management tools"
   ],
   "keyOperations": [
     "Server validation",
@@ -437,7 +436,7 @@
     "Configuration loading",
     "Project structure initialization",
     "Git repository setup",
-    "Instance identification",
+    "Branch identification",
     "Database initialization",
     "Authority establishment"
   ],
@@ -447,17 +446,17 @@
     "configurationInvalid": "Use defaults and warn user",
     "compatibilityIssues": "Require user decision before proceeding",
     "gitRepositoryIssues": "Initialize repository or report clear error to user",
-    "instanceIdentificationFailure": "Default to main instance and warn user",
+    "branchIdentificationFailure": "Default to ai-pm-org-main and warn user",
     "databaseInitializationFailure": "Report error clearly and offer file-only mode",
-    "instanceAuthorityConflict": "Enforce main instance authority and log conflict"
+    "branchAuthorityConflict": "Enforce ai-pm-org-main authority and log conflict"
   },
   "validation": {
     "serverConnection": "Must verify MCP server is responsive",
-    "toolAvailability": "All required tools must be available including instance management",
-    "configurationValid": "Configuration must pass validation including Git and instance settings",
+    "toolAvailability": "All required tools must be available including branch management",
+    "configurationValid": "Configuration must pass validation including Git and branch settings",
     "structureIntegrity": "Project structure must be valid or initializable",
     "gitRepositoryValid": "Git repository must be properly initialized and accessible",
-    "instanceTypeValid": "Instance type must be correctly identified and authority established",
+    "branchTypeValid": "Branch type must be correctly identified and authority established",
     "databaseIntegrity": "Database must be properly initialized with complete schema"
   }
 }

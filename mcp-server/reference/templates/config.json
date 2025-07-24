@@ -102,6 +102,10 @@
     "requireApprovalForStructureChanges": true,
     "validateJsonSchemas": true
   },
+  "branchManagement": {
+    "maxActiveBranches": 10,
+    "autoDeleteMerged": false
+  },
   "ai": {
     "contextLoadingStrategy": "intelligent",
     "maxContextFiles": 50,

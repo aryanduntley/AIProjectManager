@@ -33,9 +33,11 @@ review.
 
 Need database cleaning maintenance and backups.
 
-need project README
+mcp-server full code review.
 
-ensure mcp-implementation plan is fully complete. mcp-server full code review.
+config.json review, map to directives. Ensure all configurable options (eg. true/false) are accounted for in directives (if true, do this, if false, do that)
+
+check branch creation. at init, main is created. at any other time, if main exists, check if clone is needed. think on this.
 
 review directives and mcp flow regarding directives. Does it follow the instructions well end escalate directives/instructions context well.
 
@@ -46,7 +48,6 @@ review context escalation. How often should json be reviewed? How often should m
 
 node/npm ignore file update, and implementation update according to new git branch changes
 
-directive to obtain user name on any parallel branch. check for branch name duplication
 
 ======================
 

@@ -16,9 +16,8 @@
     "Structure changes",
     "Session initialization",
     "Task resumption",
-    "Instance creation/merging",
-    "Git conflict resolution",
-    "Cross-instance coordination"
+    "Branch creation/merging",
+    "Cross-branch coordination"
   ],
   "workflows": {
     "userApprovalRequirements": {
@@ -30,9 +29,8 @@
         "Context escalation",
         "File structure changes affecting multiple themes",
         "Breaking changes to shared files",
-        "Instance creation requests",
-        "Git conflict resolution decisions",
-        "Instance merge operations"
+        "Branch creation requests",
+        "Branch merge operations"
       ],
       "approvalFormat": {
         "template": "I need your approval to [specific action].\n\nCurrent state: [description]\nProposed change: [detailed change description]\nImpact: [assessment of effects]\nAlternatives: [other options if applicable]\n\nDo you approve this change? (yes/no)"

@@ -19,7 +19,7 @@ AI Project Manager is a sophisticated Model Context Protocol (MCP) server that e
 ### 🎯 **Advanced Task Management**
 - **Hierarchical Task System**: Main tasks with intelligent sidequest support
 - **Real-Time State Preservation**: Never lose progress on task completion
-- **Parallel Development**: Git-like instance management for team collaboration
+- **Parallel Development**: Git branch management for team collaboration
 - **Completion Path Tracking**: Strategic milestone-based project completion
 
 ### 🔧 **Smart Context Loading**
@@ -32,7 +32,7 @@ AI Project Manager is a sophisticated Model Context Protocol (MCP) server that e
 - **Anti-Placeholder Protocol**: Complete implementations, no TODO stubs
 - **Automatic File Modularization**: Keep files under configurable line limits
 - **Quality Assurance**: Built-in validation and cross-reference checking
-- **Conflict Resolution**: Advanced merge strategies for parallel development
+- **Git Integration**: Native Git merge capabilities for parallel development
 
 ## Architecture
 
@@ -60,7 +60,7 @@ AI Project Manager
 ### Prerequisites
 
 - **Python 3.8+** (Python 3.13+ recommended)
-- **Git** (required for project tracking, instance management, and change detection)
+- **Git** (required for project tracking, branch management, and change detection)
 - **SQLite 3.x** (included with Python)
 
 ### Dependencies
@@ -157,7 +157,7 @@ ai-pm start
 - **[Theme System](docs/organization.md#themes)**: Automatic project component discovery
 - **[Multi-Flow Architecture](docs/organization.md#projectflow)**: Domain-organized user experience flows
 - **[Task Management](docs/directives/06-task-management.md)**: Hierarchical task and sidequest system
-- **[Instance Management](docs/directives/14-instance-management.md)**: Git-like parallel development
+- **[Branch Management](docs/directives/14-branch-management.md)**: Git branch-based parallel development
 
 ### Implementation Guides
 
@@ -170,8 +170,7 @@ ai-pm start
 ### Advanced Features
 
 - **[Database Integration](docs/directives/database-integration.md)**: Hybrid file-database architecture
-- **[Git Integration](docs/directives/16-git-integration.md)**: Code change detection and reconciliation
-- **[Conflict Resolution](docs/directives/15-conflict-resolution.md)**: Advanced merge strategies
+- **[Git Integration](docs/directives/15-git-integration.md)**: Code change detection and native Git merge
 - **[Performance Optimization](mcp-server/core/performance_optimizer.py)**: Memory and processing optimization
 
 ## Configuration
@@ -202,10 +201,10 @@ Create a `projectManagement/UserSettings/config.json`:
     "autoInitRepo": true,
     "codeChangeDetection": true
   },
-  "instanceManagement": {
+  "branchManagement": {
     "enabled": true,
-    "maxActiveInstances": 10,
-    "mainInstanceAuthority": true
+    "maxActiveBranches": 10,
+    "mainBranchAuthority": true
   }
 }
 ```
@@ -257,7 +256,7 @@ python -m pytest tests/ -v  # If pytest installed
 ```
 AIProjectManager/
 ├── mcp-server/                   # Core MCP server implementation
-│   ├── core/                     # Core processing engines (scope, git, conflict resolution)
+│   ├── core/                     # Core processing engines (scope, git, branch management)
 │   ├── database/                 # SQLite integration with performance optimization
 │   ├── tools/                    # MCP tool implementations (tasks, themes, sessions)
 │   ├── deps/                     # Bundled Python dependencies (mcp, pydantic, etc.)
@@ -297,10 +296,10 @@ The AI Project Manager exposes these tools through the MCP protocol:
 - `context_escalate()` - Escalate to broader context
 - `context_get_flows()` - Get relevant user experience flows
 
-#### Instance Management
-- `instance_create()` - Create parallel development instance
-- `instance_merge()` - Merge instance changes with conflict resolution
-- `instance_list()` - List active and completed instances
+#### Branch Management
+- `create_instance_branch()` - Create parallel development branch with user attribution
+- `merge_instance_branch()` - Merge branch changes using native Git merge
+- `list_instance_branches()` - List active work branches with user info
 
 ## 🚀 Performance & Scalability
 
@@ -323,7 +322,7 @@ The AI Project Manager exposes these tools through the MCP protocol:
 - Theme-based project organization
 - Multi-flow architecture
 - Database integration
-- Instance management system
+- Git branch management system
 
 ### v1.1 (Next Release)
 - npm package distribution

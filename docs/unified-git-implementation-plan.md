@@ -376,7 +376,7 @@ Every directive must be updated to support Git-like instance management:
 #### New Directives Required:
 1. **`14-instance-management.json/.md`** - Complete Git-like instance lifecycle
 2. **`15-conflict-resolution.json/.md`** - Conflict detection and resolution protocols  
-3. **`16-git-integration.json/.md`** - Root-level Git tracking and code change detection
+3. **`15-git-integration.json/.md`** - Root-level Git tracking and code change detection
 
 #### Enhanced Existing Directives:
 1. **`01-system-initialization`** - Add instance identification and Git repository setup

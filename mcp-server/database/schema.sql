@@ -518,112 +518,42 @@ BEGIN
 END;
 
 -- ============================================================================
--- GIT INTEGRATION & INSTANCE MANAGEMENT (Phase 1)
+-- SIMPLIFIED GIT INTEGRATION & BRANCH TRACKING
 -- ============================================================================
 
--- Git project state tracking for code change detection
+-- SIMPLIFIED: Basic Git state tracking (keep)
 CREATE TABLE IF NOT EXISTS git_project_state (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_root_path TEXT NOT NULL,
     current_git_hash TEXT,
-    last_known_hash TEXT,
+    current_branch TEXT,
     last_sync_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    change_summary TEXT,
-    affected_themes TEXT DEFAULT '[]', -- JSON array of theme names affected by changes
-    reconciliation_status TEXT DEFAULT 'pending', -- pending, in-progress, completed, failed
-    reconciliation_notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- MCP instance management for Git-like workflow
-CREATE TABLE IF NOT EXISTS mcp_instances (
+-- Git branch metadata with sequential numbering (pure Git branch-based system)
+CREATE TABLE IF NOT EXISTS git_branches (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    instance_id TEXT UNIQUE NOT NULL,
-    instance_name TEXT NOT NULL,
-    created_from TEXT DEFAULT 'main',
-    created_by TEXT,
-    purpose TEXT NOT NULL,
-    primary_themes TEXT, -- JSON array of primary theme names
-    related_flows TEXT,  -- JSON array of related flow file names
-    expected_duration TEXT, -- e.g., "3-5 days", "1 week"
-    status TEXT DEFAULT 'active', -- active, merging, completed, archived, failed
-    workspace_path TEXT, -- path to instance workspace directory
-    database_path TEXT, -- path to instance database copy
-    git_base_hash TEXT, -- Git hash when instance was created
+    branch_name TEXT UNIQUE NOT NULL,     -- ai-pm-org-branch-{XXX}
+    branch_number INTEGER NOT NULL,       -- sequential number (001, 002, etc.)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    completed_at TIMESTAMP NULL,
-    archived_at TIMESTAMP NULL
-);
-
--- Instance merge history and conflict resolution tracking
-CREATE TABLE IF NOT EXISTS instance_merges (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    merge_id TEXT UNIQUE NOT NULL,
-    source_instance TEXT NOT NULL,
-    target_instance TEXT DEFAULT 'main',
-    merge_status TEXT DEFAULT 'pending', -- pending, in-progress, completed, failed, cancelled
-    conflicts_detected INTEGER DEFAULT 0,
-    conflicts_resolved INTEGER DEFAULT 0,
-    conflict_types TEXT DEFAULT '[]', -- JSON array: ["theme", "task", "flow", "database"]
-    resolution_strategy TEXT, -- JSON: detailed conflict resolution decisions
-    merge_summary TEXT,
-    database_conflicts TEXT DEFAULT '[]', -- JSON array of database conflict descriptions
-    organizational_conflicts TEXT DEFAULT '[]', -- JSON array of organizational file conflicts
-    merged_by TEXT, -- who performed the merge (usually main instance user)
-    merge_notes TEXT,
-    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    completed_at TIMESTAMP NULL,
-    failed_at TIMESTAMP NULL,
-    FOREIGN KEY (source_instance) REFERENCES mcp_instances(instance_id)
-);
-
--- Git change impact analysis for theme reconciliation
-CREATE TABLE IF NOT EXISTS git_change_impacts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    git_state_id INTEGER,
-    file_path TEXT NOT NULL,
-    change_type TEXT NOT NULL, -- added, modified, deleted, renamed
-    affected_themes TEXT DEFAULT '[]', -- JSON array of theme names
-    impact_severity TEXT DEFAULT 'low', -- low, medium, high, critical
-    reconciliation_action TEXT, -- action taken to reconcile organizational state
-    reconciliation_status TEXT DEFAULT 'pending', -- pending, completed, skipped, failed
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (git_state_id) REFERENCES git_project_state(id)
-);
-
--- Instance workspace file tracking
-CREATE TABLE IF NOT EXISTS instance_workspace_files (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    instance_id TEXT NOT NULL,
-    file_path TEXT NOT NULL,
-    file_type TEXT, -- theme, flow, task, implementation, etc.
-    operation TEXT NOT NULL, -- created, modified, deleted
-    original_content_hash TEXT,
-    modified_content_hash TEXT,
-    modification_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    merge_status TEXT DEFAULT 'pending', -- pending, included, excluded, conflicted
-    conflict_resolution TEXT, -- resolution decision if conflicted
-    FOREIGN KEY (instance_id) REFERENCES mcp_instances(instance_id)
+    merged_at TIMESTAMP NULL,
+    status TEXT DEFAULT 'active' -- active, merged, deleted
 );
 
 -- ============================================================================
--- GIT INTEGRATION INDEXES FOR PERFORMANCE
+-- SIMPLIFIED GIT INTEGRATION INDEXES FOR PERFORMANCE
 -- ============================================================================
 
 CREATE INDEX IF NOT EXISTS idx_git_project_state_hash ON git_project_state(current_git_hash);
 CREATE INDEX IF NOT EXISTS idx_git_project_state_path ON git_project_state(project_root_path);
-CREATE INDEX IF NOT EXISTS idx_mcp_instances_status ON mcp_instances(status);
-CREATE INDEX IF NOT EXISTS idx_mcp_instances_created_from ON mcp_instances(created_from);
-CREATE INDEX IF NOT EXISTS idx_instance_merges_status ON instance_merges(merge_status);
-CREATE INDEX IF NOT EXISTS idx_instance_merges_source ON instance_merges(source_instance);
-CREATE INDEX IF NOT EXISTS idx_git_change_impacts_themes ON git_change_impacts(affected_themes);
-CREATE INDEX IF NOT EXISTS idx_instance_workspace_instance ON instance_workspace_files(instance_id);
+CREATE INDEX IF NOT EXISTS idx_git_branches_name ON git_branches(branch_name);
+CREATE INDEX IF NOT EXISTS idx_git_branches_number ON git_branches(branch_number);
+CREATE INDEX IF NOT EXISTS idx_git_branches_status ON git_branches(status);
 
 -- ============================================================================
--- GIT INTEGRATION TRIGGERS
+-- SIMPLIFIED GIT INTEGRATION TRIGGERS
 -- ============================================================================
 
 -- Update timestamps on git_project_state changes
@@ -632,12 +562,4 @@ CREATE TRIGGER IF NOT EXISTS update_git_project_state_timestamps
     FOR EACH ROW
 BEGIN
     UPDATE git_project_state SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
-END;
-
--- Update last_activity on mcp_instances changes
-CREATE TRIGGER IF NOT EXISTS update_mcp_instances_activity
-    AFTER UPDATE ON mcp_instances
-    FOR EACH ROW
-BEGIN
-    UPDATE mcp_instances SET last_activity = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;

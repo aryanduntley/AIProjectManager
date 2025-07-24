@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "id": "16-git-integration",
+    "id": "15-git-integration",
     "title": "Root-Level Git Integration Directives",
     "priority": "high", 
     "frequency": "session-boot",
     "version": "1.0.0",
-    "humanReadable": "../docs/directives/16-git-integration.md"
+    "humanReadable": "../docs/directives/15-git-integration.md"
   },
   "triggers": [
     "Session boot with project code changes",
@@ -152,40 +152,40 @@
         }
       ]
     },
-    "instanceGitIntegration": {
-      "directive": "Integrate Git tracking with instance management system",
+    "branchGitIntegration": {
+      "directive": "Integrate Git tracking with branch management system",
       "steps": [
         {
-          "action": "recordInstanceGitBase",
-          "description": "Record Git hash when instance is created for merge comparison",
+          "action": "recordBranchGitBase",
+          "description": "Record Git hash when branch is created for merge comparison",
           "required": true,
-          "instance_git_tracking": [
-            "Store git_base_hash in mcp_instances table",
-            "Record project code state at instance creation time",
-            "Enable detection of external changes during instance work",
+          "branch_git_tracking": [
+            "Store git_base_hash in ai_instance_branches table",
+            "Record project code state at branch creation time",
+            "Enable detection of external changes during branch work",
             "Support merge conflict detection with Git awareness"
           ]
         },
         {
-          "action": "detectCodeChangesInInstances",
-          "description": "Detect if project code changed while instance was active",
+          "action": "detectCodeChangesInBranches",
+          "description": "Detect if project code changed while branch was active",
           "required": true,
           "change_detection": [
-            "Compare current Git hash with instance base hash",
-            "Identify external code changes during instance development",
+            "Compare current Git hash with branch base hash",
+            "Identify external code changes during branch development",
             "Include code changes in merge conflict analysis",
             "Warn of potential integration issues"
           ]
         },
         {
           "action": "integrateWithMergeProcess",
-          "description": "Include Git changes in instance merge process",
+          "description": "Include Git changes in branch merge process",
           "required": true,
           "merge_integration": [
             "Consider code changes in conflict detection",
             "Update organizational state for external code changes",
-            "Reconcile both instance changes AND code changes during merge",
-            "Ensure main instance authority over code change interpretation"
+            "Reconcile both branch changes AND code changes during merge",
+            "Ensure ai-pm-org-main authority over code change interpretation"
           ]
         }
       ]
@@ -237,13 +237,13 @@
   },
   "gitConfiguration": {
     "gitignoreUpdates": {
-      "description": "Maintain .gitignore for MCP instance management",
+      "description": "Maintain .gitignore for AI branch management",
       "tracked": [
         "All project source code",
-        "Main projectManagement/ organizational state", 
-        "Instance management structure (.mcp-instances/)",
-        "Merge history and conflict resolution logs",
-        "Instance metadata and branch information"
+        "AI organizational state in Git branches", 
+        "Branch metadata and tracking information",
+        "Git merge history and branch logs",
+        "AI branch management configuration"
       ],
       "notTracked": [
         "User-specific settings (UserSettings/)",
@@ -253,12 +253,12 @@
       ]
     },
     "repositoryStructure": {
-      "description": "Expected Git repository structure for MCP integration",
+      "description": "Expected Git repository structure for AI branch integration",
       "structure": [
-        ".git/ - Root-level Git repository",
-        "projectManagement/ - MAIN instance (canonical organizational state)",
-        ".mcp-instances/ - Instance management directory (tracked)",
-        ".gitignore - Updated for MCP instance management exclusions"
+        ".git/ - Root-level Git repository with AI organizational branches",
+        "ai-pm-org-main branch - Canonical AI organizational state",
+        "ai-pm-org-branch-{XXX} branches - Sequential numbered work branches",
+        ".gitignore - Updated for AI branch management exclusions"
       ]
     }
   },
@@ -297,8 +297,8 @@
     "databaseUpdateFailure": "Roll back Git state updates and retry"
   },
   "integrationPoints": {
-    "instanceManagement": "Coordinate with instance system for Git-aware merging",
-    "conflictResolution": "Provide Git context for merge conflict resolution",
+    "branchManagement": "Coordinate with Git branch system for merge operations",
+    "gitMergeOperations": "Use native Git merge capabilities for conflict resolution",
     "auditSystem": "Log all Git integration actions for compliance",
     "themeManagement": "Update theme definitions based on code changes"
   }

@@ -4,7 +4,7 @@
     "created": "2025-01-15T18:00:00Z",
     "lastUpdated": "2025-01-15T18:00:00Z",
     "description": "Index of all AI Project Manager directives for AI reference",
-    "totalDirectives": 13
+    "totalDirectives": 17
   },
   "directives": {
     "01-system-initialization": {
@@ -332,12 +332,118 @@
       "configSettings": [],
       "integrations": [
         "02-project-initialization",
-        "08-project-management",
+        "08-project-management",  
         "04-theme-management"
       ],
       "dependencies": ["ProjectBlueprint/metadata.json", "ProjectLogic updates", "Theme discovery"],
       "keyOperations": ["Metadata initialization", "Characteristic tracking", "Workflow integration"],
       "frequency": "project-evolution"
+    },
+    "14-branch-management": {
+      "filename": "14-branch-management.md",
+      "title": "Git Branch Management Directives",
+      "purpose": "Manage Git branch lifecycle with automatic user identification and Git-native operations",
+      "priority": "high",
+      "triggers": ["Branch creation request", "Multiple developer scenario", "Parallel development needed", "Branch merge operations", "User identification needed"],
+      "sections": [
+        "Branch Naming Conventions",
+        "User Identification System",
+        "Branch Creation Workflow",
+        "Branch Development Phase",
+        "Branch Merging Workflow",
+        "Branch Management Tools"
+      ],
+      "configSettings": [
+        "branch_management.enabled",
+        "branch_management.max_active_branches",
+        "branch_management.auto_delete_merged",
+        "branch_management.branch_naming_validation"
+      ],
+      "integrations": [
+        "15-git-integration",
+        "03-session-management",
+        "09-logging-documentation"
+      ],
+      "dependencies": ["Git repository", "ai-pm-org-main branch", "ai_instance_branches database table"],
+      "keyOperations": ["User detection", "Branch creation", "Git merge", "User attribution", "Branch cleanup"],
+      "frequency": "branch-operations"
+    },
+    "15-git-integration": {
+      "filename": "15-git-integration.md",
+      "title": "Git Integration Directives",
+      "purpose": "Root-level Git tracking, code change detection, and organizational reconciliation",
+      "priority": "high",
+      "triggers": ["Session boot with project code changes", "Git repository state detection needed", "External code modifications detected"],
+      "sections": [
+        "Git Repository Structure",
+        "Code Change Detection",
+        "Organizational Reconciliation",
+        "Git Configuration Management"
+      ],
+      "configSettings": [
+        "git.enabled",
+        "git.auto_init_repo", 
+        "git.code_change_detection",
+        "git.auto_reconcile_on_boot"
+      ],
+      "integrations": [
+        "14-branch-management",
+        "03-session-management",
+        "04-theme-management"
+      ],
+      "dependencies": ["Git repository", "Project root access", "Theme impact analysis"],
+      "keyOperations": ["Change detection", "Theme reconciliation", "Git state tracking", "Repository initialization"],
+      "frequency": "session-boot"
+    },
+    "database-integration": {
+      "filename": "database-integration.md",
+      "title": "Database Integration Directives",
+      "purpose": "Database integration protocols for hybrid file-database architecture",
+      "priority": "critical",
+      "triggers": ["Project initialization", "Database setup", "State synchronization"],
+      "sections": [
+        "Hybrid Architecture Protocol",
+        "Real-Time State Synchronization",
+        "Session Persistence",
+        "Database Operations"
+      ],
+      "configSettings": [
+        "database.enabled",
+        "synchronization.atomicOperations",
+        "sessions.contextSnapshots",
+        "synchronization.realTimeUpdates"
+      ],
+      "integrations": [
+        "03-session-management",
+        "06-task-management",
+        "05-context-loading"
+      ],
+      "dependencies": ["project.db", "Database schema", "SQLite support"],
+      "keyOperations": ["State synchronization", "Session snapshots", "Database queries", "Context preservation"],
+      "frequency": "continuous"
+    },
+    "directive-escalation-system": {
+      "filename": "directive-escalation-system.md",
+      "title": "Directive Escalation System",
+      "purpose": "Directive escalation system for accessing detailed implementation specifications",
+      "priority": "critical",
+      "triggers": ["Directive ambiguity", "User communication needed", "Complex workflow execution", "Edge case handling"],
+      "sections": [
+        "Three-Tier Escalation System",
+        "Forced Escalation Operations",
+        "Escalation Protocol",
+        "Context Preservation"
+      ],
+      "configSettings": [
+        "escalation.automaticJSON",
+        "escalation.requireMDApproval"
+      ],
+      "integrations": [
+        "All directives - provides escalation framework"
+      ],
+      "dependencies": ["All directive files", "Escalation chain integrity"],
+      "keyOperations": ["Escalation chain", "User approval process", "Context preservation", "Directive navigation"],
+      "frequency": "as-needed"
     }
   },
   "relationships": {
@@ -385,7 +491,21 @@
     "validation.validateJsonSchemas": ["11-quality-assurance"],
     "archiving.projectlogicSizeLimit": ["09-logging-documentation"],
     "archiving.noteworthySizeLimit": ["09-logging-documentation"],
-    "archiving.deleteArchivesOlderThan": ["09-logging-documentation"]
+    "archiving.deleteArchivesOlderThan": ["09-logging-documentation"],
+    "branch_management.enabled": ["14-branch-management"],
+    "branch_management.max_active_branches": ["14-branch-management"],
+    "branch_management.auto_delete_merged": ["14-branch-management"],
+    "branch_management.branch_naming_validation": ["14-branch-management"],
+    "git.enabled": ["15-git-integration"],
+    "git.auto_init_repo": ["15-git-integration"],
+    "git.code_change_detection": ["15-git-integration"],
+    "git.auto_reconcile_on_boot": ["15-git-integration"],
+    "database.enabled": ["database-integration"],
+    "synchronization.atomicOperations": ["database-integration"],
+    "sessions.contextSnapshots": ["database-integration"],
+    "synchronization.realTimeUpdates": ["database-integration"],
+    "escalation.automaticJSON": ["directive-escalation-system"],
+    "escalation.requireMDApproval": ["directive-escalation-system"]
   },
   "usage_patterns": {
     "session_start": [
@@ -412,6 +532,11 @@
       "07-implementation-plans",
       "08-project-management",
       "06-task-management"
+    ],
+    "branch_operations": [
+      "14-branch-management",
+      "15-git-integration",
+      "03-session-management"
     ]
   },
   "quick_reference": {
