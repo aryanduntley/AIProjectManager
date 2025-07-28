@@ -27,7 +27,7 @@ class EventQueries:
             # Generate event ID if not provided
             event_id = event_data.get('event_id')
             if not event_id:
-                timestamp = datetime.utcnow().strftime('%Y-%m-%d-%H%M%S')
+                timestamp = datetime.utcnow().strftime('%Y-%m-%d-%H%M%S-%f')
                 event_id = f"event-{timestamp}"
             
             # Prepare event data

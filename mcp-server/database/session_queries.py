@@ -795,3 +795,94 @@ class SessionQueries:
         """Update active sidequests for a session."""
         query = "UPDATE sessions SET active_sidequests = ? WHERE session_id = ?"
         self.db.execute_update(query, (json.dumps(active_sidequests), session_id))
+    
+    def log_context_escalation(self, session_id: str, from_mode: str, to_mode: str, 
+                              reason: str, task_id: str = None):
+        """
+        Log a context escalation event.
+        
+        Args:
+            session_id: Session ID
+            from_mode: Previous context mode
+            to_mode: New context mode
+            reason: Reason for escalation
+            task_id: Related task ID if any
+        """
+        try:
+            # Update session context mode
+            self.db.execute_update(
+                "UPDATE sessions SET context_mode = ? WHERE session_id = ?",
+                (to_mode, session_id)
+            )
+            
+            # Log the escalation event
+            event_data = {
+                'event_type': 'context_escalation',
+                'title': f'Context escalated from {from_mode} to {to_mode}',
+                'description': reason,
+                'session_id': session_id,
+                'task_id': task_id,
+                'context_data': json.dumps({
+                    'from_mode': from_mode,
+                    'to_mode': to_mode,
+                    'reason': reason
+                })
+            }
+            
+            # Simple event logging without complex event management
+            self.db.logger.info(f"Context escalation: {from_mode} → {to_mode} (Reason: {reason})")
+            
+        except Exception as e:
+            self.db.logger.error(f"Error logging context escalation: {e}")
+    
+    def get_session_analytics(self, days: int = 30) -> Dict[str, Any]:
+        """
+        Get session analytics for the specified number of days.
+        
+        Args:
+            days: Number of days to analyze
+            
+        Returns:
+            Analytics dictionary
+        """
+        try:
+            # Total sessions in period
+            total_query = """
+                SELECT COUNT(*) as count FROM sessions 
+                WHERE start_time >= datetime('now', '-{} days')
+            """.format(days)
+            total_sessions = self.db.execute_query(total_query)[0]['count']
+            
+            # Average session duration
+            duration_query = """
+                SELECT AVG(ROUND((julianday(last_activity) - julianday(start_time)) * 24, 2)) as avg_duration 
+                FROM sessions 
+                WHERE start_time >= datetime('now', '-{} days')
+            """.format(days)
+            result = self.db.execute_query(duration_query)
+            avg_duration = result[0]['avg_duration'] if result else 0
+            
+            # Context mode distribution
+            mode_query = """
+                SELECT context_mode, COUNT(*) as count FROM sessions 
+                WHERE start_time >= datetime('now', '-{} days')
+                GROUP BY context_mode
+            """.format(days)
+            mode_results = self.db.execute_query(mode_query)
+            mode_distribution = {row['context_mode']: row['count'] for row in mode_results}
+            
+            return {
+                'total_sessions': total_sessions,
+                'avg_duration_hours': round(avg_duration or 0, 2),
+                'context_mode_distribution': mode_distribution,
+                'analysis_period_days': days
+            }
+            
+        except Exception as e:
+            self.db.logger.error(f"Error getting session analytics: {e}")
+            return {
+                'total_sessions': 0,
+                'avg_duration_hours': 0,
+                'context_mode_distribution': {},
+                'analysis_period_days': days
+            }

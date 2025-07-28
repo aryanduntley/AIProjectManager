@@ -40,6 +40,7 @@ class DatabaseManager:
         self.connection: Optional[sqlite3.Connection] = None
         self.logger = logging.getLogger(__name__)
         self._lock = threading.RLock()  # For thread safety
+        self._in_transaction = False  # Track transaction state
         
         # Configuration
         self.enable_foreign_keys = True
@@ -163,7 +164,11 @@ class DatabaseManager:
         connection = self.connect()
         cursor = connection.cursor()
         cursor.execute(query, params)
-        connection.commit()
+        
+        # Only commit if we're not inside a transaction
+        if not self._in_transaction:
+            connection.commit()
+        
         return cursor.rowcount
     
     def execute_insert(self, query: str, params: Tuple = ()) -> int:
@@ -180,7 +185,11 @@ class DatabaseManager:
         connection = self.connect()
         cursor = connection.cursor()
         cursor.execute(query, params)
-        connection.commit()
+        
+        # Only commit if we're not inside a transaction
+        if not self._in_transaction:
+            connection.commit()
+            
         return cursor.lastrowid
     
     def backup_database(self, backup_path: Optional[str] = None) -> str:
@@ -243,13 +252,18 @@ class DatabaseManager:
                 db_manager.execute_update("UPDATE ...", params)
         """
         connection = self.connect()
+        old_transaction_state = self._in_transaction
+        self._in_transaction = True
         try:
             yield connection
             connection.commit()
+            self.logger.debug("Transaction committed successfully")
         except Exception as e:
             connection.rollback()
             self.logger.error(f"Transaction failed, rolled back: {e}")
             raise
+        finally:
+            self._in_transaction = old_transaction_state
     
     def execute_many(self, query: str, params_list: List[Tuple]) -> int:
         """

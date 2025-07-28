@@ -7,7 +7,8 @@ Follows the exact schema structure defined in mcp-server/database/schema.sql
 
 import json
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional, Tuple, Set
+from collections import deque
 from .db_manager import DatabaseManager
 
 

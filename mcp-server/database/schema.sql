@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     context_mode TEXT DEFAULT 'theme-focused',
+    context TEXT DEFAULT '{}', -- JSON: session context data/content
     active_themes TEXT DEFAULT '[]', -- JSON array of theme names
     active_tasks TEXT DEFAULT '[]',  -- JSON array of task IDs
     active_sidequests TEXT DEFAULT '[]', -- JSON array of sidequest IDs
@@ -212,6 +213,16 @@ CREATE TABLE IF NOT EXISTS file_modifications (
     FOREIGN KEY (session_id) REFERENCES sessions(session_id)
 );
 
+-- Directory Metadata for README.json replacement
+CREATE TABLE IF NOT EXISTS directory_metadata (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    directory_path TEXT UNIQUE NOT NULL,
+    purpose TEXT,
+    description TEXT,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Task Completion Metrics
 CREATE TABLE IF NOT EXISTS task_metrics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -320,6 +331,9 @@ CREATE INDEX IF NOT EXISTS idx_noteworthy_events_impact ON noteworthy_events(imp
 CREATE INDEX IF NOT EXISTS idx_event_relationships_parent ON event_relationships(parent_event_id);
 CREATE INDEX IF NOT EXISTS idx_event_relationships_child ON event_relationships(child_event_id);
 
+-- Directory metadata indexes
+CREATE INDEX IF NOT EXISTS idx_directory_metadata_path ON directory_metadata(directory_path);
+
 -- Views for Common Queries
 CREATE VIEW IF NOT EXISTS theme_flow_summary AS
 SELECT 
@@ -348,6 +362,7 @@ SELECT
     start_time,
     last_activity,
     ROUND((julianday(last_activity) - julianday(start_time)) * 24, 2) as duration_hours,
+    context_mode,
     context,
     active_themes,
     active_tasks

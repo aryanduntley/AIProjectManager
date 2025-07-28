@@ -428,3 +428,49 @@ class UserPreferenceQueries:
         except Exception as e:
             logger.error(f"Error importing preferences: {e}")
             return f"Error importing preferences: {str(e)}"
+    
+    async def get_preference_analytics(self) -> Dict[str, Any]:
+        """Get analytics about user preferences."""
+        try:
+            # Total preferences count
+            total_result = self.db_manager.execute("SELECT COUNT(*) as count FROM user_preferences")
+            total_preferences = total_result[0]['count'] if total_result else 0
+            
+            # Preference types breakdown
+            type_result = self.db_manager.execute("""
+                SELECT 
+                    CASE 
+                        WHEN preference_key LIKE 'context_mode_%' THEN 'context_modes'
+                        WHEN preference_key LIKE 'theme_preference_%' THEN 'theme_preferences'
+                        WHEN preference_key LIKE 'workflow_%' THEN 'workflow_patterns'
+                        ELSE 'other'
+                    END as type,
+                    COUNT(*) as count
+                FROM user_preferences 
+                GROUP BY type
+            """)
+            
+            preference_breakdown = {row['type']: row['count'] for row in type_result}
+            
+            # Average confidence score
+            confidence_result = self.db_manager.execute("""
+                SELECT AVG(confidence_score) as avg_confidence
+                FROM user_preferences
+            """)
+            avg_confidence = confidence_result[0]['avg_confidence'] if confidence_result else 0.0
+            
+            return {
+                'total_preferences': total_preferences,
+                'preference_breakdown': preference_breakdown,
+                'average_confidence': round(avg_confidence or 0.0, 2),
+                'analysis_timestamp': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting preference analytics: {e}")
+            return {
+                'total_preferences': 0,
+                'preference_breakdown': {},
+                'average_confidence': 0.0,
+                'error': str(e)
+            }

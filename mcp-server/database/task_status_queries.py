@@ -29,7 +29,7 @@ class TaskStatusQueries:
     
     # Task Status Management
     
-    def create_task(
+    async def create_task(
         self,
         task_id: str,
         title: str,
@@ -42,7 +42,7 @@ class TaskStatusQueries:
         assigned_to: str = "ai-agent",
         acceptance_criteria: List[str] = None,
         testing_requirements: Dict[str, Any] = None
-    ) -> bool:
+    ) -> str:
         """
         Create a new task with comprehensive metadata.
         
@@ -60,7 +60,7 @@ class TaskStatusQueries:
             testing_requirements: Testing requirements dictionary
             
         Returns:
-            True if successful, False otherwise
+            Task ID if successful, raises exception on failure
         """
         try:
             query = """
@@ -86,10 +86,10 @@ class TaskStatusQueries:
             # Initialize sidequest limits for this task
             self._initialize_sidequest_limits(task_id)
             
-            return True
+            return task_id
         except Exception as e:
             self.db.logger.error(f"Error creating task {task_id}: {e}")
-            return False
+            raise
     
     def update_task_status(
         self,
@@ -225,88 +225,82 @@ class TaskStatusQueries:
     
     # Sidequest Management with Multiple Support
     
-    def create_sidequest(
-        self,
-        sidequest_id: str,
-        parent_task_id: str,
-        title: str,
-        description: str = "",
-        scope_description: str = "",
-        reason: str = "",
-        urgency: str = "medium",
-        impact_on_parent: str = "minimal",
-        primary_theme: str = None,
-        related_themes: List[str] = None,
-        completion_trigger: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+    async def create_sidequest(self, sidequest_data: Dict[str, Any]) -> str:
         """
         Create a new sidequest with automatic limit checking.
         
         Args:
-            sidequest_id: Unique sidequest identifier
-            parent_task_id: Parent task ID
-            title: Sidequest title
-            description: Sidequest description
-            scope_description: Scope description for the sidequest
-            reason: Reason for creating the sidequest
-            urgency: Urgency level (high, medium, low)
-            impact_on_parent: Impact on parent task (minimal, moderate, significant)
-            primary_theme: Primary theme name
-            related_themes: List of related themes
-            completion_trigger: Completion criteria
+            sidequest_data: Dictionary matching sidequest_status schema:
+                - sidequest_id (required): Unique sidequest identifier
+                - parent_task_id (required): Parent task ID
+                - title (required): Sidequest title
+                - description (optional): Sidequest description
+                - scope_description (optional): Scope description
+                - reason (optional): Reason for creating the sidequest
+                - urgency (optional): Urgency level, defaults to 'medium'
+                - impact_on_parent (optional): Impact level, defaults to 'minimal'
+                - primary_theme (optional): Primary theme name
+                - related_themes (optional): List of related themes as JSON
+                - completion_trigger (optional): Completion criteria as JSON
+                - notes (optional): Additional notes as JSON
+                - status (optional): Status, defaults to 'pending'
+                - priority (optional): Priority, defaults to 'medium'
             
         Returns:
-            Dictionary with creation result and limit status
+            Sidequest ID if successful, raises exception on failure
         """
         try:
-            # Check sidequest limits first
-            limit_status = self.check_sidequest_limits(parent_task_id)
+            # Extract required fields from sidequest_data
+            sidequest_id = sidequest_data['sidequest_id']
+            parent_task_id = sidequest_data['parent_task_id']
+            title = sidequest_data['title']
+            
+            # Extract optional fields with defaults
+            description = sidequest_data.get('description', '')
+            scope_description = sidequest_data.get('scope_description', '')
+            reason = sidequest_data.get('reason', '')
+            urgency = sidequest_data.get('urgency', 'medium')
+            impact_on_parent = sidequest_data.get('impact_on_parent', 'minimal')
+            primary_theme = sidequest_data.get('primary_theme')
+            related_themes = sidequest_data.get('related_themes', [])
+            completion_trigger = sidequest_data.get('completion_trigger', {})
+            notes = sidequest_data.get('notes', [])
+            status = sidequest_data.get('status', 'pending')
+            priority = sidequest_data.get('priority', 'medium')
+            
+            # Check sidequest limits first (use sync version to avoid async/await)
+            limit_status = await self.check_sidequest_limits(parent_task_id)
             
             if limit_status["limit_status"] == "at_limit":
-                return {
-                    "success": False,
-                    "reason": "sidequest_limit_exceeded",
-                    "limit_status": limit_status,
-                    "message": f"Maximum of {limit_status['max_allowed_sidequests']} sidequests reached for task {parent_task_id}"
-                }
+                raise ValueError(f"Maximum of {limit_status['max_allowed_sidequests']} sidequests reached for task {parent_task_id}")
             
             # Create the sidequest (trigger will automatically update limits)
             query = """
                 INSERT INTO sidequest_status (
                     sidequest_id, parent_task_id, title, description, status,
-                    scope_description, reason, urgency, impact_on_parent,
-                    primary_theme, related_themes, completion_trigger
-                ) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?)
+                    priority, scope_description, reason, urgency, impact_on_parent,
+                    primary_theme, related_themes, completion_trigger, notes
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """
             
             params = (
-                sidequest_id, parent_task_id, title, description, scope_description,
-                reason, urgency, impact_on_parent, primary_theme,
-                json.dumps(related_themes or []), json.dumps(completion_trigger or {})
+                sidequest_id, parent_task_id, title, description, status,
+                priority, scope_description, reason, urgency, impact_on_parent, 
+                primary_theme, json.dumps(related_themes), 
+                json.dumps(completion_trigger), json.dumps(notes)
             )
             
             self.db.execute_update(query, params)
             
-            # Warn if approaching limit
+            # Log warning if approaching limit
             if limit_status["limit_status"] == "approaching_limit":
-                warning = f"Approaching sidequest limit ({limit_status['active_sidequests_count'] + 1}/{limit_status['max_allowed_sidequests']})"
-            else:
-                warning = None
+                self.db.logger.warning(f"Approaching sidequest limit ({limit_status['active_sidequests_count'] + 1}/{limit_status['max_allowed_sidequests']}) for task {parent_task_id}")
             
-            return {
-                "success": True,
-                "sidequest_id": sidequest_id,
-                "limit_status": limit_status,
-                "warning": warning
-            }
+            return sidequest_id
             
         except Exception as e:
-            self.db.logger.error(f"Error creating sidequest {sidequest_id}: {e}")
-            return {
-                "success": False,
-                "reason": "database_error",
-                "error": str(e)
-            }
+            self.db.logger.error(f"Error creating sidequest {sidequest_data.get('sidequest_id', 'unknown')}: {e}")
+            raise
     
     def check_sidequest_limits(self, parent_task_id: str) -> Dict[str, Any]:
         """Check current sidequest limits and return status."""
@@ -459,58 +453,66 @@ class TaskStatusQueries:
     
     # Subtask Management
     
-    def create_subtask(
-        self,
-        subtask_id: str,
-        parent_id: str,
-        parent_type: str,  # 'task' or 'sidequest'
-        title: str,
-        description: str = "",
-        context_mode: str = "theme-focused",
-        flow_references: List[Dict[str, Any]] = None,
-        files: List[str] = None,
-        dependencies: List[str] = None,
-        priority: str = "medium"
-    ) -> bool:
+    async def create_subtask(self, subtask_data: Dict[str, Any]) -> str:
         """
         Create a new subtask for a task or sidequest.
         
         Args:
-            subtask_id: Unique subtask identifier
-            parent_id: Parent task or sidequest ID
-            parent_type: Type of parent ('task' or 'sidequest')
-            title: Subtask title
-            description: Subtask description
-            context_mode: Context mode for this subtask
-            flow_references: List of flow references (flowId, flowFile, steps)
-            files: List of file paths
-            dependencies: List of dependency subtask IDs
-            priority: Subtask priority
+            subtask_data: Dictionary matching subtask_status schema:
+                - subtask_id (required): Unique subtask identifier
+                - parent_task_id (required): Parent task ID (will be mapped to parent_id)
+                - title (required): Subtask title
+                - description (optional): Subtask description
+                - status (optional): Status, defaults to 'pending'
+                - priority (optional): Priority, defaults to 'medium'
+                - context_mode (optional): Context mode, defaults to 'theme-focused'
+                - flow_references (optional): List of flow references as JSON
+                - files (optional): List of file paths as JSON
+                - dependencies (optional): List of dependency subtask IDs as JSON
+                - blockers (optional): List of blockers as JSON
+                - notes (optional): Additional notes
             
         Returns:
-            True if successful, False otherwise
+            Subtask ID if successful, raises exception on failure
         """
         try:
+            # Extract required fields from subtask_data
+            subtask_id = subtask_data['subtask_id']
+            parent_task_id = subtask_data['parent_task_id']  # Will be mapped to parent_id
+            title = subtask_data['title']
+            
+            # Extract optional fields with defaults
+            description = subtask_data.get('description', '')
+            status = subtask_data.get('status', 'pending')
+            priority = subtask_data.get('priority', 'medium')
+            context_mode = subtask_data.get('context_mode', 'theme-focused')
+            flow_references = subtask_data.get('flow_references', [])
+            files = subtask_data.get('files', [])
+            dependencies = subtask_data.get('dependencies', [])
+            blockers = subtask_data.get('blockers', [])
+            notes = subtask_data.get('notes', '')
+            
             query = """
                 INSERT INTO subtask_status (
                     subtask_id, parent_id, parent_type, title, description,
                     status, priority, context_mode, flow_references,
-                    files, dependencies
-                ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
+                    files, dependencies, blockers, notes
+                ) VALUES (?, ?, 'task', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """
             
             params = (
-                subtask_id, parent_id, parent_type, title, description,
-                priority, context_mode, json.dumps(flow_references or []),
-                json.dumps(files or []), json.dumps(dependencies or [])
+                subtask_id, parent_task_id, title, description, status,
+                priority, context_mode, json.dumps(flow_references),
+                json.dumps(files), json.dumps(dependencies), 
+                json.dumps(blockers), notes
             )
             
             self.db.execute_update(query, params)
-            return True
+            return subtask_id
             
         except Exception as e:
-            self.db.logger.error(f"Error creating subtask {subtask_id}: {e}")
-            return False
+            self.db.logger.error(f"Error creating subtask {subtask_data.get('subtask_id', 'unknown')}: {e}")
+            raise
     
     def update_subtask_status(
         self,
@@ -769,3 +771,128 @@ class TaskStatusQueries:
             "analysis_period_days": days,
             "theme_filter": theme_name
         }
+    
+    # Additional methods expected by tests (distinct from existing update_task_status)
+    
+    async def update_task_progress(self, task_id: str, progress_percentage: int, status: str = None):
+        """
+        Update task progress percentage and optionally status.
+        This is simpler than update_task_status - focused just on progress updates.
+        """
+        try:
+            update_fields = ["progress_percentage = ?"]
+            params = [progress_percentage]
+            
+            if status:
+                update_fields.append("status = ?")
+                params.append(status)
+            
+            if status == "completed":
+                update_fields.append("completed_at = CURRENT_TIMESTAMP")
+            
+            params.append(task_id)
+            query = f"UPDATE task_status SET {', '.join(update_fields)} WHERE task_id = ?"
+            
+            self.db.execute_update(query, tuple(params))
+            
+        except Exception as e:
+            self.db.logger.error(f"Error updating task progress {task_id}: {e}")
+            raise
+    
+    async def update_subtask_progress(self, subtask_id: str, progress_percentage: int, status: str = None):
+        """Update subtask progress percentage and optionally status."""
+        try:
+            update_fields = ["progress_percentage = ?"]
+            params = [progress_percentage]
+            
+            if status:
+                update_fields.append("status = ?")
+                params.append(status)
+            
+            if status == "completed":
+                update_fields.append("completed_at = CURRENT_TIMESTAMP")
+            
+            params.append(subtask_id)
+            query = f"UPDATE subtask_status SET {', '.join(update_fields)} WHERE subtask_id = ?"
+            
+            self.db.execute_update(query, tuple(params))
+            
+        except Exception as e:
+            self.db.logger.error(f"Error updating subtask progress {subtask_id}: {e}")
+            raise
+    
+    async def get_task_status(self, task_id: str) -> Optional[Dict[str, Any]]:
+        """Get task status by ID."""
+        try:
+            query = "SELECT * FROM task_status WHERE task_id = ?"
+            result = self.db.execute_query(query, (task_id,))
+            
+            if result:
+                row = result[0]
+                return self._task_row_to_dict(row)
+            return None
+            
+        except Exception as e:
+            self.db.logger.error(f"Error getting task status {task_id}: {e}")
+            return None
+    
+    async def complete_task(self, task_id: str):
+        """Mark task as completed with full completion metadata."""
+        try:
+            query = """
+                UPDATE task_status 
+                SET status = 'completed', completed_at = CURRENT_TIMESTAMP, progress_percentage = 100
+                WHERE task_id = ?
+            """
+            self.db.execute_update(query, (task_id,))
+            
+        except Exception as e:
+            self.db.logger.error(f"Error completing task {task_id}: {e}")
+            raise
+    
+    async def check_sidequest_limits(self, parent_task_id: str) -> Dict[str, Any]:
+        """Check current sidequest limits and return status (async version for test compatibility)."""
+        try:
+            query = """
+                SELECT 
+                    COALESCE(tsl.active_sidequests_count, 0) as active_count,
+                    COALESCE(tsl.max_allowed_sidequests, 3) as max_allowed,
+                    COALESCE(tsl.warning_threshold, 2) as warning_threshold
+                FROM task_status ts
+                LEFT JOIN task_sidequest_limits tsl ON ts.task_id = tsl.task_id
+                WHERE ts.task_id = ?
+            """
+            
+            result = self.db.execute_query(query, (parent_task_id,))
+            if result:
+                row = result[0]
+                active_count = row['active_count']
+                max_allowed = row['max_allowed']
+                warning_threshold = row['warning_threshold']
+                
+                if active_count >= max_allowed:
+                    limit_status = "at_limit"
+                elif active_count >= warning_threshold:
+                    limit_status = "approaching_limit"
+                else:
+                    limit_status = "normal"
+                
+                return {
+                    "active_sidequests_count": active_count,
+                    "max_allowed_sidequests": max_allowed,
+                    "warning_threshold": warning_threshold,
+                    "limit_status": limit_status,
+                    "remaining_capacity": max_allowed - active_count
+                }
+            else:
+                # Task doesn't exist or no limits set yet
+                return {
+                    "active_sidequests_count": 0,
+                    "max_allowed_sidequests": 3,
+                    "warning_threshold": 2,
+                    "limit_status": "normal",
+                    "remaining_capacity": 3
+                }
+        except Exception as e:
+            self.db.logger.error(f"Error checking sidequest limits for task {parent_task_id}: {e}")
+            raise
