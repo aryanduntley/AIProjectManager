@@ -163,7 +163,7 @@ The theme system is now ready for Phase 3 (Task Management System) integration:
 ## 📁 File Structure Summary
 
 ```
-mcp-server/
+ai-pm-mcp/
 ├── core/
 │   └── scope_engine.py        # Context loading engine (413 lines)
 ├── tools/

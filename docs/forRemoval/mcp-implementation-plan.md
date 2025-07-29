@@ -17,7 +17,7 @@ This document outlines the implementation plan for a single, monolithic MCP (Mod
 ## Server Structure
 
 ```
-/mcp-server/
+/ai-pm-mcp/
 ├── server.py                    # Main MCP server entry point
 ├── core/
 │   ├── __init__.py
@@ -541,13 +541,13 @@ This document outlines the implementation plan for a single, monolithic MCP (Mod
 
 **⚠️ IMPORTANT: The following directives need to be updated to integrate with the new database infrastructure implemented in Phase 1:**
 
-### Core System Integration (mcp-server/core/)
-- **mcp-server/core/session_manager.py** → Replace file-based session state with `SessionQueries` for database persistence
-- **mcp-server/core/scope_engine.py** → Integrate `ThemeFlowQueries` for optimized context loading and theme relationships
-- **mcp-server/core/processor.py** → Update task processing to use `TaskStatusQueries` for real-time status tracking
-- **mcp-server/core/mcp_api.py** → Add database initialization and connection management
+### Core System Integration (ai-pm-mcp/core/)
+- **ai-pm-mcp/core/session_manager.py** → Replace file-based session state with `SessionQueries` for database persistence
+- **ai-pm-mcp/core/scope_engine.py** → Integrate `ThemeFlowQueries` for optimized context loading and theme relationships
+- **ai-pm-mcp/core/processor.py** → Update task processing to use `TaskStatusQueries` for real-time status tracking
+- **ai-pm-mcp/core/mcp_api.py** → Add database initialization and connection management
 
-### ✅ **COMPLETED: Tool Integration Updates (mcp-server/tools/)**
+### ✅ **COMPLETED: Tool Integration Updates (ai-pm-mcp/tools/)**
 - ✅ **tools/theme_tools.py** → Database theme-flow relationships with sync functionality implemented
 - ✅ **tools/task_tools.py** → Complete integration with TaskStatusQueries for status tracking and sidequest coordination
 - ✅ **tools/session_manager.py** → New tool created for session persistence and analytics
@@ -560,7 +560,7 @@ This document outlines the implementation plan for a single, monolithic MCP (Mod
 - **core/scope_engine.py** → Integrate ThemeFlowQueries for optimized context loading
 - **core/processor.py** → Update task processing to use TaskStatusQueries
 
-### Service Layer Directives (mcp-server/core-services/)
+### Service Layer Directives (ai-pm-mcp/core-services/)
 - **Context Loading Service** → Update to use database for theme-flow relationship queries
 - **Session Boot Service** → Replace file scanning with database context restoration
 - **Analytics Service** → Implement database-driven project analytics and user preference learning
@@ -651,7 +651,7 @@ This implementation plan provides a structured approach to building a comprehens
 1. **✅ Schema Infrastructure** - Complete JSON schema validation system (4 schemas, 1,300+ lines)
 2. **✅ Utility Infrastructure** - Complete JSON/JSONL utilities and validation (1,000+ lines)
 3. **✅ Compressed Context Integration** - Fully integrated with ScopeEngine (1,458+ lines)
-4. **✅ Self-Contained Architecture** - Reference system moved to mcp-server/, all paths fixed
+4. **✅ Self-Contained Architecture** - Reference system moved to ai-pm-mcp/, all paths fixed
 5. **✅ Template System** - Complete template system in `reference/templates/`
 
 **READY FOR PRODUCTION:** All foundation and advanced features are implemented and fully functional.

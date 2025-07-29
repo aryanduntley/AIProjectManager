@@ -228,7 +228,7 @@ This is the actual data store that holds scopes, tasks, logs, decisions, setting
 Each new external project (that the AI will manage) will have a similar structure, instantiated via templates but stored separately
 
 ✅ Suggested File Structure for the MCP Server Itself
-/mcp-server
+/ai-pm-mcp
 ├── core/                       # Core logic for interpreting protocols
 │   ├── processor.py            # Task interpreter, scope resolver
 │   ├── scope_engine.py         # Determines scope level to load

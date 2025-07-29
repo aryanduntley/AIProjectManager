@@ -84,23 +84,23 @@ user-project/
 #### Files to DELETE (Replace with Simple Git Operations):
 ```bash
 # Core instance management (15,000+ lines to remove)
-rm mcp-server/core/instance_manager.py
-rm mcp-server/tools/instance_tools.py
-rm mcp-server/core/conflict_resolution.py
-rm mcp-server/tools/conflict_resolution_tools.py
+rm ai-pm-mcp/core/instance_manager.py
+rm ai-pm-mcp/tools/instance_tools.py
+rm ai-pm-mcp/core/conflict_resolution.py
+rm ai-pm-mcp/tools/conflict_resolution_tools.py
 
 # Advanced features not needed with Git branches
-rm mcp-server/core/audit_system.py
-rm mcp-server/core/performance_optimizer.py  
-rm mcp-server/core/error_recovery.py
-rm mcp-server/tools/advanced_tools.py
+rm ai-pm-mcp/core/audit_system.py
+rm ai-pm-mcp/core/performance_optimizer.py  
+rm ai-pm-mcp/core/error_recovery.py
+rm ai-pm-mcp/tools/advanced_tools.py
 
 # Instance-specific templates
-rm mcp-server/reference/templates/mcp-branch-info.json
-rm mcp-server/reference/templates/mcp-config.json
-rm mcp-server/reference/templates/mcp-merge-log.jsonl
-rm mcp-server/reference/templates/mcp-work-summary.md
-rm mcp-server/reference/templates/mcp-instance-main
+rm ai-pm-mcp/reference/templates/mcp-branch-info.json
+rm ai-pm-mcp/reference/templates/mcp-config.json
+rm ai-pm-mcp/reference/templates/mcp-merge-log.jsonl
+rm ai-pm-mcp/reference/templates/mcp-work-summary.md
+rm ai-pm-mcp/reference/templates/mcp-instance-main
 ```
 
 #### Database Tables to Remove from schema.sql:
@@ -118,7 +118,7 @@ DROP TABLE IF EXISTS git_change_impacts;
 
 ### **PHASE 2: Create Simple Git Branch Manager**
 
-#### New File: `mcp-server/core/branch_manager.py` (Replace instance_manager.py)
+#### New File: `ai-pm-mcp/core/branch_manager.py` (Replace instance_manager.py)
 ```python
 class GitBranchManager:
     def __init__(self, project_root: Path):
@@ -223,7 +223,7 @@ class GitBranchManager:
         return bool(result.stdout.strip())
 ```
 
-#### New File: `mcp-server/tools/branch_tools.py` (Replace instance_tools.py)
+#### New File: `ai-pm-mcp/tools/branch_tools.py` (Replace instance_tools.py)
 ```python
 # Simple Git-native MCP tools with user identification
 
@@ -327,7 +327,7 @@ CREATE TABLE IF NOT EXISTS ai_instance_branches (
 
 ### **PHASE 4: Update Git Integration**
 
-#### Modify `mcp-server/core/git_integration.py`:
+#### Modify `ai-pm-mcp/core/git_integration.py`:
 ```python
 class GitIntegrationManager:
     def __init__(self, project_root: Path):
@@ -471,25 +471,25 @@ git checkout main
 ### **Step 2: Remove Complex Code & Restore Valuable Components**
 ```bash
 # Remove complex instance management files
-rm mcp-server/core/instance_manager.py
-rm mcp-server/tools/instance_tools.py  
-rm mcp-server/core/conflict_resolution.py
-rm mcp-server/tools/conflict_resolution_tools.py
+rm ai-pm-mcp/core/instance_manager.py
+rm ai-pm-mcp/tools/instance_tools.py  
+rm ai-pm-mcp/core/conflict_resolution.py
+rm ai-pm-mcp/tools/conflict_resolution_tools.py
 
 # ORIGINALLY REMOVED BUT RESTORED: Essential functionality adapted for Git branches
-# rm mcp-server/core/audit_system.py           → RESTORED (adapted for Git branches)
-# rm mcp-server/core/performance_optimizer.py  → RESTORED (adapted for Git branches)  
-# rm mcp-server/core/error_recovery.py         → RESTORED (adapted for Git branches)
-# rm mcp-server/tools/advanced_tools.py        → RESTORED (adapted for Git branches)
+# rm ai-pm-mcp/core/audit_system.py           → RESTORED (adapted for Git branches)
+# rm ai-pm-mcp/core/performance_optimizer.py  → RESTORED (adapted for Git branches)  
+# rm ai-pm-mcp/core/error_recovery.py         → RESTORED (adapted for Git branches)
+# rm ai-pm-mcp/tools/advanced_tools.py        → RESTORED (adapted for Git branches)
 
 # NEW: General-purpose utilities extracted during restoration
-# + mcp-server/utils/name_utils.py             → NEW (name normalization/validation)
+# + ai-pm-mcp/utils/name_utils.py             → NEW (name normalization/validation)
 ```
 
 ### **Step 3: Create Simple Git Branch Manager**
-- Create `mcp-server/core/branch_manager.py`
-- Create `mcp-server/tools/branch_tools.py`
-- Update `mcp-server/core/git_integration.py`
+- Create `ai-pm-mcp/core/branch_manager.py`
+- Create `ai-pm-mcp/tools/branch_tools.py`
+- Update `ai-pm-mcp/core/git_integration.py`
 
 ### **Step 4: Simplify Database Schema**
 - Remove complex instance tables from `schema.sql`
@@ -533,12 +533,12 @@ rm mcp-server/tools/conflict_resolution_tools.py
 
 ### **System Functionality**:
 - [x] Current complex instance system works (unified plan completed)
-- [x] Simple Git branch manager created (`mcp-server/core/branch_manager.py`)
+- [x] Simple Git branch manager created (`ai-pm-mcp/core/branch_manager.py`)
 - [x] All complex instance code removed (97% code reduction achieved)
 - [x] Database schema simplified (83% table reduction)
-- [x] MCP tools updated for branch operations (`mcp-server/tools/branch_tools.py`)
-- [x] Git integration enhanced for branch model (`mcp-server/core/git_integration.py`)  
-- [x] MCP API updated to register branch tools (`mcp-server/core/mcp_api.py`)
+- [x] MCP tools updated for branch operations (`ai-pm-mcp/tools/branch_tools.py`)
+- [x] Git integration enhanced for branch model (`ai-pm-mcp/core/git_integration.py`)  
+- [x] MCP API updated to register branch tools (`ai-pm-mcp/core/mcp_api.py`)
 - [ ] All 16 directives updated for branch methodology
 - [ ] Migration from complex to simple system completed
 - [x] All functionality preserved with pure Git operations
@@ -575,7 +575,7 @@ During the initial simplification, several files containing **enterprise-grade f
 
 #### **✅ RESTORED FILES (Adapted for Git Branches):**
 
-1. **`mcp-server/core/performance_optimizer.py`** - **Enterprise Performance System**
+1. **`ai-pm-mcp/core/performance_optimizer.py`** - **Enterprise Performance System**
    - **ContentCache**: Intelligent LRU+LFU hybrid caching with TTL expiration
    - **PerformanceMetrics**: Comprehensive operation timing and cache analytics
    - **DatabaseOptimizer**: SQLite VACUUM, ANALYZE, and performance indexing
@@ -583,7 +583,7 @@ During the initial simplification, several files containing **enterprise-grade f
    - **ParallelProcessor**: Multi-threaded processing for branch operations
    - **🔧 Adaptations**: Changed threshold from 100 instances → 50 Git branches
 
-2. **`mcp-server/core/audit_system.py`** - **Enterprise Audit & Compliance**
+2. **`ai-pm-mcp/core/audit_system.py`** - **Enterprise Audit & Compliance**
    - **AuditTrail**: Complete audit logging with integrity verification
    - **ComplianceTracker**: Enterprise compliance monitoring and reporting
    - **AuditEvent**: SHA256 checksummed audit events with tamper detection
@@ -592,7 +592,7 @@ During the initial simplification, several files containing **enterprise-grade f
      - Event types: `BRANCH_CREATED`, `BRANCH_MERGED`, `BRANCH_DELETED`
      - Storage: `projectManagement/audit` instead of `.mcp-instances/audit`
 
-3. **`mcp-server/core/error_recovery.py`** - **Enterprise Recovery System**
+3. **`ai-pm-mcp/core/error_recovery.py`** - **Enterprise Recovery System**
    - **BackupManager**: Comprehensive backup and restore capabilities
    - **RecoveryPoint**: Checkpoint system for critical operations
    - **ErrorRecoveryManager**: Automated failure handling and rollback
@@ -602,14 +602,14 @@ During the initial simplification, several files containing **enterprise-grade f
      - Storage: `projectManagement/recovery` and `projectManagement/backups`
      - Git integration: Handles `git branch -D` and `git merge --abort`
 
-4. **`mcp-server/tools/advanced_tools.py`** - **Advanced System Management**
+4. **`ai-pm-mcp/tools/advanced_tools.py`** - **Advanced System Management**
    - **Performance Optimization Tools**: System optimization with multiple levels
    - **Recovery Management Tools**: Checkpoint creation and rollback capabilities  
    - **Audit System Tools**: Report generation and event searching
    - **System Health Check**: Comprehensive diagnostics across all components
    - **🔧 Adaptations**: All tools updated for Git branch methodology
 
-5. **`mcp-server/utils/name_utils.py`** - **NEW: General-Purpose Utilities**
+5. **`ai-pm-mcp/utils/name_utils.py`** - **NEW: General-Purpose Utilities**
    - **Name normalization**: Clean and sanitize names for Git branches
    - **Branch name generation**: Sequential `ai-pm-org-branch-{XXX}` formatting
    - **Identifier validation**: Length, character, and reserved name checking
@@ -668,22 +668,22 @@ The major technical migration has been successfully completed. We have achieved 
 
 #### **1. Code Simplification (COMPLETE) + Valuable Functionality Restoration**
 - **✅ Removed Instance-Specific Files:**
-  - `mcp-server/core/instance_manager.py` (1,200+ lines) - Complex instance lifecycle
-  - `mcp-server/tools/instance_tools.py` (800+ lines) - Instance-specific tooling
-  - `mcp-server/core/conflict_resolution.py` (2,000+ lines) - Instance merge conflicts
-  - `mcp-server/tools/conflict_resolution_tools.py` (600+ lines) - Instance conflict tools
+  - `ai-pm-mcp/core/instance_manager.py` (1,200+ lines) - Complex instance lifecycle
+  - `ai-pm-mcp/tools/instance_tools.py` (800+ lines) - Instance-specific tooling
+  - `ai-pm-mcp/core/conflict_resolution.py` (2,000+ lines) - Instance merge conflicts
+  - `ai-pm-mcp/tools/conflict_resolution_tools.py` (600+ lines) - Instance conflict tools
   - Instance template files (5 files)
 
 - **✅ RESTORED Enterprise Functionality (Adapted for Git Branches):**
-  - `mcp-server/core/audit_system.py` (620 lines) - Enterprise audit & compliance system
-  - `mcp-server/core/performance_optimizer.py` (710 lines) - Performance optimization & caching
-  - `mcp-server/core/error_recovery.py` (656 lines) - Backup & recovery system
-  - `mcp-server/tools/advanced_tools.py` (813 lines) - Advanced system management tools
-  - `mcp-server/utils/name_utils.py` (245 lines) - **NEW** Name normalization utilities
+  - `ai-pm-mcp/core/audit_system.py` (620 lines) - Enterprise audit & compliance system
+  - `ai-pm-mcp/core/performance_optimizer.py` (710 lines) - Performance optimization & caching
+  - `ai-pm-mcp/core/error_recovery.py` (656 lines) - Backup & recovery system
+  - `ai-pm-mcp/tools/advanced_tools.py` (813 lines) - Advanced system management tools
+  - `ai-pm-mcp/utils/name_utils.py` (245 lines) - **NEW** Name normalization utilities
 
 - **✅ Created Simple Core Replacements:**
-  - `mcp-server/core/branch_manager.py` (400 lines) - Pure Git operations with user identification
-  - `mcp-server/tools/branch_tools.py` (300 lines) - 8 MCP tools for Git branch management
+  - `ai-pm-mcp/core/branch_manager.py` (400 lines) - Pure Git operations with user identification
+  - `ai-pm-mcp/tools/branch_tools.py` (300 lines) - 8 MCP tools for Git branch management
 
 #### **2. Database Simplification (COMPLETE)**
 - **✅ Removed Complex Tables:**
@@ -699,7 +699,7 @@ The major technical migration has been successfully completed. We have achieved 
   - Corresponding indexes and triggers
 
 #### **3. Git Integration Enhancement (COMPLETE)**
-- **✅ Enhanced `mcp-server/core/git_integration.py`:**
+- **✅ Enhanced `ai-pm-mcp/core/git_integration.py`:**
   - Added `ensure_ai_main_branch_exists()` method
   - Added `switch_to_ai_branch()` method
   - Added `get_user_code_changes()` method
@@ -707,7 +707,7 @@ The major technical migration has been successfully completed. We have achieved 
   - Added `_branch_exists()` and `_initialize_ai_structure_on_branch()` helpers
 
 #### **4. MCP API Integration (COMPLETE)**
-- **✅ Updated `mcp-server/core/mcp_api.py`:**
+- **✅ Updated `ai-pm-mcp/core/mcp_api.py`:**
   - Added import and registration for `BranchTools`
   - Removed any references to complex instance tools
   - Clean integration with existing tool discovery system
@@ -728,22 +728,22 @@ The major technical migration has been successfully completed. We have achieved 
 The only major remaining task is updating the directive system to use branch methodology instead of instance methodology:
 
 **Files to Update (16 directives):**
-- `mcp-server/reference/directives/01-system-initialization.json`
-- `mcp-server/reference/directives/02-project-initialization.json`
-- `mcp-server/reference/directives/03-session-management.json`
-- `mcp-server/reference/directives/04-theme-management.json`
-- `mcp-server/reference/directives/05-context-loading.json`
-- `mcp-server/reference/directives/06-task-management.json`
-- `mcp-server/reference/directives/07-implementation-plans.json`
-- `mcp-server/reference/directives/08-project-management.json`
-- `mcp-server/reference/directives/09-logging-documentation.json`
-- `mcp-server/reference/directives/10-file-operations.json`
-- `mcp-server/reference/directives/11-quality-assurance.json`
-- `mcp-server/reference/directives/12-user-interaction.json`
-- `mcp-server/reference/directives/13-metadata-management.json`
-- `mcp-server/reference/directives/14-instance-management.json` → **RENAME to** `14-branch-management.json`
-- `mcp-server/reference/directives/15-conflict-resolution.json` → **DELETE** (Git handles conflicts)
-- `mcp-server/reference/directives/15-git-integration.json`
+- `ai-pm-mcp/reference/directives/01-system-initialization.json`
+- `ai-pm-mcp/reference/directives/02-project-initialization.json`
+- `ai-pm-mcp/reference/directives/03-session-management.json`
+- `ai-pm-mcp/reference/directives/04-theme-management.json`
+- `ai-pm-mcp/reference/directives/05-context-loading.json`
+- `ai-pm-mcp/reference/directives/06-task-management.json`
+- `ai-pm-mcp/reference/directives/07-implementation-plans.json`
+- `ai-pm-mcp/reference/directives/08-project-management.json`
+- `ai-pm-mcp/reference/directives/09-logging-documentation.json`
+- `ai-pm-mcp/reference/directives/10-file-operations.json`
+- `ai-pm-mcp/reference/directives/11-quality-assurance.json`
+- `ai-pm-mcp/reference/directives/12-user-interaction.json`
+- `ai-pm-mcp/reference/directives/13-metadata-management.json`
+- `ai-pm-mcp/reference/directives/14-instance-management.json` → **RENAME to** `14-branch-management.json`
+- `ai-pm-mcp/reference/directives/15-conflict-resolution.json` → **DELETE** (Git handles conflicts)
+- `ai-pm-mcp/reference/directives/15-git-integration.json`
 
 **Plus corresponding markdown files in `docs/directives/`**
 
@@ -772,7 +772,7 @@ The enhanced branch-based Git system combines **simplicity + enterprise capabili
 
 ### **🎯 NEXT SESSION PRIORITY:**
 1. **Update directive files** (batch operation, systematic replacement)
-2. **Update compressed directive context** (`mcp-server/core-context/directive-compressed.json`)
+2. **Update compressed directive context** (`ai-pm-mcp/core-context/directive-compressed.json`)
 3. **Final testing** and validation
 4. **Documentation updates**
 

@@ -8,8 +8,8 @@ import json
 import sys
 from pathlib import Path
 
-# Add mcp-server to Python path
-sys.path.insert(0, str(Path(__file__).parent / "mcp-server"))
+# Add ai-pm-mcp to Python path
+sys.path.insert(0, str(Path(__file__).parent / "ai-pm-mcp"))
 
 from core.scope_engine import CompressedContextManager
 
@@ -18,7 +18,7 @@ async def test_directive_escalation():
     print("=== Testing Directive Escalation System ===\n")
     
     # Initialize context manager
-    mcp_server_path = Path(__file__).parent / "mcp-server"
+    mcp_server_path = Path(__file__).parent / "ai-pm-mcp"
     context_manager = CompressedContextManager(mcp_server_path)
     
     # Load core context

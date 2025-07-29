@@ -9,10 +9,10 @@ import asyncio
 import json
 from pathlib import Path
 
-# Add the mcp-server directory and deps to the path
+# Add the ai-pm-mcp directory and deps to the path
 project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root / "mcp-server"))
-sys.path.insert(0, str(project_root / "mcp-server" / "deps"))
+sys.path.insert(0, str(project_root / "ai-pm-mcp"))
+sys.path.insert(0, str(project_root / "ai-pm-mcp" / "deps"))
 
 from tools.flow_tools import FlowTools
 from database.db_manager import DatabaseManager
@@ -36,7 +36,7 @@ async def test_multi_flow_system():
     (pm_dir / "database").mkdir(exist_ok=True)
     
     # Copy foundational schema
-    schema_src = Path(__file__).parent / "mcp-server" / "database" / "schema.sql"
+    schema_src = Path(__file__).parent / "ai-pm-mcp" / "database" / "schema.sql"
     schema_dst = pm_dir / "database" / "schema.sql"
     if schema_src.exists():
         import shutil

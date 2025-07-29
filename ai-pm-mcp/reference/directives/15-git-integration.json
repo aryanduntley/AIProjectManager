@@ -1,0 +1,330 @@
+{
+  "metadata": {
+    "id": "15-git-integration",
+    "title": "Root-Level Git Integration Directives",
+    "priority": "high", 
+    "frequency": "session-boot",
+    "version": "1.0.0",
+    "humanReadable": "reference/directivesmd/15-git-integration.md"
+  },
+  "triggers": [
+    "Session boot with project code changes",
+    "Git repository state detection needed",
+    "External code modifications detected",
+    "Theme impact analysis required",
+    "Organizational reconciliation needed"
+  ],
+  "workflows": {
+    "sessionBootGitDetection": {
+      "directive": "Detect project code changes during session boot and reconcile organizational state",
+      "steps": [
+        {
+          "action": "detectGitRepository",
+          "description": "Check if project root has Git repository and initialize if needed",
+          "required": true,
+          "detection": [
+            "Look for .git/ directory in project root",
+            "Initialize Git repository if not found and auto_init_repo enabled",
+            "Verify Git repository integrity",
+            "Set up Git configuration for MCP tracking",
+            "Check for remote repository configuration (team collaboration)"
+          ]
+        },
+        {
+          "action": "ensureAiMainBranchExists",
+          "description": "NEW: Establish ai-pm-org-main branch with team collaboration support",
+          "required": true,
+          "priorityLogic": "Remote clone > Local restoration > Fresh creation",
+          "teamCollaboration": [
+            "Check if ai-pm-org-main exists locally",
+            "If missing locally, check remote repository for ai-pm-org-main",
+            "If exists on remote: Clone from remote (team collaboration scenario)",
+            "If no remote but has previous AI state: Restore from organizational state",
+            "If completely new: Create fresh branch from user's main"
+          ],
+          "implementation": {
+            "remoteClone": "git checkout -b ai-pm-org-main origin/ai-pm-org-main",
+            "localRestore": "git checkout -b ai-pm-org-main main (with existing org state)",
+            "freshCreation": "git checkout -b ai-pm-org-main main (new AI structure)"
+          },
+          "benefits": [
+            "Multiple team members can inherit shared AI organizational state",
+            "Automatic detection of existing team setup",
+            "No manual coordination needed between developers",
+            "Consistent organizational structure across team"
+          ]
+        },
+        {
+          "action": "compareGitState",
+          "description": "Compare current Git HEAD with last known state from database",
+          "required": true,
+          "comparison": [
+            "Get current Git hash",
+            "Retrieve last known hash from git_project_state table",
+            "Identify if project code has changed since last session",
+            "Generate change summary if differences found"
+          ]
+        },
+        {
+          "action": "analyzeProjectCodeChanges",
+          "description": "Analyze changed files to understand impact on project organization",
+          "required": true,
+          "analysis": [
+            "Get list of modified, added, deleted files",
+            "Categorize changes by file type and location",
+            "Calculate impact metrics (number of files, change types)",
+            "Generate human-readable change summary"
+          ]
+        },
+        {
+          "action": "performThemeImpactAnalysis",
+          "description": "Determine which themes are affected by code changes",
+          "required": true,
+          "impact_analysis": [
+            "Load existing theme definitions",
+            "Map changed files to themes using direct references",
+            "Infer theme impact from directory structure",
+            "Apply file naming pattern analysis",
+            "Handle deleted file impact on themes"
+          ]
+        }
+      ]
+    },
+    "organizationalReconciliation": {
+      "directive": "Reconcile organizational state with detected project code changes",
+      "steps": [
+        {
+          "action": "assessReconciliationNeeds",
+          "description": "Determine if organizational reconciliation is needed based on changes",
+          "required": true,
+          "assessment": [
+            "Check if affected themes need updates",
+            "Identify flows that may need revision",
+            "Assess impact on active tasks and implementation plans",
+            "Determine user notification requirements"
+          ]
+        },
+        {
+          "action": "updateAffectedThemes",
+          "description": "Update theme files to reflect code changes",
+          "required": true,
+          "theme_updates": [
+            "Add new files to appropriate themes",
+            "Remove deleted files from theme definitions",
+            "Update shared file configurations",
+            "Validate theme relationships and dependencies"
+          ]
+        },
+        {
+          "action": "reviewFlowImpact",
+          "description": "Review and update flows affected by code changes",
+          "required": true,
+          "flow_updates": [
+            "Check if new files affect user flows",
+            "Update flow step references to code changes",
+            "Validate flow completion status",
+            "Update flow-index if needed"
+          ]
+        },
+        {
+          "action": "notifyUserOfChanges",
+          "description": "Present changes and AI adaptations to user for approval",
+          "required": true,
+          "user_communication": [
+            "Show summary of detected changes",
+            "Present organizational adaptations made",
+            "Request user approval for significant changes",
+            "Allow user to override AI decisions if needed"
+          ]
+        }
+      ]
+    },
+    "gitStateTracking": {
+      "directive": "Track Git state in database for session continuity",
+      "steps": [
+        {
+          "action": "updateGitProjectState",
+          "description": "Update database with current Git project state",
+          "required": true,
+          "database_updates": [
+            "Insert new git_project_state record",
+            "Record current and last known Git hashes",
+            "Store change summary and affected themes",
+            "Set reconciliation status based on changes made"
+          ]
+        },
+        {
+          "action": "trackFileChanges",
+          "description": "Record individual file changes for detailed impact tracking",
+          "required": true,
+          "file_tracking": [
+            "Insert git_change_impacts records for each changed file",
+            "Record change type (added, modified, deleted, renamed)",
+            "Store per-file theme impact analysis",
+            "Set impact severity and reconciliation actions"
+          ]
+        },
+        {
+          "action": "maintainChangeHistory",
+          "description": "Maintain history of Git changes for analysis and rollback",
+          "required": true,
+          "history_maintenance": [
+            "Preserve previous git_project_state records",
+            "Enable change history analysis",
+            "Support rollback to previous organizational states",
+            "Provide audit trail for Git integration actions"
+          ]
+        }
+      ]
+    },
+    "branchGitIntegration": {
+      "directive": "Integrate Git tracking with branch management system",
+      "steps": [
+        {
+          "action": "recordBranchGitBase",
+          "description": "Record Git hash when branch is created for merge comparison",
+          "required": true,
+          "branch_git_tracking": [
+            "Store git_base_hash in ai_instance_branches table",
+            "Record project code state at branch creation time",
+            "Enable detection of external changes during branch work",
+            "Support merge conflict detection with Git awareness"
+          ]
+        },
+        {
+          "action": "detectCodeChangesInBranches",
+          "description": "Detect if project code changed while branch was active",
+          "required": true,
+          "change_detection": [
+            "Compare current Git hash with branch base hash",
+            "Identify external code changes during branch development",
+            "Include code changes in merge conflict analysis",
+            "Warn of potential integration issues"
+          ]
+        },
+        {
+          "action": "integrateWithMergeProcess",
+          "description": "Include Git changes in branch merge process",
+          "required": true,
+          "merge_integration": [
+            "Consider code changes in conflict detection",
+            "Update organizational state for external code changes",
+            "Reconcile both branch changes AND code changes during merge",
+            "Ensure ai-pm-org-main authority over code change interpretation"
+          ]
+        }
+      ]
+    }
+  },
+  "themeImpactAnalysis": {
+    "directMapping": {
+      "description": "Map files to themes through explicit theme file references",
+      "process": [
+        "Load theme JSON files",
+        "Check if changed file paths match theme file lists",
+        "Include themes that explicitly reference the files"
+      ]
+    },
+    "directoryInference": {
+      "description": "Infer theme impact from directory structure",
+      "mappings": {
+        "auth/authentication": ["authentication", "security"],
+        "user/users": ["user-management"],
+        "payment/billing": ["payment", "billing"],
+        "api": ["api", "backend"],
+        "ui/components": ["ui", "frontend"],
+        "database/db": ["database", "data"],
+        "admin": ["admin", "management"],
+        "config/settings": ["configuration"]
+      }
+    },
+    "patternAnalysis": {
+      "description": "Analyze file naming patterns for theme inference",
+      "patterns": {
+        "auth/login/signup": ["authentication"],
+        "payment/billing": ["payment", "billing"],
+        "user/profile": ["user-management"],
+        "api/middleware": ["api", "middleware"],
+        "config/setting": ["configuration"],
+        "test/spec": ["testing"],
+        "error/log": ["error-handling", "logging"]
+      }
+    },
+    "deletionImpact": {
+      "description": "Special handling for deleted files and their theme impact",
+      "process": [
+        "Identify themes that referenced deleted files",
+        "Mark themes for review due to file deletion",
+        "Update theme file lists to remove deleted files",
+        "Alert user about themes affected by deletions"
+      ]
+    }
+  },
+  "gitConfiguration": {
+    "gitignoreUpdates": {
+      "description": "Maintain .gitignore for AI branch management",
+      "tracked": [
+        "All project source code",
+        "AI organizational state in Git branches", 
+        "Branch metadata and tracking information",
+        "Git merge history and branch logs",
+        "AI branch management configuration"
+      ],
+      "notTracked": [
+        "User-specific settings (UserSettings/)",
+        "Database backups (database/backups/)",
+        "Temporary session files",
+        "Active work logs during development"
+      ]
+    },
+    "repositoryStructure": {
+      "description": "Expected Git repository structure for AI branch integration",
+      "structure": [
+        ".git/ - Root-level Git repository with AI organizational branches",
+        "ai-pm-org-main branch - Canonical AI organizational state",
+        "ai-pm-org-branch-{XXX} branches - Sequential numbered work branches",
+        ".gitignore - Updated for AI branch management exclusions"
+      ]
+    }
+  },
+  "reconciliationStrategies": {
+    "autoReconcile": {
+      "description": "Automatically reconcile minor organizational changes",
+      "criteria": [
+        "File additions to existing themes",
+        "Non-conflicting theme updates",
+        "Flow reference updates that don't change logic"
+      ]
+    },
+    "userApprovalRequired": {
+      "description": "Require user approval for significant changes",
+      "criteria": [
+        "New theme creation needed",
+        "Major flow changes required",
+        "Task or milestone impacts detected",
+        "Conflicting organizational interpretations"
+      ]
+    },
+    "manualReconciliation": {
+      "description": "Request manual user intervention for complex changes",
+      "criteria": [
+        "Multiple possible theme assignments",
+        "Structural project changes",
+        "Deleted core files affecting multiple themes",
+        "Changes that could break existing workflows"
+      ]
+    }
+  },
+  "errorHandling": {
+    "gitRepositoryIssues": "Initialize repository or report clear error to user",
+    "themeImpactAnalysisFailure": "Fall back to user-guided theme assignment",
+    "organizationalReconciliationFailure": "Preserve original state and request manual review",
+    "databaseUpdateFailure": "Roll back Git state updates and retry"
+  },
+  "integrationPoints": {
+    "branchManagement": "Coordinate with Git branch system for merge operations",
+    "gitMergeOperations": "Use native Git merge capabilities for conflict resolution",
+    "auditSystem": "Log all Git integration actions for compliance",
+    "themeManagement": "Update theme definitions based on code changes"
+  }
+}

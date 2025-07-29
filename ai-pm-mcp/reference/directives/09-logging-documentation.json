@@ -1,0 +1,252 @@
+{
+  "metadata": {
+    "id": "09-logging-documentation",
+    "title": "Logging & Documentation Directives",
+    "priority": "medium",
+    "frequency": "ongoing",
+    "version": "1.0.0",
+    "humanReadable": "reference/directivesmd/09-logging-documentation.md"
+  },
+  "triggers": [
+    "Logic changes",
+    "Context escalations",
+    "User corrections",
+    "Shared file modifications",
+    "Documentation updates"
+  ],
+  "workflows": {
+    "hybridLogging": {
+      "directive": "Use hybrid file-database approach for comprehensive project tracking",
+      "primaryLogging": {
+        "projectlogic.jsonl": "Major logic shifts and direction changes (file-based)",
+        "noteworthy_events_table": "Real-time technical decisions and notable events (database)",
+        "noteworthy.json": "Archive file created automatically when database events exceed size limits"
+      },
+      "projectlogicContent": [
+        "Architecture pivots with direction changes",
+        "Major logic modifications affecting project flow",
+        "Technical discoveries that change project approach",
+        "User-driven direction changes with reasoning"
+      ],
+      "databaseEventContent": [
+        "Context escalations (theme-focused → theme-expanded → project-wide)",
+        "User corrections to AI understanding",
+        "Shared file modifications affecting multiple themes",
+        "Notable technical discussions impacting implementation",
+        "Session events, task status changes, and decision patterns",
+        "Real-time analytics for pattern recognition and learning"
+      ],
+      "excludedContent": [
+        "Normal task progress (tracked in task files)",
+        "Routine file modifications",
+        "Standard AI responses to clear requests"
+      ]
+    },
+    "automaticArchiving": {
+      "directive": "Prevent unbounded file growth through size-based archiving",
+      "process": [
+        "Before every write, check file size against configured limit",
+        "If size >= limit: rename file with archive date suffix",
+        "Create new file with latest entry + archive reference",
+        "Archives remain available for deeper historical context"
+      ],
+      "configuration": {
+        "projectlogic_size_limit": "2MB",
+        "noteworthy_size_limit": "1MB"
+      },
+      "archiveReference": "Links to archived file with entry count and last entry summary"
+    },
+    "loggingTriggers": {
+      "directive": "Define specific events that require log entries",
+      "projectlogicTriggers": [
+        "User states 'No, that's not what I want' or similar corrections",
+        "Architecture decisions affecting multiple themes",
+        "Discovery of technical limitations requiring project direction change",
+        "Major flow modifications based on user feedback"
+      ],
+      "noteworthyTriggers": [
+        "AI escalates context mode due to insufficient information",
+        "AI modifies files shared across multiple themes",
+        "User provides significant technical clarification",
+        "AI makes decisions affecting cross-theme integration"
+      ],
+      "noLoggingRequired": [
+        "Task completion (tracked in task files)",
+        "Normal file edits within single theme",
+        "Standard AI responses to clear instructions"
+      ]
+    },
+    "documentationUpdates": {
+      "directive": "Keep all documentation current with project evolution",
+      "updateTriggers": [
+        "Theme changes → Update theme descriptions and relationships",
+        "Flow changes → Update ProjectFlow documentation",
+        "Logic changes → Update projectlogic.jsonl entries",
+        "Completion path changes → Update completion-path.json",
+        "File structure changes → Update affected README.md files"
+      ],
+      "dualDocumentationSystem": {
+        "readmeMd": "Human-readable directory documentation",
+        "readmeJson": "AI-optimized directory metadata"
+      }
+    },
+    "readmeManagement": {
+      "directive": "Maintain README.md files in every significant directory",
+      "updateTriggers": [
+        "Any significant code change in directory",
+        "Addition/removal of files",
+        "Change in directory purpose",
+        "New exports or external interfaces",
+        "Architectural changes"
+      ],
+      "requiredContent": [
+        "Directory purpose and scope",
+        "List of files and their purposes",
+        "Exported functions/classes/components",
+        "Usage examples where appropriate",
+        "Dependencies and relationships",
+        "Recent changes summary"
+      ],
+      "readmeJsonRequirements": [
+        "File inventory with descriptions",
+        "Exports (functions, classes, components)",
+        "Dependencies (internal and external)",
+        "Theme references",
+        "File chains and logical connections",
+        "Implementation status"
+      ]
+    }
+  },
+  "configSettings": {
+    "logging.archiving.projectlogic_size_limit": {
+      "default": "2MB",
+      "type": "string",
+      "description": "Size limit for projectlogic.jsonl before archiving"
+    },
+    "logging.archiving.noteworthy_size_limit": {
+      "default": "1MB",
+      "type": "string",
+      "description": "Size limit for noteworthy.json before archiving"
+    },
+    "logging.lastUpdatedBehavior": {
+      "default": "overwrite",
+      "type": "string",
+      "enum": ["overwrite", "append"],
+      "description": "How to handle README last updated sections"
+    },
+    "logging.readmeJsonFilename": {
+      "default": "README.json",
+      "type": "string",
+      "description": "Filename for AI-optimized directory metadata"
+    }
+  },
+  "integrations": [
+    "08-project-management",
+    "05-context-loading",
+    "06-task-management",
+    "07-implementation-plans"
+  ],
+  "dependencies": [
+    "ProjectLogic/projectlogic.jsonl",
+    "Logs/noteworthy.json",
+    "README.md files",
+    "reference/templates/README-template.md",
+    "reference/templates/README-template.json"
+  ],
+  "keyOperations": [
+    "Dual-file logging",
+    "Automatic archiving",
+    "Documentation updates",
+    "README management"
+  ],
+  "noteworthyEventExamples": {
+    "codebaseStructural": [
+      "File consolidation or modularization",
+      "Directory structure changes",
+      "Naming conventions adoption"
+    ],
+    "documentationDecisions": [
+      "Internal commenting practices",
+      "Documentation format standards"
+    ],
+    "toolingWorkflow": [
+      "Linting/formatting standard updates",
+      "Build tool or script changes",
+      "Test coverage threshold changes"
+    ],
+    "designUX": [
+      "UI/UX adjustments outside theme scope",
+      "Layout shifts for consistency"
+    ],
+    "dependencyManagement": [
+      "Dependency locking or switching",
+      "Polyfill or shimming decisions"
+    ],
+    "performanceOptimization": [
+      "Lazy loading or code splitting",
+      "Caching strategy tweaks"
+    ],
+    "dataApiModeling": [
+      "Non-schema data adjustments",
+      "Temporary data models"
+    ],
+    "environmentDebugging": [
+      "Feature flags or experimental toggles",
+      "Debug output strategy"
+    ],
+    "legacyCleanup": [
+      "Marking legacy code",
+      "Temporary workarounds"
+    ],
+    "crossCuttingConcerns": [
+      "Cross-theme impacts",
+      "Broad assumption changes"
+    ],
+    "userDecisions": [
+      "User overrides",
+      "Preference lock-ins"
+    ]
+  },
+  "logLifecycleManagement": {
+    "primaryLogFile": "Logs/noteworthy.json",
+    "purpose": "Captures AI decisions and user feedback for events worthy of logging",
+    "automaticArchiving": {
+      "trigger": "Before every write, check if file >= size limit",
+      "process": [
+        "Rename existing file with archive date suffix",
+        "Create new file with latest entry + archive reference"
+      ],
+      "archives": "Available for deeper historical context when needed"
+    }
+  },
+  "readmeUpdateRequirements": {
+    "readmeMd": {
+      "purpose": "Human-readable directory documentation",
+      "updateTriggers": [
+        "Purpose changes",
+        "Current state changes",
+        "Export changes",
+        "Significant modifications"
+      ],
+      "lastUpdatedBehavior": "Overwrite with most recent changes only (avoid duplicate tracking)"
+    },
+    "readmeJson": {
+      "purpose": "AI-optimized directory metadata",
+      "updateTriggers": [
+        "File changes",
+        "Export changes",
+        "Dependency changes",
+        "Theme reference changes",
+        "Implementation status changes"
+      ],
+      "content": [
+        "Complete file inventory with descriptions",
+        "Functions, classes, components that can be imported",
+        "Internal and external dependencies",
+        "Theme associations",
+        "Logical file connections",
+        "Implementation status"
+      ]
+    }
+  }
+}

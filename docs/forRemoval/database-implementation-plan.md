@@ -819,14 +819,14 @@ This hybrid approach preserves the human-readable benefits of key files while ga
 
 **⚠️ IMPORTANT: The following directives need to be updated to integrate with the new database infrastructure:**
 
-### ✅ **COMPLETED: Core System Integration Directives (mcp-server/core/)**
+### ✅ **COMPLETED: Core System Integration Directives (ai-pm-mcp/core/)**
 - ✅ **Enhanced ScopeEngine** → Complete integration with `ThemeFlowQueries`, `SessionQueries`, `FileMetadataQueries`
 - ✅ **New TaskProcessor** → Full task processing system with database-driven optimization and analytics
 - ✅ **Advanced MCP Tools** → 5 new enhanced tools leveraging complete database infrastructure
 - ✅ **Smart Context Loading** → Database-optimized context loading with intelligent recommendations
 - ✅ **Processing Analytics** → Real-time performance metrics and optimization insights
 
-### ✅ **COMPLETED: Tool Integration Directives (mcp-server/tools/)**
+### ✅ **COMPLETED: Tool Integration Directives (ai-pm-mcp/tools/)**
 - ✅ **Theme Management** → Updated `theme_tools.py` with database theme-flow relationships and sync
 - ✅ **Task Management** → Integrated `task_tools.py` with complete database status tracking
 - ✅ **Session Management** → Created `session_manager.py` with database persistence

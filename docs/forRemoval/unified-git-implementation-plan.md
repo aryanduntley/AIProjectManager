@@ -351,13 +351,13 @@ class ConflictResolutionInterface:
 ### All 3-Layer Directive Updates
 Every directive must be updated to support Git-like instance management:
 
-**Layer 1: Compressed (mcp-server/core-context/directive-compressed.json)**
+**Layer 1: Compressed (ai-pm-mcp/core-context/directive-compressed.json)**
 - Add instance awareness to all basic operations  
 - Include instance authority checks (main vs branch instances)
 - Add merge conflict detection triggers
 - Update session boot sequence for instance identification
 
-**Layer 2: JSON (mcp-server/reference/directives/*.json)**
+**Layer 2: JSON (ai-pm-mcp/reference/directives/*.json)**
 - Detailed instance lifecycle management procedures
 - Complete conflict resolution workflows
 - Git integration protocols and change detection
@@ -393,7 +393,7 @@ Every directive must be updated to support Git-like instance management:
 12. **`12-user-interaction`** - Include conflict resolution UI and main instance decision protocols
 13. **`13-metadata-management`** - Add instance metadata and merge tracking
 
-#### Compressed Context Updates (mcp-server/core-context/):
+#### Compressed Context Updates (ai-pm-mcp/core-context/):
 - **`directive-compressed.json`** - Add instance management decision trees
 - **`system-essence.json`** - Include instance authority and Git integration rules
 - **`workflow-triggers.json`** - Add instance creation, merge, and conflict scenarios
@@ -401,12 +401,12 @@ Every directive must be updated to support Git-like instance management:
 
 #### Index Updates:
 - **`docs/directives/directives.json`** - Add new directives and update relationships
-- **`mcp-server/reference/index.json`** - Include instance management directive hierarchy
+- **`ai-pm-mcp/reference/index.json`** - Include instance management directive hierarchy
 
 ## Implementation Progress Tracking
 
 ### Prerequisites (Completed ✅)
-- [x] **Organization Files Updated**: Updated `docs/organization.md` and `mcp-server/reference/organization.json` with Git-like instance management structure
+- [x] **Organization Files Updated**: Updated `ai-pm-mcp/reference/organization.md` and `ai-pm-mcp/reference/organization.json` with Git-like instance management structure
 - [x] **Project Structure Definition**: Defined root-level Git repository structure with main instance and `.mcp-instances/` directory
 - [x] **Instance Management Architecture**: Added comprehensive instance lifecycle, conflict resolution, and database integration specifications
 - [x] **Configuration Integration**: Added Git and instance management configuration schemas to organization files
@@ -555,15 +555,15 @@ This unified Git implementation plan provides a clean, familiar approach to mana
 - **Parallel processing support** for multiple concurrent instances
 
 ### 🔧 **Key Implementation Files:**
-- `mcp-server/core/git_integration.py` - Git repository management and change detection
-- `mcp-server/core/instance_manager.py` - Git-like instance lifecycle management
-- `mcp-server/core/conflict_resolution.py` - Complete conflict detection and resolution
-- `mcp-server/core/audit_system.py` - Enterprise audit trail and compliance
-- `mcp-server/core/performance_optimizer.py` - Large project optimization
-- `mcp-server/core/error_recovery.py` - Rollback and recovery capabilities
-- `mcp-server/tools/instance_tools.py` - 8 MCP tools for instance management
-- `mcp-server/tools/conflict_resolution_tools.py` - 6 MCP tools for conflict resolution
-- `mcp-server/database/git_queries.py` - Database operations for Git integration
+- `ai-pm-mcp/core/git_integration.py` - Git repository management and change detection
+- `ai-pm-mcp/core/instance_manager.py` - Git-like instance lifecycle management
+- `ai-pm-mcp/core/conflict_resolution.py` - Complete conflict detection and resolution
+- `ai-pm-mcp/core/audit_system.py` - Enterprise audit trail and compliance
+- `ai-pm-mcp/core/performance_optimizer.py` - Large project optimization
+- `ai-pm-mcp/core/error_recovery.py` - Rollback and recovery capabilities
+- `ai-pm-mcp/tools/instance_tools.py` - 8 MCP tools for instance management
+- `ai-pm-mcp/tools/conflict_resolution_tools.py` - 6 MCP tools for conflict resolution
+- `ai-pm-mcp/database/git_queries.py` - Database operations for Git integration
 
 ### 🎯 **System Capabilities:**
 - **Git-like workflow** with familiar branching and merging patterns
