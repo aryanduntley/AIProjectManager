@@ -52,6 +52,17 @@ user main branch, not mcp main branch, should never be automatically pushed to. 
 
 node/npm ignore file update, and npm implementation update according to new git branch changes
 
+does "cwd": "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/" allow the mcp access to the project directory /home/eveningb4dawn/Desktop/Projects/AIProjectManager/
+
+Installation steps in README.md, add claude setup instructions:
+~/user/.claude.json (linux)
+"mcpServers": {
+    "ai-project-manager": {
+        "command": "python3",
+        "args": ["start-mcp-server.py"],
+        "cwd": "pathToProjectRoot/ai-pm-mcp/"
+      }
+  }
 
 ======================
 
@@ -60,14 +71,17 @@ our directives are 3 layered. More detailed, human readable md files in ai-pm-mc
 
 ======================
 ai-pm-mcp/
-ai-pm-production/
+ai-pm-mcp-production/
 /home/eveningb4dawn/.claude.json
 "mcpServers": {
     "ai-project-manager": {
-        "command": "python3",
-        "args": ["start-mcp-server.py"],
-        "cwd": "/home/eveningb4dawn/ai-pm-production/"
-      }
+      "command": "python3",
+      "args": [
+        "-m",
+        "server"
+      ],
+      "cwd": "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/"
+    }
   }
   Step 3: Test & Debug Cycle
 

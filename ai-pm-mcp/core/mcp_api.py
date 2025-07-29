@@ -175,8 +175,6 @@ class MCPToolRegistry:
             ("project_tools", "ProjectTools"),
             ("theme_tools", "ThemeTools"), 
             ("task_tools", "TaskTools"),
-            ("instance_tools", "InstanceTools"),
-            ("conflict_resolution_tools", "ConflictResolutionTools"),
             ("branch_tools", "BranchTools")
         ]
         

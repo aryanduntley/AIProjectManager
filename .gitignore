@@ -27,3 +27,6 @@ build/
 *.bak
 *.swp
 *.tmp
+
+# Ignore specific files related to MCP server startup
+ai-pm-mcp-production/

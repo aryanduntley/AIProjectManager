@@ -129,11 +129,25 @@ The server will:
    - Connect with Claude or compatible AI client
    - Use the project management tools to set up your project structure
 
-3. **Connect with Claude or Compatible AI**:
-   - Configure your AI client to connect to the MCP server
-   - The server exposes tools for project management, task execution, and context loading
+3. **Connect with Claude Code**:
+   Add the following configuration to your `~/.claude.json` file:
+   ```json
+   "mcpServers": {
+     "ai-project-manager": {
+       "command": "python3",
+       "args": ["-m", "server"],
+       "cwd": "/path/to/your/ai-pm-mcp/"
+     }
+   }
+   ```
+   
+   **Important**: Replace `/path/to/your/ai-pm-mcp/` with the actual path to your ai-pm-mcp directory.
+   
+   **Note**: Use the `-m server` module approach rather than `start-mcp-server.py` to avoid Python import issues.
 
-4. **Start Managing Your Project**:
+4. **Restart Claude Code** to load the MCP server connection.
+
+5. **Start Managing Your Project**:
    ```
    AI: "Continue development on this project"
    #  AI automatically loads project context and resumes work
@@ -147,6 +161,23 @@ python3 test_basic.py
 
 # The server will start and show connection info
 ```
+
+### Troubleshooting Claude Code Integration
+
+**Problem**: "1 MCP server failed" message in Claude Code
+
+**Solution**: Ensure you're using the module approach in your `~/.claude.json`:
+```json
+"args": ["-m", "server"]
+```
+**Not**: `"args": ["start-mcp-server.py"]`
+
+**Why**: The module approach (`-m server`) properly resolves Python relative imports, while running the script directly can cause import failures.
+
+**Steps to Fix**:
+1. Update your `~/.claude.json` configuration as shown above
+2. Restart Claude Code completely
+3. Check that the MCP server loads without errors
 
 ## 🚀 Documentation
 
@@ -403,7 +434,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Ready to revolutionize your AI-powered development workflow?** 
 
-[Get Started](#quick-start) | [View Documentation](docs/) | [Join Community](https://github.com/aryanduntley/AIProjectManager/discussions)
+[Get Started](#quick-start) | [Join Community](https://github.com/aryanduntley/AIProjectManager/discussions)
 
 ---
 
