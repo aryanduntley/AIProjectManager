@@ -277,7 +277,7 @@ class CompressedContextManager:
             
             # Load Markdown if needed
             if escalation_level == 'markdown':
-                md_path = self.mcp_server_path.parent / "docs" / "directives" / f"{directive_id}.md"
+                md_path = self.mcp_server_path / "reference" / "directivesmd" / f"{directive_id}.md"
                 if md_path.exists():
                     md_content = md_path.read_text()
                     directive_content['markdown'] = md_content
