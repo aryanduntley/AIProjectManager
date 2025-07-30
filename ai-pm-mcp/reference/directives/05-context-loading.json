@@ -53,11 +53,12 @@
       "protocol": [
         "Load theme structure from JSON files",
         "Query database for intelligent directory metadata and file relationship insights",
+        "Query file_metadata table for file analysis results and dependencies",
         "Database-Optimized Flow Loading: AI queries database for optimal flow file selection based on theme-flow relationships",
         "Read README.md files in relevant directories (limit 2KB each) for human-readable context",
-        "Combine database insights with README context to assess task requirements",
-        "Intelligent File Loading: AI uses database insights to load only specific files needed for the task",
-        "Use database analytics to determine optimal file selection and avoid unnecessary code analysis"
+        "Combine database insights with README context and file metadata to assess task requirements",
+        "Intelligent File Loading: AI uses database file metadata to load only specific files needed for the task",
+        "Use database analytics and file metadata to determine optimal file selection and avoid unnecessary code analysis"
       ],
       "priorityOrder": [
         "Project root README.md",
@@ -196,13 +197,17 @@
     "ProjectFlow/flow-index.json",
     "README.md files",
     "Theme JSON files",
-    "UserSettings/config.json"
+    "UserSettings/config.json",
+    "project.db file_metadata table",
+    "Database file intelligence queries"
   ],
   "keyOperations": [
     "Context mode selection",
-    "Multi-flow context loading",
+    "Multi-flow context loading", 
     "Flow scope optimization",
     "README-guided loading",
+    "Database-enhanced file selection",
+    "File metadata intelligence",
     "Memory optimization",
     "Escalation management"
   ],
@@ -213,7 +218,9 @@
       "Use lazy loading for theme definitions",
       "Estimate memory usage and warn if >100MB",
       "Recommend context reduction if memory usage excessive",
-      "Cache frequently accessed theme data"
+      "Cache frequently accessed theme data",
+      "Use database file metadata queries to avoid loading unnecessary files",
+      "Leverage file_metadata.file_purpose and file_description for targeted loading"
     ]
   },
   "sharedFileImpact": {

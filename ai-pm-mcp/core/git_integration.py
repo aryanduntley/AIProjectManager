@@ -115,6 +115,9 @@ class GitIntegrationManager:
 # AI Project Manager - Git Branch Based Management
 # Track organizational state, not user-specific settings or temporary files
 
+# MCP Server Infrastructure (tooling, not user code)
+ai-pm-mcp/
+
 # Project Management - Track Organizational State, Not User Data
 projectManagement/UserSettings/
 projectManagement/database/backups/

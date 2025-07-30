@@ -67,7 +67,8 @@
           "onlyAfterApproval": "Create individual theme JSON files in Themes/ directory",
           "generateMasterIndex": "Generate master themes.json index file",
           "updateProjectLogic": "Update projectlogic.jsonl with theme decisions",
-          "linkToFlows": "Link themes to existing user flows and tasks"
+          "linkToFlows": "Link themes to existing user flows and tasks",
+          "updateFileMetadata": "Store theme associations in file_metadata table for database-driven context intelligence"
         }
       }
     },
@@ -80,6 +81,7 @@
         "Propose merges if overlapping themes detected",
         "Maintain themes.json root-level theme index",
         "Handle shared files across multiple themes",
+        "Update theme_associations field in file_metadata table",
         "Update Git tracking for theme changes"
       ],
       "logicDetails": {
@@ -183,7 +185,9 @@
     "Theme discovery",
     "User approval",
     "File validation",
-    "Threshold monitoring"
+    "Threshold monitoring",
+    "Database-driven theme associations",
+    "File metadata synchronization"
   ],
   "fileStructure": {
     "themeFile": {
@@ -260,7 +264,9 @@
     "updateTriggers": [
       "When theme files are created, modified, or deleted",
       "When flow references in theme files change",
-      "During session boot to ensure data consistency"
+      "During session boot to ensure data consistency",
+      "When file_metadata.theme_associations field is updated",
+      "During initialization when files are analyzed and categorized"
     ]
   },
   "ongoingThemeManagement": {

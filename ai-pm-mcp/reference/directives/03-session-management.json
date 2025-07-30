@@ -22,6 +22,7 @@
       "prerequisites": "This assumes automatic state detection (from 01-system-initialization) has already notified the user and they have chosen to proceed with session boot",
       "coreRequirements": [
         "Initialize database connection and restore session context from project.db",
+        "Check initialization status and resume incomplete initialization if needed",
         "Load projectManagement/ProjectBlueprint/blueprint.md",
         "Load projectManagement/ProjectFlow/flow-index.json and selective flow files",
         "Load projectManagement/ProjectLogic/projectlogic.jsonl", 
@@ -31,11 +32,15 @@
         "Check projectManagement/Implementations/active/{activeImplementationPlan.md}",
         "Query database for current task/sidequest status and analytics",
         "Load current implementation plan context and phase progress from database",
+        "Load file metadata context for intelligent context decisions",
         "Ensure proposed updates are confirmed by user before changing anything"
       ],
       "detailedBootSequence": [
         "1. Identify branch type (ai-pm-org-main vs work branch) and establish authority",
         "2. Initialize database connection and restore session context from project.db",
+        "2a. Check initialization_phase in sessions table - if incomplete, offer to resume initialization",
+        "2b. If initialization incomplete, load unanalyzed files using get_unanalyzed_files() method",
+        "2c. Present initialization progress and offer resumption options to user",
         "3. [AI-PM-ORG-MAIN ONLY] Detect Git changes and perform organizational reconciliation if needed",
         "4. Read ProjectBlueprint for project understanding",  
         "5. Read ProjectFlow (flow-index.json) for interaction understanding",
@@ -44,11 +49,12 @@
         "8. Restore active themes, tasks, sidequests from session database context",
         "9. Load recent noteworthy events from database (instead of file scanning)",
         "10. Assess current state using database task/sidequest status queries",
-        "11. Determine next steps with priority suggestions based on database analytics",
-        "12. Get user approval for direction",
-        "13. Determine/restore context mode from session database",
-        "14. Generate/restore task context using database theme-flow relationships",
-        "15. Begin task execution with preserved session state"
+        "11. Load file metadata context using database file_metadata table for intelligent context decisions",
+        "12. Determine next steps with priority suggestions based on database analytics",
+        "13. Get user approval for direction",
+        "14. Determine/restore context mode from session database",
+        "15. Generate/restore task context using database theme-flow relationships and file metadata",
+        "16. Begin task execution with preserved session state"
       ],
       "statePreservationProtocol": {
         "directive": "MANDATORY FOR SESSION CONTINUITY: Database-enhanced boot sequence requires STRICT adherence to real-time state updates",
@@ -372,41 +378,52 @@
   ],
   "keyOperations": [
     "Context loading",
-    "Task resumption",
+    "Task resumption", 
     "State preservation",
     "Implementation plan integration",
+    "Initialization progress checking",
+    "File metadata context loading",
+    "Database session restoration",
     "Organizational file updates"
   ],
   "sessionStateManagement": {
-    "directive": "Maintain session state through persistent project files",
+    "directive": "Maintain session state through persistent project files and database",
     "stateTracking": {
       "activeTasks": "Tasks/active/ directory",
       "projectProgress": "Tasks/completion-path.json",
       "implementationPlans": "Implementations/active/",
       "recentDecisions": "ProjectLogic/projectlogic.jsonl",
-      "noteworthyItems": "Logs/noteworthy.json"
+      "noteworthyItems": "Logs/noteworthy.json",
+      "sessionContext": "sessions table in project.db",
+      "initializationProgress": "initialization_phase and progress tracking in sessions table",
+      "fileMetadata": "file_metadata table for context intelligence"
     },
     "sessionContextRecovery": {
-      "bootSequence": "loads all relevant project files",
+      "bootSequence": "loads all relevant project files and database context",
       "activeTasks": "provide immediate context",
       "projectLogic": "maintains reasoning history",
-      "implementationPlans": "track current objectives"
+      "implementationPlans": "track current objectives",
+      "databaseContext": "restores complete session state including initialization progress",
+      "fileMetadata": "enables intelligent context loading decisions"
     }
   },
   "sessionContinuityRequirements": {
     "directive": "Ensure seamless transitions between sessions",
     "statePreservation": [
-      "All work states saved in appropriate files",
+      "All work states saved in appropriate files and database",
       "Context loading can recreate working environment",
       "Task dependencies and relationships maintained",
       "User preferences and decisions preserved",
-      "Project logic evolution tracked"
+      "Project logic evolution tracked",
+      "Initialization progress preserved in database",
+      "File metadata context preserved for intelligent decisions"
     ],
     "recoveryCapabilities": [
-      "Can resume from any interruption point",
-      "Previous session state fully recoverable",
-      "Context can be recreated from saved state",
-      "Task progress maintained across sessions"
+      "Can resume from any interruption point including incomplete initialization",
+      "Previous session state fully recoverable from database",
+      "Context can be recreated from saved state and file metadata",
+      "Task progress maintained across sessions",
+      "Initialization progress resumption from exact point of interruption"  
     ]
   },
   "basicEdgeCaseHandling": {

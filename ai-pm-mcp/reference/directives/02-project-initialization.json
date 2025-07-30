@@ -187,30 +187,55 @@
           ]
         },
         {
+          "action": "fileMetadataInitialization",
+          "description": "Initialize comprehensive file-by-file tracking system",
+          "required": true,
+          "substeps": [
+            "Start initialization phase in sessions table with initialization_phase='discovering_files'",
+            "Discover all project files and populate file_metadata table with basic information",
+            "Track total_files_discovered count in sessions table for progress monitoring",
+            "Set initialization_phase='analyzing_themes' after file discovery complete"
+          ]
+        },
+        {
           "action": "directoryByDirectoryAssessment",
-          "description": "Assess each directory systematically",
+          "description": "Assess each directory systematically with database-driven progress tracking",
           "required": true,
           "recursive": true,
           "substeps": [
-            "Read files in each directory one by one",
+            "Read files in each directory one by one using batch processing (50 files per batch)",
             "Avoid dependency folders (deps, node_modules, git, etc.)",
             "Create/update README.md file in directory",
-            "Update database with directory and file metadata",
+            "Update file_metadata table with analysis results: file_purpose, file_description, important_exports, dependencies",
+            "Mark files as analyzed with initialization_analyzed=TRUE in database",
+            "Store theme associations in theme_associations field of file_metadata",
             "Update organizational files with new information",
             "Discuss theme updates with user for approval",
             "Discuss blueprint updates with user for approval",
             "Discuss logic amendments with user for approval",
             "Log noteworthy information",
-            "Use database file_metadata table for progress tracking"
+            "Automatically update files_processed count via database triggers"
+          ]
+        },
+        {
+          "action": "flowAssociationBuilding",
+          "description": "Build flow associations and complete initialization tracking",
+          "required": true,
+          "substeps": [
+            "Set initialization_phase='building_flows' in sessions table",
+            "Update flow_references field in file_metadata for files referenced by flows",
+            "Complete flow association mapping between themes and flows"
           ]
         },
         {
           "action": "finalReviewAndCompletion",
-          "description": "Final review of core files",
+          "description": "Final review of core files and complete initialization",
           "required": true,
           "substeps": [
             "Review core files for consistency and accuracy",
-            "Confirm initialization is complete"
+            "Set initialization_phase='complete' and initialization_completed_at timestamp in sessions table",
+            "Verify all files are marked with initialization_analyzed=TRUE",
+            "Confirm initialization is complete with 100% progress"
           ]
         },
         {
@@ -279,6 +304,9 @@
     "Theme discovery",
     "Flow definition",
     "Metadata initialization",
+    "File metadata initialization",
+    "Database-driven progress tracking",
+    "Initialization phase management",
     "Project evaluation",
     "README management"
   ],
@@ -291,15 +319,27 @@
   "errorHandling": {
     "userRejection": "Revise and resubmit for approval",
     "incompleteInformation": "Continue gathering information before proceeding",
-    "resourceConstraints": "Adjust reading strategy based on project size",
-    "sessionTermination": "Use database file_metadata table to track progress"
+    "resourceConstraints": "Adjust reading strategy based on project size, use batch processing",
+    "sessionTermination": "Use database file_metadata table and initialization_phase tracking for seamless resumption"
   },
   "progressTracking": {
-    "method": "Database file_metadata table",
+    "method": "Database file_metadata table with sessions table integration",
+    "phases": [
+      "not_started → discovering_files → analyzing_themes → building_flows → complete"
+    ],
     "indicators": [
-      "initialization_analyzed flag indicates file assessment complete",
+      "initialization_phase in sessions table tracks current stage",
+      "files_processed and total_files_discovered in sessions table track progress",
+      "initialization_analyzed flag in file_metadata indicates file assessment complete",
       "last_analyzed timestamp indicates currency of assessment",
-      "Missing file_metadata record indicates file needs assessment"
+      "Completion percentage calculated as files_processed / total_files_discovered"
+    ],
+    "resumption": "Use get_unanalyzed_files() method to resume from interruption point",
+    "tools": [
+      "get_initialization_progress - Current progress status with analytics", 
+      "resume_initialization - Continue incomplete initialization from any point",
+      "session_get_initialization_summary - Comprehensive progress reporting",
+      "session_reset_initialization - Safe reset with confirmation"
     ]
   },
   "documentationRequirements": {

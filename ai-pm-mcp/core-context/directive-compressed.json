@@ -27,7 +27,7 @@
     "workflows": {
       "newProject": [
         "Initialize Git repository at project root if enabled",
-        "Initialize database: Create project.db from ai-pm-mcp/database/schema.sql",
+        "Initialize database: Create project.db from ai-pm-mcp/database/schema.sql with file_metadata table",
         "Create projectManagement/ structure from templates on ai-pm-org-main branch",
         "Generate initial blueprint.md with user discussion",
         "Create basic theme structure and flow index", 
@@ -37,13 +37,18 @@
       ],
       "existingProject": [
         "Detect and integrate existing Git repository or initialize new one",
-        "Analyze current project structure and codebase",
-        "Auto-discover themes and generate theme files",
-        "Create project flows based on existing functionality",
+        "Initialize comprehensive file-by-file tracking with initialization phases",
+        "Discover all project files and populate file_metadata table (batch processing)",
+        "Analyze current project structure with database-driven progress tracking",
+        "Auto-discover themes and store associations in file_metadata.theme_associations",
+        "Create project flows and link to files via flow_references field",
         "Generate blueprint and completion path from analysis",
+        "Complete initialization tracking with phase transitions",
         "Set up Git tracking for organizational state"
       ]
     },
+    "initializationPhases": ["not_started", "discovering_files", "analyzing_themes", "building_flows", "complete"],
+    "progressTracking": "Database file_metadata table with real-time progress updates and resumption capability",
     "approvalRequired": ["ProjectBlueprint", "Theme definitions", "ProjectFlow outline"]
   },
   "sessionManagement": {
@@ -51,13 +56,16 @@
     "bootSequence": [
       "Identify branch type (ai-pm-org-main vs work branch) using git branch --show-current",
       "Detect Git changes and perform organizational reconciliation if on ai-pm-org-main",
-      "Initialize database connection and restore session context from project.db", 
+      "Initialize database connection and check initialization_phase in sessions table",
+      "If initialization incomplete, offer to resume using get_unanalyzed_files() method",
+      "Restore session context from project.db with file metadata intelligence", 
       "Read ProjectBlueprint for project context",
       "Read completion-path.json + implementation plan status from database",
       "Restore active themes, tasks, sidequests from session database context",
       "Load recent noteworthy events from database",
+      "Load file metadata context for intelligent context decisions",
       "Assess current state using database task/sidequest status queries",
-      "Load appropriate theme context using database theme-flow relationships"
+      "Load appropriate theme context using database theme-flow relationships and file metadata"
     ],
     "contextRestoration": "Database session snapshots + projectlogic.jsonl for complete context restoration",
     "taskResumption": "Database-driven task resumption with preserved session state",
@@ -72,7 +80,7 @@
     },
     "maintenance": {
       "triggers": ["file creation", "file deletion", "file movement", "directory restructuring", "Git changes affecting theme files"],
-      "actions": ["Update theme file paths", "Validate linked themes", "Check shared file references", "Update Git tracking for theme changes"]
+      "actions": ["Update theme file paths", "Update theme_associations in file_metadata table", "Validate linked themes", "Check shared file references", "Update Git tracking for theme changes"]
     }
   },
   "contextLoading": {
@@ -84,9 +92,10 @@
     "databaseEnhancedProcess": [
       "Load theme structure from Themes/[theme].json",
       "Query database for intelligent directory metadata and file relationships",
+      "Query file_metadata table for file analysis results, dependencies, and theme associations",
       "Read README.md files in relevant directories for human-readable context",
-      "Combine database insights with README context to assess task requirements",
-      "Load only files determined necessary through database analytics"
+      "Combine database insights with README context and file metadata to assess task requirements",
+      "Load only files determined necessary through database analytics and file metadata intelligence"
     ],
     "escalation": "AI can escalate context mode when insufficient, user can override to project-wide",
     "implementationRequired": "LOAD reference/directives/05-context-loading.json for complete context loading protocols, memory optimization, and escalation procedures"
@@ -183,7 +192,7 @@
     },
     "hybridArchitecture": {
       "filesPreserved": ["blueprint.md", "projectlogic.jsonl", "flow-index.json", "individual flow files", "task definitions", "theme definitions"],
-      "databaseEnhanced": ["Status tracking", "Session persistence", "Relationship management", "Analytics", "Performance optimization"],
+      "databaseEnhanced": ["Status tracking", "Session persistence", "Relationship management", "Analytics", "Performance optimization", "File metadata and initialization tracking"],
       "synchronizationProtocol": "Files remain source of truth for definitions, database provides operational intelligence"
     }
   },

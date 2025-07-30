@@ -161,7 +161,7 @@ The server will:
 python3 -m ai-pm-mcp
 
 # The server will start and show connection info including:
-# "Registered 53 tools successfully"
+# "Registered 57 tools successfully"
 # "AI Project Manager MCP Server initialized successfully"
 ```
 

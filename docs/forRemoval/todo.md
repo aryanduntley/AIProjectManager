@@ -47,11 +47,6 @@ user main branch, not mcp main branch, should never be automatically pushed to. 
 
 remove logger.error from mcp server files once working
 
-ensure no code is readme.json related. ensure code is managing file based database entries well
-
-assess tools and ensure readme is up to date
-
-is ai-pm-mcp dir added to .gitignore? Should it be?
 
 ======================
 
@@ -69,6 +64,10 @@ ai-pm-mcp-production/
       "cwd": "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/"
     }
   }
+
+ cd .. && timeout 10 python3 -m ai-pm-mcp 2>&1 | head   │
+│    -20 
+
   Step 3: Test & Debug Cycle
 
   # 1. Start MCP server (Claude will do this

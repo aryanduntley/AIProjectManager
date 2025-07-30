@@ -1,9 +1,6 @@
 # AI Project Manager - Added automatically
-# MCP Instance Management - Track Structure, Not Content
-.mcp-instances/active/*/projectManagement/UserSettings/
-.mcp-instances/active/*/projectManagement/database/backups/
-.mcp-instances/*/logs/
-.mcp-instances/*/temp/
+# MCP Server Infrastructure (tooling, not user code)
+ai-pm-mcp/
 
 # Project Management - Track Organizational State, Not User-Specific Data
 projectManagement/UserSettings/
