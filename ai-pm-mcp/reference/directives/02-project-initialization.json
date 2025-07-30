@@ -79,7 +79,7 @@
           "condition": "autoTaskCreation is false",
           "substeps": [
             "Generate first implementation plan for scaffolding",
-            "Include README.md and README.json for every directory",
+            "Include README.md for every directory and update database with directory metadata",
             "Update README files as changes are made"
           ]
         },
@@ -195,13 +195,13 @@
             "Read files in each directory one by one",
             "Avoid dependency folders (deps, node_modules, git, etc.)",
             "Create/update README.md file in directory",
-            "Create README.json file",
+            "Update database with directory and file metadata",
             "Update organizational files with new information",
             "Discuss theme updates with user for approval",
             "Discuss blueprint updates with user for approval",
             "Discuss logic amendments with user for approval",
             "Log noteworthy information",
-            "Use README.json for progress tracking"
+            "Use database file_metadata table for progress tracking"
           ]
         },
         {
@@ -253,10 +253,10 @@
       "enum": ["overwrite", "append"],
       "description": "How to handle README last updated sections"
     },
-    "readmeJsonFilename": {
-      "default": "README.json",
-      "type": "string",
-      "description": "Configurable filename for AI-specific directory metadata"
+    "databaseProgressTracking": {
+      "default": true,
+      "type": "boolean",
+      "description": "Use database for tracking file analysis progress instead of README.json"
     }
   },
   "integrations": [
@@ -292,24 +292,23 @@
     "userRejection": "Revise and resubmit for approval",
     "incompleteInformation": "Continue gathering information before proceeding",
     "resourceConstraints": "Adjust reading strategy based on project size",
-    "sessionTermination": "Use README.json files to track progress"
+    "sessionTermination": "Use database file_metadata table to track progress"
   },
   "progressTracking": {
-    "method": "README.json files",
+    "method": "Database file_metadata table",
     "indicators": [
-      "README.json presence indicates directory assessment complete",
-      "README.json lastUpdated indicates currency of assessment",
-      "Missing README.json indicates directory needs assessment"
+      "initialization_analyzed flag indicates file assessment complete",
+      "last_analyzed timestamp indicates currency of assessment",
+      "Missing file_metadata record indicates file needs assessment"
     ]
   },
   "documentationRequirements": {
     "readmeManagement": {
       "readmeMd": "Standard human-readable documentation following best practices",
-      "readmeJson": "AI-specific metadata for quick directory assessment"
+      "databaseMetadata": "AI-specific metadata stored in database for quick directory assessment"
     },
     "templates": [
-      "reference/templates/README-template.md",
-      "reference/templates/README-template.json"
+      "reference/templates/README-template.md"
     ]
   }
 }

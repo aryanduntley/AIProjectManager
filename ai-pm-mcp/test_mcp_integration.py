@@ -19,14 +19,14 @@ sys.path.insert(0, str(current_dir))
 sys.path.insert(0, str(current_dir / "deps"))
 
 # Import MCP components
-from core.mcp_api import MCPToolRegistry
-from core.config_manager import ConfigManager
-from database.db_manager import DatabaseManager
-from tools.log_tools import LogTools
-from tools.project_tools import ProjectTools
-from tools.theme_tools import ThemeTools
-from tools.task_tools import TaskTools
-from tools.session_manager import SessionManager
+from .core.mcp_api import MCPToolRegistry
+from .core.config_manager import ConfigManager
+from .database.db_manager import DatabaseManager
+from .tools.log_tools import LogTools
+from .tools.project_tools import ProjectTools
+from .tools.theme_tools import ThemeTools
+from .tools.task_tools import TaskTools
+from .tools.session_manager import SessionManager
 
 
 class MCPIntegrationTestSuite:

@@ -10,9 +10,9 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
-from core.mcp_api import ToolDefinition
-from database.theme_flow_queries import ThemeFlowQueries
-from database.file_metadata_queries import FileMetadataQueries
+from ..core.mcp_api import ToolDefinition
+from ..database.theme_flow_queries import ThemeFlowQueries
+from ..database.file_metadata_queries import FileMetadataQueries
 
 logger = logging.getLogger(__name__)
 

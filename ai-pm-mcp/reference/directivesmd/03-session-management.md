@@ -4,6 +4,8 @@
 
 **Directive**: Follow exact sequence when starting new sessions or "continue development".
 
+**Prerequisites**: This assumes automatic state detection (from 01-system-initialization) has already notified the user and they have chosen to proceed with session boot.
+
 ### Enhanced Session Boot Sequence with Implementation Plan Integration
 
 **Core Requirements:**

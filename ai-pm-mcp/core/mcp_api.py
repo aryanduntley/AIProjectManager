@@ -19,16 +19,16 @@ from mcp.server import Server
 from mcp.types import Tool, TextContent, CallToolRequest
 from pydantic import BaseModel
 
-from core.config_manager import ConfigManager
-from core.scope_engine import ScopeEngine
-from core.processor import TaskProcessor
-from database.db_manager import DatabaseManager
-from database.session_queries import SessionQueries
-from database.task_status_queries import TaskStatusQueries
-from database.theme_flow_queries import ThemeFlowQueries
-from database.file_metadata_queries import FileMetadataQueries
-from database.user_preference_queries import UserPreferenceQueries
-from database.event_queries import EventQueries
+from .config_manager import ConfigManager
+from .scope_engine import ScopeEngine
+from .processor import TaskProcessor
+from ..database.db_manager import DatabaseManager
+from ..database.session_queries import SessionQueries
+from ..database.task_status_queries import TaskStatusQueries
+from ..database.theme_flow_queries import ThemeFlowQueries
+from ..database.file_metadata_queries import FileMetadataQueries
+from ..database.user_preference_queries import UserPreferenceQueries
+from ..database.event_queries import EventQueries
 
 logger = logging.getLogger(__name__)
 
@@ -107,31 +107,31 @@ class MCPToolRegistry:
         """Discover and import all tool modules."""
         try:
             # Import project tools with database integration
-            from tools.project_tools import ProjectTools
+            from ..tools.project_tools import ProjectTools
             project_tools = ProjectTools(self.db_manager)
             await self._register_tool_module(project_tools)
             
             # Import task tools with database integration
-            from tools.task_tools import TaskTools
+            from ..tools.task_tools import TaskTools
             task_tools = TaskTools(self.task_queries, self.session_queries, self.file_metadata_queries)
             await self._register_tool_module(task_tools)
             
             # Import session manager with database integration
-            from tools.session_manager import SessionManager
+            from ..tools.session_manager import SessionManager
             session_manager = SessionManager(self.session_queries, self.file_metadata_queries)
             await self._register_tool_module(session_manager)
             
             # Import file tools
-            from tools.file_tools import FileTools
+            from ..tools.file_tools import FileTools
             await self._register_tool_module(FileTools())
             
             # Import theme tools with database integration
-            from tools.theme_tools import ThemeTools
+            from ..tools.theme_tools import ThemeTools
             theme_tools = ThemeTools(self.theme_flow_queries, self.file_metadata_queries)
             await self._register_tool_module(theme_tools)
             
             # Import flow tools with database integration
-            from tools.flow_tools import FlowTools
+            from ..tools.flow_tools import FlowTools
             flow_tools = FlowTools(self.theme_flow_queries, self.session_queries, self.file_metadata_queries)
             await self._register_tool_module(flow_tools)
             
@@ -140,16 +140,16 @@ class MCPToolRegistry:
                 await self._register_enhanced_core_tools()
             
             # Import log tools with event queries integration
-            from tools.log_tools import LogTools
+            from ..tools.log_tools import LogTools
             log_tools = LogTools(self.event_queries)
             await self._register_tool_module(log_tools)
             
             # Import config tools
-            from tools.config_tools import ConfigTools
+            from ..tools.config_tools import ConfigTools
             await self._register_tool_module(ConfigTools())
             
             # Import branch tools for simplified Git branch management
-            from tools.branch_tools import BranchTools
+            from ..tools.branch_tools import BranchTools
             await self._register_tool_module(BranchTools())
             
         except ImportError as e:

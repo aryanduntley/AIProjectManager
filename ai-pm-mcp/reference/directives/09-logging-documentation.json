@@ -85,9 +85,9 @@
         "Completion path changes → Update completion-path.json",
         "File structure changes → Update affected README.md files"
       ],
-      "dualDocumentationSystem": {
+      "documentationSystem": {
         "readmeMd": "Human-readable directory documentation",
-        "readmeJson": "AI-optimized directory metadata"
+        "databaseMetadata": "AI-optimized directory metadata stored in database"
       }
     },
     "readmeManagement": {
@@ -107,13 +107,13 @@
         "Dependencies and relationships",
         "Recent changes summary"
       ],
-      "readmeJsonRequirements": [
-        "File inventory with descriptions",
-        "Exports (functions, classes, components)",
-        "Dependencies (internal and external)",
-        "Theme references",
-        "File chains and logical connections",
-        "Implementation status"
+      "databaseMetadataRequirements": [
+        "File inventory with descriptions stored in file_metadata table",
+        "Exports (functions, classes, components) in important_exports field",
+        "Dependencies (internal and external) in dependencies field",
+        "Theme references in theme_associations field",
+        "File chains and logical connections tracked in database",
+        "Implementation status via initialization_analyzed flag"
       ]
     }
   },
@@ -133,11 +133,6 @@
       "type": "string",
       "enum": ["overwrite", "append"],
       "description": "How to handle README last updated sections"
-    },
-    "logging.readmeJsonFilename": {
-      "default": "README.json",
-      "type": "string",
-      "description": "Filename for AI-optimized directory metadata"
     }
   },
   "integrations": [
@@ -150,8 +145,8 @@
     "ProjectLogic/projectlogic.jsonl",
     "Logs/noteworthy.json",
     "README.md files",
-    "reference/templates/README-template.md",
-    "reference/templates/README-template.json"
+    "Database file_metadata and directory_metadata tables",
+    "reference/templates/README-template.md"
   ],
   "keyOperations": [
     "Dual-file logging",
@@ -230,8 +225,8 @@
       ],
       "lastUpdatedBehavior": "Overwrite with most recent changes only (avoid duplicate tracking)"
     },
-    "readmeJson": {
-      "purpose": "AI-optimized directory metadata",
+    "databaseMetadata": {
+      "purpose": "AI-optimized directory and file metadata stored in database",
       "updateTriggers": [
         "File changes",
         "Export changes",
@@ -240,12 +235,12 @@
         "Implementation status changes"
       ],
       "content": [
-        "Complete file inventory with descriptions",
-        "Functions, classes, components that can be imported",
-        "Internal and external dependencies",
-        "Theme associations",
-        "Logical file connections",
-        "Implementation status"
+        "Complete file inventory with descriptions in file_metadata table",
+        "Functions, classes, components in important_exports field",
+        "Internal and external dependencies in dependencies field",
+        "Theme associations in theme_associations field",
+        "Logical file connections tracked via database relationships",
+        "Implementation status via initialization_analyzed flag"
       ]
     }
   }

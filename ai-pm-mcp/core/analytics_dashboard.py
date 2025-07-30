@@ -13,11 +13,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 # Database components
-from database.session_queries import SessionQueries
-from database.task_status_queries import TaskStatusQueries
-from database.theme_flow_queries import ThemeFlowQueries
-from database.file_metadata_queries import FileMetadataQueries
-from database.user_preference_queries import UserPreferenceQueries
+from ..database.session_queries import SessionQueries
+from ..database.task_status_queries import TaskStatusQueries
+from ..database.theme_flow_queries import ThemeFlowQueries
+from ..database.file_metadata_queries import FileMetadataQueries
+from ..database.user_preference_queries import UserPreferenceQueries
 
 logger = logging.getLogger(__name__)
 

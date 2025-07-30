@@ -11,12 +11,12 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 import shutil
 
-from core.mcp_api import ToolDefinition
-from database.db_manager import DatabaseManager
-from database.session_queries import SessionQueries
-from database.task_status_queries import TaskStatusQueries
-from database.theme_flow_queries import ThemeFlowQueries
-from database.file_metadata_queries import FileMetadataQueries
+from ..core.mcp_api import ToolDefinition
+from ..database.db_manager import DatabaseManager
+from ..database.session_queries import SessionQueries
+from ..database.task_status_queries import TaskStatusQueries
+from ..database.theme_flow_queries import ThemeFlowQueries
+from ..database.file_metadata_queries import FileMetadataQueries
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +122,36 @@ class ProjectTools:
                     "required": ["project_path"]
                 },
                 handler=self.initialize_database
+            ),
+            ToolDefinition(
+                name="resume_initialization",
+                description="Resume incomplete file metadata initialization",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "project_path": {
+                            "type": "string",
+                            "description": "Path to the project directory"
+                        }
+                    },
+                    "required": ["project_path"]
+                },
+                handler=self.resume_file_metadata_initialization
+            ),
+            ToolDefinition(
+                name="get_initialization_progress",
+                description="Get current file metadata initialization progress",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "project_path": {
+                            "type": "string",
+                            "description": "Path to the project directory"
+                        }
+                    },
+                    "required": ["project_path"]
+                },
+                handler=self.get_initialization_progress
             )
         ]
     
@@ -392,7 +422,7 @@ This is the high-level blueprint for the {project_name} project. This document s
             return f"Error getting project status: {str(e)}"
     
     async def _initialize_database(self, project_path: Path):
-        """Initialize database for the project."""
+        """Initialize database for the project with file metadata discovery."""
         try:
             db_path = project_path / "projectManagement" / "project.db"
             schema_path = project_path / "projectManagement" / "database" / "schema.sql"
@@ -422,6 +452,11 @@ This is the high-level blueprint for the {project_name} project. This document s
             session_id = session_queries.start_session(str(project_path))
             logger.info(f"Database initialized at {db_path} with session {session_id}")
             
+            # Start file metadata initialization process
+            await self._initialize_file_metadata(
+                project_path, session_id, session_queries, file_metadata_queries
+            )
+            
             # Log initial project creation
             file_metadata_queries.log_file_modification(
                 file_path="projectManagement/",
@@ -434,6 +469,72 @@ This is the high-level blueprint for the {project_name} project. This document s
         except Exception as e:
             logger.error(f"Error initializing database: {e}")
             raise
+    
+    async def _initialize_file_metadata(
+        self, 
+        project_path: Path, 
+        session_id: str, 
+        session_queries, 
+        file_metadata_queries
+    ):
+        """Initialize file metadata using database-driven approach (replaces README.json)."""
+        try:
+            logger.info("Starting database-driven file metadata initialization")
+            
+            # Step 1: Discover all project files
+            discovered_files = file_metadata_queries.discover_project_files(
+                str(project_path),
+                exclude_patterns=[
+                    'projectManagement/UserSettings/*',
+                    'projectManagement/database/backups/*',
+                    '__pycache__/*', '*.pyc', '.git/*', 'node_modules/*'
+                ]
+            )
+            
+            # Flatten discovered files for processing
+            all_files = []
+            for category, files in discovered_files.items():
+                all_files.extend(files)
+            
+            if not all_files:
+                logger.warning("No files discovered during initialization")
+                return
+            
+            # Step 2: Start initialization tracking in session
+            success = session_queries.start_initialization(session_id, len(all_files))
+            if not success:
+                logger.error("Failed to start initialization tracking")
+                return
+            
+            logger.info(f"Discovered {len(all_files)} files for analysis")
+            
+            # Step 3: Analyze files in batches for better performance
+            batch_size = 50  # Process files in batches of 50
+            processed_count = 0
+            
+            for i in range(0, len(all_files), batch_size):
+                batch = all_files[i:i + batch_size]
+                
+                # Analyze this batch of files
+                batch_results = await file_metadata_queries.batch_analyze_files(
+                    batch, str(project_path)
+                )
+                
+                processed_count += len(batch)
+                logger.info(f"Processed {processed_count}/{len(all_files)} files")
+                
+                # Update session progress
+                session_queries.increment_files_processed(session_id, len(batch))
+            
+            # Step 4: Mark initialization as complete
+            session_queries.complete_initialization(session_id)
+            
+            logger.info(f"File metadata initialization completed: {processed_count} files analyzed")
+            
+        except Exception as e:
+            logger.error(f"Error during file metadata initialization: {e}")
+            # Mark initialization as failed but don't raise - allow project init to continue
+            session_queries.update_initialization_phase(session_id, 'failed')
     
     async def initialize_database(self, arguments: Dict[str, Any]) -> str:
         """Initialize database for an existing project."""
@@ -453,3 +554,108 @@ This is the high-level blueprint for the {project_name} project. This document s
         except Exception as e:
             logger.error(f"Error in initialize_database: {e}")
             return f"Error initializing database: {str(e)}"
+    
+    async def resume_file_metadata_initialization(self, arguments: Dict[str, Any]) -> str:
+        """Resume incomplete file metadata initialization."""
+        try:
+            project_path = Path(arguments["project_path"])
+            
+            if not project_path.exists():
+                return f"Project directory does not exist: {project_path}"
+            
+            # Initialize database connection
+            db_manager = DatabaseManager(str(project_path))
+            db_manager.connect()
+            
+            # Initialize query classes
+            session_queries = SessionQueries(db_manager)
+            file_metadata_queries = FileMetadataQueries(db_manager)
+            
+            # Check for sessions needing initialization
+            incomplete_sessions = session_queries.get_sessions_needing_initialization()
+            if not incomplete_sessions:
+                return "No incomplete initialization sessions found."
+            
+            # Get the most recent incomplete session
+            session_data = incomplete_sessions[0]
+            session_id = session_data['session_id']
+            
+            logger.info(f"Resuming initialization for session {session_id}")
+            
+            # Get unanalyzed files
+            unanalyzed_files = file_metadata_queries.get_unanalyzed_files()
+            
+            if not unanalyzed_files:
+                # Mark as complete if no unanalyzed files remain
+                session_queries.complete_initialization(session_id)
+                return f"File metadata initialization was already complete for session {session_id}"
+            
+            # Resume file analysis
+            batch_size = 50
+            processed_count = 0
+            
+            for i in range(0, len(unanalyzed_files), batch_size):
+                batch = unanalyzed_files[i:i + batch_size]
+                
+                # Analyze this batch of files
+                batch_results = await file_metadata_queries.batch_analyze_files(
+                    batch, str(project_path)
+                )
+                
+                processed_count += len(batch)
+                logger.info(f"Resumed analysis: {processed_count}/{len(unanalyzed_files)} files")
+                
+                # Update session progress
+                session_queries.increment_files_processed(session_id, len(batch))
+            
+            # Mark initialization as complete
+            session_queries.complete_initialization(session_id)
+            
+            return f"File metadata initialization resumed and completed: {processed_count} files analyzed"
+            
+        except Exception as e:
+            logger.error(f"Error resuming file metadata initialization: {e}")
+            return f"Error resuming initialization: {str(e)}"
+    
+    async def get_initialization_progress(self, arguments: Dict[str, Any]) -> str:
+        """Get current file metadata initialization progress."""
+        try:
+            project_path = Path(arguments["project_path"])
+            
+            if not project_path.exists():
+                return f"Project directory does not exist: {project_path}"
+            
+            # Initialize database connection
+            db_manager = DatabaseManager(str(project_path))
+            db_manager.connect()
+            
+            # Initialize query classes
+            session_queries = SessionQueries(db_manager)
+            file_metadata_queries = FileMetadataQueries(db_manager)
+            
+            # Get initialization status
+            status = session_queries.get_initialization_status()
+            
+            if not status:
+                return "No initialization sessions found."
+            
+            # Get progress details
+            progress = file_metadata_queries.get_initialization_progress()
+            
+            summary = f"""File Metadata Initialization Status:
+
+Session ID: {status['session_id']}
+Phase: {status['initialization_phase']}
+Progress: {status['files_processed']}/{status['total_files_discovered']} files ({progress['completion_percentage']:.1f}%)
+Started: {status.get('initialization_started_at', 'Unknown')}
+Completed: {status.get('initialization_completed_at', 'In progress')}
+
+Remaining files: {progress['remaining_files']}
+Analysis rate: {progress.get('analysis_rate', 'Unknown')} files/min
+"""
+            
+            return summary
+            
+        except Exception as e:
+            logger.error(f"Error getting initialization progress: {e}")
+            return f"Error getting progress: {str(e)}"

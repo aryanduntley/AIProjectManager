@@ -15,13 +15,13 @@ from datetime import datetime
 import asyncio
 
 # Database integration
-from database.task_status_queries import TaskStatusQueries
-from database.session_queries import SessionQueries
-from database.theme_flow_queries import ThemeFlowQueries
-from database.file_metadata_queries import FileMetadataQueries
+from ..database.task_status_queries import TaskStatusQueries
+from ..database.session_queries import SessionQueries
+from ..database.theme_flow_queries import ThemeFlowQueries
+from ..database.file_metadata_queries import FileMetadataQueries
 
 # Core components
-from core.scope_engine import ScopeEngine, ContextMode, ContextResult
+from ..core.scope_engine import ScopeEngine, ContextMode, ContextResult
 
 logger = logging.getLogger(__name__)
 

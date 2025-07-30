@@ -6,7 +6,7 @@ Usage: python -m ai-pm-mcp
 
 import asyncio
 import sys
-from server import main
+from .server import main
 
 if __name__ == "__main__":
     try:

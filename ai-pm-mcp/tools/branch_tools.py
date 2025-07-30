@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 from pydantic import BaseModel
 
-from core.branch_manager import GitBranchManager, BranchInfo
+from ..core.branch_manager import GitBranchManager, BranchInfo
 
 logger = logging.getLogger(__name__)
 

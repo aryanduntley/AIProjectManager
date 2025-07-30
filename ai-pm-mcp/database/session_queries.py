@@ -886,3 +886,317 @@ class SessionQueries:
                 'context_mode_distribution': {},
                 'analysis_period_days': days
             }
+    
+    # Initialization Tracking Methods (Phase 2 Implementation)
+    
+    def start_initialization(self, session_id: str, total_files_discovered: int) -> bool:
+        """
+        Start initialization phase for a session.
+        
+        Args:
+            session_id: Session ID to update
+            total_files_discovered: Total number of files discovered for initialization
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            query = """
+                UPDATE sessions 
+                SET initialization_phase = 'discovering_files',
+                    total_files_discovered = ?,
+                    files_processed = 0,
+                    initialization_started_at = ?
+                WHERE session_id = ?
+            """
+            
+            self.db.execute_update(query, (total_files_discovered, datetime.now().isoformat(), session_id))
+            return True
+            
+        except Exception as e:
+            self.db.logger.error(f"Error starting initialization for session {session_id}: {e}")
+            return False
+    
+    def update_initialization_phase(self, session_id: str, phase: str) -> bool:
+        """
+        Update the initialization phase for a session.
+        
+        Args:
+            session_id: Session ID to update
+            phase: New initialization phase (discovering_files, analyzing_themes, building_flows, complete)
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            query = """
+                UPDATE sessions 
+                SET initialization_phase = ?
+                WHERE session_id = ?
+            """
+            
+            self.db.execute_update(query, (phase, session_id))
+            return True
+            
+        except Exception as e:
+            self.db.logger.error(f"Error updating initialization phase for session {session_id}: {e}")
+            return False
+    
+    def complete_initialization(self, session_id: str) -> bool:
+        """
+        Mark initialization as complete for a session.
+        
+        Args:
+            session_id: Session ID to update
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            query = """
+                UPDATE sessions 
+                SET initialization_phase = 'complete',
+                    initialization_completed_at = ?
+                WHERE session_id = ?
+            """
+            
+            self.db.execute_update(query, (datetime.now().isoformat(), session_id))
+            return True
+            
+        except Exception as e:
+            self.db.logger.error(f"Error completing initialization for session {session_id}: {e}")
+            return False
+    
+    def get_initialization_status(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get initialization status for a session.
+        
+        Args:
+            session_id: Session ID to check
+            
+        Returns:
+            Dictionary with initialization status or None if session not found
+        """
+        try:
+            query = """
+                SELECT initialization_phase, files_processed, total_files_discovered,
+                       initialization_started_at, initialization_completed_at
+                FROM sessions
+                WHERE session_id = ?
+            """
+            
+            results = self.db.execute_query(query, (session_id,))
+            if results:
+                row = results[0]
+                
+                # Calculate completion percentage
+                total_files = row['total_files_discovered'] or 0
+                processed_files = row['files_processed'] or 0
+                completion_percentage = (processed_files / total_files * 100) if total_files > 0 else 0
+                
+                # Calculate elapsed time if initialization started
+                elapsed_time = None
+                if row['initialization_started_at']:
+                    start_time = datetime.fromisoformat(row['initialization_started_at'])
+                    if row['initialization_completed_at']:
+                        end_time = datetime.fromisoformat(row['initialization_completed_at'])
+                        elapsed_time = (end_time - start_time).total_seconds()
+                    else:
+                        elapsed_time = (datetime.now() - start_time).total_seconds()
+                
+                return {
+                    'session_id': session_id,
+                    'initialization_phase': row['initialization_phase'],
+                    'files_processed': processed_files,
+                    'total_files_discovered': total_files,
+                    'completion_percentage': round(completion_percentage, 2),
+                    'initialization_started_at': row['initialization_started_at'],
+                    'initialization_completed_at': row['initialization_completed_at'],
+                    'elapsed_time_seconds': elapsed_time,
+                    'is_complete': row['initialization_phase'] == 'complete'
+                }
+            return None
+            
+        except Exception as e:
+            self.db.logger.error(f"Error getting initialization status for session {session_id}: {e}")
+            return None
+    
+    def get_sessions_needing_initialization(self) -> List[Dict[str, Any]]:
+        """
+        Get sessions that need initialization or have incomplete initialization.
+        
+        Returns:
+            List of sessions that need initialization work
+        """
+        try:
+            query = """
+                SELECT session_id, project_path, initialization_phase, 
+                       files_processed, total_files_discovered, start_time
+                FROM sessions
+                WHERE initialization_phase IN ('not_started', 'discovering_files', 'analyzing_themes', 'building_flows')
+                  AND status = 'active'
+                ORDER BY start_time DESC
+            """
+            
+            results = self.db.execute_query(query)
+            sessions = []
+            
+            for row in results:
+                # Calculate completion percentage
+                total_files = row['total_files_discovered'] or 0
+                processed_files = row['files_processed'] or 0
+                completion_percentage = (processed_files / total_files * 100) if total_files > 0 else 0
+                
+                sessions.append({
+                    'session_id': row['session_id'],
+                    'project_path': row['project_path'],
+                    'initialization_phase': row['initialization_phase'],
+                    'files_processed': processed_files,
+                    'total_files_discovered': total_files,
+                    'completion_percentage': round(completion_percentage, 2),
+                    'start_time': row['start_time']
+                })
+            
+            return sessions
+            
+        except Exception as e:
+            self.db.logger.error(f"Error getting sessions needing initialization: {e}")
+            return []
+    
+    def increment_files_processed(self, session_id: str) -> bool:
+        """
+        Increment the files_processed counter for a session.
+        This is typically called via database trigger, but can be called manually.
+        
+        Args:
+            session_id: Session ID to update
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            query = """
+                UPDATE sessions 
+                SET files_processed = files_processed + 1,
+                    last_activity = ?
+                WHERE session_id = ?
+            """
+            
+            self.db.execute_update(query, (datetime.now().isoformat(), session_id))
+            return True
+            
+        except Exception as e:
+            self.db.logger.error(f"Error incrementing files processed for session {session_id}: {e}")
+            return False
+    
+    def reset_initialization(self, session_id: str) -> bool:
+        """
+        Reset initialization status for a session to start over.
+        
+        Args:
+            session_id: Session ID to reset
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            query = """
+                UPDATE sessions 
+                SET initialization_phase = 'not_started',
+                    files_processed = 0,
+                    total_files_discovered = 0,
+                    initialization_started_at = NULL,
+                    initialization_completed_at = NULL
+                WHERE session_id = ?
+            """
+            
+            self.db.execute_update(query, (session_id,))
+            return True
+            
+        except Exception as e:
+            self.db.logger.error(f"Error resetting initialization for session {session_id}: {e}")
+            return False
+    
+    def get_initialization_analytics(self, days: int = 30) -> Dict[str, Any]:
+        """
+        Get analytics about initialization performance across sessions.
+        
+        Args:
+            days: Number of days to analyze
+            
+        Returns:
+            Dictionary with initialization analytics
+        """
+        try:
+            # Sessions by initialization phase
+            phase_query = """
+                SELECT initialization_phase, COUNT(*) as count
+                FROM sessions
+                WHERE start_time >= datetime('now', '-{} days')
+                GROUP BY initialization_phase
+            """.format(days)
+            
+            phase_results = self.db.execute_query(phase_query)
+            phase_distribution = {row['initialization_phase']: row['count'] for row in phase_results}
+            
+            # Average initialization time for completed sessions
+            completion_time_query = """
+                SELECT AVG(
+                    (julianday(initialization_completed_at) - julianday(initialization_started_at)) * 24 * 60
+                ) as avg_minutes
+                FROM sessions
+                WHERE initialization_phase = 'complete'
+                  AND initialization_started_at IS NOT NULL
+                  AND initialization_completed_at IS NOT NULL
+                  AND start_time >= datetime('now', '-{} days')
+            """.format(days)
+            
+            time_result = self.db.execute_query(completion_time_query)
+            avg_completion_time = time_result[0]['avg_minutes'] if time_result else 0
+            
+            # Average files processed per completed initialization
+            files_query = """
+                SELECT AVG(CAST(total_files_discovered AS FLOAT)) as avg_files,
+                       AVG(CAST(files_processed AS FLOAT)) as avg_processed
+                FROM sessions
+                WHERE initialization_phase = 'complete'
+                  AND start_time >= datetime('now', '-{} days')
+            """.format(days)
+            
+            files_result = self.db.execute_query(files_query)
+            avg_files = files_result[0]['avg_files'] if files_result else 0
+            avg_processed = files_result[0]['avg_processed'] if files_result else 0
+            
+            # Success rate (completed vs started)
+            started_count = self.db.execute_query("""
+                SELECT COUNT(*) as count FROM sessions
+                WHERE initialization_started_at IS NOT NULL 
+                  AND start_time >= datetime('now', '-{} days')
+            """.format(days))[0]['count']
+            
+            completed_count = phase_distribution.get('complete', 0)
+            success_rate = (completed_count / started_count * 100) if started_count > 0 else 0
+            
+            return {
+                'phase_distribution': phase_distribution,
+                'avg_completion_time_minutes': round(avg_completion_time or 0, 2),
+                'avg_files_discovered': round(avg_files or 0, 0),
+                'avg_files_processed': round(avg_processed or 0, 0),
+                'success_rate_percentage': round(success_rate, 2),
+                'total_initializations_started': started_count,
+                'total_initializations_completed': completed_count,
+                'analysis_period_days': days
+            }
+            
+        except Exception as e:
+            self.db.logger.error(f"Error getting initialization analytics: {e}")
+            return {
+                'phase_distribution': {},
+                'avg_completion_time_minutes': 0,
+                'avg_files_discovered': 0,
+                'avg_files_processed': 0,
+                'success_rate_percentage': 0,
+                'total_initializations_started': 0,
+                'total_initializations_completed': 0,
+                'analysis_period_days': days
+            }

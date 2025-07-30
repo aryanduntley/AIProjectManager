@@ -36,7 +36,7 @@ Discuss with user goals of project. Be as detailed as needed to fulfil the goals
 
 6. **Implementation Plan and Scaffolding**
    - Generate the first implementation plan that should involve creating the scaffolding for the project
-   - A README.md and README.json file for every directory should be included in scaffolding and updates as changes are made to the files in the folder
+   - A README.md file for every directory should be included in scaffolding with database metadata tracking as changes are made to the files in the folder
    - User approval if autoTaskCreation is false
 
 7. **Task Generation**
@@ -94,10 +94,10 @@ Discuss with user goals of project. Be as detailed as needed to fulfil the goals
    
    **For each directory:**
    - Once read for given directory
-   - Before moving to subdirectory, create or update existing README.md file in directory according to the directives for these README files. And create the README.json file
+   - Before moving to subdirectory, create or update existing README.md file in directory according to the directives for these README files. And update database metadata for directory and files
    - Note in the README file last updated
    - After README and before moving on to next directory or subdirectory, update all relevant organizational files as needed, with the new information. Themes may need to be updated, discuss with user for approval. Blueprint may need to be updated, discuss with user for approval. Logic may need amending or clarification, discuss with user for approval. Steps in completion path can start to be defined. There may be noteworthy information that would be useful to log based on your discoveries during this project
-   - Using this method, if premature termination of session occurs, tracking progress can be achieved by way of the README.json files. If folder does not have, or last updated not up to date, you know the folder has not been assessed and/or the data relative to the folder has not been incorporated fully into the organizational files
+   - Using this method, if premature termination of session occurs, tracking progress can be achieved by way of the database file_metadata table. If file does not have initialization_analyzed=TRUE or last_analyzed is not up to date, you know the file has not been assessed and/or the data relative to the file has not been incorporated fully into the organizational files
    - Recursive, and continue for each folder until complete
 
 8. **Final Review and Completion**
@@ -121,7 +121,7 @@ Discuss with user goals of project. Be as detailed as needed to fulfil the goals
 
 ### README Management
 - **README.md**: Standard human-readable documentation following best practices
-- **README.json**: AI-specific metadata for quick directory assessment
+- **Database Metadata**: AI-specific metadata stored in database for quick directory and file assessment
 
 **Configuration**: The `lastUpdatedBehavior` setting in config.json controls this behavior:
 - `"overwrite"` (default): Replace with most recent changes only - avoids duplicate tracking since we have comprehensive change tracking in projectlogic.jsonl, noteworthy.json, task files, and git history
@@ -131,4 +131,4 @@ Discuss with user goals of project. Be as detailed as needed to fulfil the goals
 - `reference/templates/README-template.md`
 - `reference/templates/README-template.json`
 
-The README.json filename should be configurable in UserSettings/config.json to avoid conflicts if projects already use this naming convention.
+Database metadata is automatically managed and does not require filename configuration.

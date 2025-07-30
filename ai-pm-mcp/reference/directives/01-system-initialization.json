@@ -16,6 +16,68 @@
     "Git repository setup needed"
   ],
   "workflows": {
+    "automaticStateNotification": {
+      "directive": "Upon MCP server connection, immediately analyze project state and notify user with next-step options without waiting for user request",
+      "criticalRequirement": "This must happen automatically during server initialization, not when the user first asks for something",
+      "steps": [
+        {
+          "action": "detectProjectDirectory",
+          "description": "Detect current project directory and structure",
+          "required": true
+        },
+        {
+          "action": "checkProjectManagementExists",
+          "description": "Check for projectManagement/ directory existence and completeness",
+          "required": true
+        },
+        {
+          "action": "analyzeComponentStatus", 
+          "description": "Analyze component status (blueprint, themes, flows, database, tasks)",
+          "required": true,
+          "components": ["blueprint", "metadata", "flow_index", "themes", "completion_path", "database"]
+        },
+        {
+          "action": "categorizeProjectState",
+          "description": "Categorize state: none/partial/complete/unknown",
+          "required": true,
+          "categories": ["none", "partial", "complete", "unknown"]
+        },
+        {
+          "action": "presentStateAnalysis",
+          "description": "Present formatted state analysis directly to user via stderr",
+          "required": true,
+          "outputFormat": "stderr to avoid interfering with MCP protocol"
+        },
+        {
+          "action": "provideClearOptions",
+          "description": "Provide clear next-step options based on current state",
+          "required": true
+        },
+        {
+          "action": "waitForUserChoice",
+          "description": "Wait for user choice before proceeding with any actions",
+          "required": true
+        }
+      ],
+      "stateResponses": {
+        "none": {
+          "message": "No project management structure found",
+          "options": ["Initialize new project", "Review project status", "Check existing code"]
+        },
+        "partial": {
+          "message": "Show existing/missing components with status indicators",
+          "options": ["Complete initialization", "Review current state", "Continue with existing"]
+        },
+        "complete": {
+          "message": "Show component summary and task counts", 
+          "options": ["Get detailed status", "Start/resume session", "View active tasks"]
+        },
+        "unknown": {
+          "message": "Could not determine project state",
+          "options": ["Manual analysis", "Force initialization", "Check logs"]
+        }
+      }
+    },
     "mcpServerConnection": {
       "directive": "Always verify MCP server connectivity and tool availability before beginning any project work",
       "steps": [

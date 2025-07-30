@@ -10,11 +10,11 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
-from core.mcp_api import ToolDefinition
-from core.git_integration import GitIntegrationManager
-from database.session_queries import SessionQueries
-from database.file_metadata_queries import FileMetadataQueries
-from database.git_queries import GitQueries
+from ..core.mcp_api import ToolDefinition
+from ..core.git_integration import GitIntegrationManager
+from ..database.session_queries import SessionQueries
+from ..database.file_metadata_queries import FileMetadataQueries
+from ..database.git_queries import GitQueries
 
 logger = logging.getLogger(__name__)
 
@@ -228,6 +228,41 @@ class SessionManager:
                     "required": ["project_path"]
                 },
                 handler=self.boot_session_with_git_detection
+            ),
+            ToolDefinition(
+                name="session_get_initialization_summary",
+                description="Get detailed summary of file metadata initialization progress",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "project_path": {
+                            "type": "string",
+                            "description": "Path to the project directory"
+                        }
+                    },
+                    "required": ["project_path"]
+                },
+                handler=self.get_initialization_summary
+            ),
+            ToolDefinition(
+                name="session_reset_initialization",
+                description="Reset file metadata initialization to start fresh",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "project_path": {
+                            "type": "string",
+                            "description": "Path to the project directory"
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Confirm reset operation (required to actually reset)",
+                            "default": False
+                        }
+                    },
+                    "required": ["project_path"]
+                },
+                handler=self.reset_initialization
             )
         ]
     
@@ -256,6 +291,9 @@ class SessionManager:
                 project_path=project_path,
                 context_mode=context_mode
             )
+            
+            # Check for incomplete file metadata initialization
+            initialization_status = await self._check_initialization_status(session_id)
             
             # Check for team member scenario BEFORE creating ai-pm-org-main
             try:
@@ -290,7 +328,7 @@ class SessionManager:
                     details={"project_path": project_path, "context_mode": context_mode, "branch_info": branch_info}
                 )
             
-            return f"Started new session {session_id} for project {project_path}. Context mode: {context_mode}{branch_info}"
+            return f"Started new session {session_id} for project {project_path}. Context mode: {context_mode}{branch_info}{initialization_status}"
             
         except Exception as e:
             logger.error(f"Error starting session: {e}")
@@ -511,6 +549,126 @@ class SessionManager:
         except Exception as e:
             logger.error(f"Error in Git-aware session boot: {e}")
             return f"Error in Git-aware session boot: {str(e)}"
+    
+    async def _check_initialization_status(self, session_id: str) -> str:
+        """Check file metadata initialization status and provide user feedback."""
+        try:
+            if not self.session_queries or not self.file_metadata_queries:
+                return " (Initialization check skipped - database not available)"
+            
+            # Get initialization status
+            status = self.session_queries.get_initialization_status()
+            
+            if not status:
+                return " (No initialization history found)"
+            
+            phase = status.get('initialization_phase', 'unknown')
+            
+            if phase == 'complete':
+                return " (File metadata initialization complete)"
+            elif phase == 'failed':
+                return " (⚠️ Previous initialization failed - use resume_initialization to retry)"
+            elif phase in ['not_started', 'discovering_files', 'analyzing_themes', 'building_flows']:
+                files_processed = status.get('files_processed', 0)
+                total_files = status.get('total_files_discovered', 0)
+                
+                if total_files > 0:
+                    percentage = (files_processed / total_files) * 100
+                    return f" (🔄 Initialization {percentage:.1f}% complete - use resume_initialization to continue)"
+                else:
+                    return " (🔄 Initialization in progress - use resume_initialization to continue)"
+            else:
+                return f" (Unknown initialization phase: {phase})"
+                
+        except Exception as e:
+            logger.error(f"Error checking initialization status: {e}")
+            return " (Error checking initialization status)"
+    
+    async def get_initialization_summary(self, arguments: Dict[str, Any]) -> str:
+        """Get detailed summary of file metadata initialization progress."""
+        try:
+            project_path = arguments["project_path"]
+            
+            if not self.session_queries or not self.file_metadata_queries:
+                return "Database not available. Initialization tracking requires database connection."
+            
+            # Get current status
+            status = self.session_queries.get_initialization_status()
+            
+            if not status:
+                return "No initialization sessions found. Run project initialization first."
+            
+            # Get detailed progress
+            progress = self.file_metadata_queries.get_initialization_progress()
+            
+            # Format comprehensive summary
+            summary = f"""📋 **File Metadata Initialization Summary**
+
+**Session Information:**
+- Session ID: {status['session_id']}
+- Project Path: {status.get('project_path', 'Unknown')}
+- Started: {status.get('initialization_started_at', 'Unknown')}
+- Status: {status['initialization_phase']}
+
+**Progress Details:**
+- Phase: {status['initialization_phase']}
+- Files Processed: {status['files_processed']}/{status['total_files_discovered']}
+- Completion: {progress['completion_percentage']:.1f}%
+- Remaining: {progress['remaining_files']} files
+
+**Performance:**
+- Analysis Rate: {progress.get('analysis_rate', 'Calculating...')} files/min
+- Estimated Completion: {progress.get('estimated_completion', 'Unknown')}
+
+**Next Steps:**
+"""
+            
+            if status['initialization_phase'] == 'complete':
+                summary += "✅ Initialization complete! All project files have been analyzed."
+            elif status['initialization_phase'] == 'failed':
+                summary += "❌ Initialization failed. Use `resume_initialization` to retry."
+            else:
+                summary += "🔄 Initialization in progress. Use `resume_initialization` to continue."
+            
+            return summary
+            
+        except Exception as e:
+            logger.error(f"Error getting initialization summary: {e}")
+            return f"Error getting initialization summary: {str(e)}"
+    
+    async def reset_initialization(self, arguments: Dict[str, Any]) -> str:
+        """Reset file metadata initialization to start fresh."""
+        try:
+            project_path = arguments["project_path"]
+            confirm = arguments.get("confirm", False)
+            
+            if not confirm:
+                return """⚠️ This will reset all file metadata initialization progress and start fresh.
+
+To confirm, call this tool again with: {"project_path": "...", "confirm": true}
+
+This will:
+- Clear all existing file metadata
+- Reset initialization phase to 'not_started'
+- Remove all initialization progress tracking
+- Require complete re-analysis of all project files"""
+            
+            if not self.session_queries or not self.file_metadata_queries:
+                return "Database not available. Reset requires database connection."
+            
+            # Reset initialization in database
+            success = self.session_queries.reset_initialization()
+            if not success:
+                return "Failed to reset initialization in session tracking."
+            
+            # Clear all file metadata
+            cleared_count = self.file_metadata_queries.clear_all_file_metadata()
+            
+            return f"✅ Initialization reset complete. Cleared {cleared_count} file metadata records. Run project initialization to start fresh analysis."
+            
+        except Exception as e:
+            logger.error(f"Error resetting initialization: {e}")
+            return f"Error resetting initialization: {str(e)}"
     
     def _identify_instance_type(self, project_path: Path) -> str:
         """

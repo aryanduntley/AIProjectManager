@@ -15,9 +15,9 @@ current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
 sys.path.insert(0, str(current_dir / "deps"))
 
-from core.config_manager import ConfigManager
-from core.mcp_api import MCPToolRegistry
-from tools.project_tools import ProjectTools
+from .core.config_manager import ConfigManager
+from .core.mcp_api import MCPToolRegistry
+from .tools.project_tools import ProjectTools
 
 
 async def test_config_manager():

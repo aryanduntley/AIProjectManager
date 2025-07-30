@@ -37,7 +37,7 @@
 #### Context Loading Process
 1. Load primary theme files structure from `Themes/[theme].json`
 2. **Database-Optimized Flow Loading**: AI queries database for optimal flow file selection based on theme-flow relationships
-3. Query database for directory metadata and file relationships (replacing README.json approach)
+3. Query database for directory metadata and file relationships (database-driven approach)
 4. Read README.md files in relevant directories for quick human-readable context
 5. **Intelligent File Loading**: AI uses database insights to load only specific files needed for the task
 6. AI can request theme-expanded if insufficient context (requires user approval)

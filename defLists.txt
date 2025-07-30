@@ -1,0 +1,115 @@
+file_metadata_queryies 61
+    def __init__(self, db_manager: DatabaseManager):
+    def update_directory_metadata(self, directory_metadata: Dict[str, Any]) -> bool:
+    def get_directory_metadata(self, directory_path: str) -> Optional[Dict[str, Any]]:
+    def log_file_modification(
+    def get_file_modifications(
+    def get_file_modification_summary(self, days: int = 7) -> Dict[str, Any]:
+    def discover_project_files(
+    def _empty_file_categorization(self) -> Dict[str, List[str]]:
+    def _should_exclude_file(self, file_path: str, exclude_patterns: List[str]) -> bool:
+    def _matches_include_patterns(self, filename: str, file_patterns: List[str]) -> bool:
+    def _categorize_file(self, file_path: str, filename: str) -> str:
+    def analyze_file_dependencies(self, file_path: str) -> Dict[str, Any]:
+    def _empty_dependency_analysis(self) -> Dict[str, Any]:
+    def _analyze_python_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+    def _analyze_javascript_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+    def _analyze_java_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+    def _analyze_go_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+    def _analyze_rust_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+    def _analyze_generic_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+    def get_impact_analysis(self, file_path: str) -> Dict[str, Any]:
+    def _get_themes_for_file(self, file_path: str) -> List[str]:
+    def _calculate_impact_level(
+    def map_file_relationships(self, project_path: str) -> Dict[str, Any]:
+    def _empty_relationship_mapping(self) -> Dict[str, Any]:
+    def _detect_circular_dependencies(self, dependency_graph: Dict[str, List[str]]) -> List[List[str]]:
+        def dfs_visit(node: str, path: List[str]) -> None:
+    def _calculate_criticality_score(self, file_path: str, dependents: List[str], 
+    def _get_transitive_dependents(self, file_path: str, dependency_graph: Dict[str, List[str]]) -> Set[str]:
+    def _create_file_clusters(self, dependency_graph: Dict[str, List[str]], 
+    def _create_simple_file_clusters(self, dependency_graph: Dict[str, List[str]], 
+    def _find_common_patterns(self, files: List[str]) -> List[str]:
+    def _calculate_relationship_statistics(self, dependency_graph: Dict[str, List[str]], 
+    def get_critical_files(self, project_path: str) -> List[Dict[str, Any]]:
+    def update_file_theme_associations(
+    def get_files_by_theme(self, theme_name: str) -> List[Dict[str, Any]]:
+    def get_theme_file_coverage(self, theme_name: str) -> Dict[str, Any]:
+    def get_file_hotspots(self, days: int = 30) -> List[Dict[str, Any]]:
+    
+
+    def cleanup_old_modifications(self, days: int = 90) -> int:
+    
+
+    def create_or_update_file_metadata(
+    def get_file_metadata(self, file_path: str) -> Optional[Dict[str, Any]]:
+    def mark_file_analyzed(self, file_path: str) -> bool:
+    def get_initialization_progress(self, session_id: str = None) -> Dict[str, Any]:
+    def get_unanalyzed_files(self, limit: int = 100) -> List[Dict[str, Any]]:
+    def analyze_and_store_file_metadata(self, file_path: str) -> bool:
+    def _detect_language_from_extension(self, extension: str) -> str:
+    def _determine_file_purpose(self, file_path: str, dependency_analysis: Dict[str, Any]) -> str:
+    def _generate_file_description(self, file_path: str, dependency_analysis: Dict[str, Any], language: str) -> str:
+    def batch_analyze_files(self, file_paths: List[str], batch_size: int = 10) -> Dict[str, Any]:
+
+directory_ops 2
+    def __init__(self, db_manager: DatabaseManager):
+    def update_directory_metadata(self, directory_metadata: Dict[str, Any]) -> bool:
+    def get_directory_metadata(self, directory_path: str) -> Optional[Dict[str, Any]]:
+file_discovery 11
+    def __init__(self, db_manager: DatabaseManager):
+    def discover_project_files(
+    def _empty_file_categorization(self) -> Dict[str, List[str]]:
+    def _should_exclude_file(self, file_path: str, exclude_patterns: List[str]) -> bool:
+    def _matches_include_patterns(self, filename: str, file_patterns: List[str]) -> bool:
+    def _categorize_file(self, file_path: str, filename: str) -> str:
+modification_logging 3
+    def __init__(self, db_manager: DatabaseManager):
+    def log_file_modification(
+    def get_file_modifications(
+    def get_file_modification_summary(self, days: int = 7) -> Dict[str, Any]:
+    def get_file_hotspots(self, days: int = 30) -> List[Dict[str, Any]]:
+	def cleanup_old_modifications(self, days: int = 90) -> int:
+dependency_analysis 12
+    def __init__(self, db_manager: DatabaseManager):
+    def analyze_file_dependencies(self, file_path: str) -> Dict[str, Any]:
+    def _empty_dependency_analysis(self) -> Dict[str, Any]:
+    def _analyze_python_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+    def _analyze_javascript_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+    def _analyze_java_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+    def _analyze_go_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+    def _analyze_rust_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+    def _analyze_generic_dependencies(self, content: str, file_path: str) -> Dict[str, Any]:
+impact_analysis 16
+    def __init__(self, db_manager: DatabaseManager):
+    def get_impact_analysis(self, file_path: str) -> Dict[str, Any]:
+    def _get_themes_for_file(self, file_path: str) -> List[str]:
+    def _calculate_impact_level(
+    def map_file_relationships(self, project_path: str) -> Dict[str, Any]:
+    def _empty_relationship_mapping(self) -> Dict[str, Any]:
+    def _detect_circular_dependencies(self, dependency_graph: Dict[str, List[str]]) -> List[List[str]]:
+        def dfs_visit(node: str, path: List[str]) -> None:
+    def _calculate_criticality_score(self, file_path: str, dependents: List[str], 
+    def _get_transitive_dependents(self, file_path: str, dependency_graph: Dict[str, List[str]]) -> Set[str]:
+    def _create_file_clusters(self, dependency_graph: Dict[str, List[str]], 
+    def _create_simple_file_clusters(self, dependency_graph: Dict[str, List[str]], 
+    def _find_common_patterns(self, files: List[str]) -> List[str]:
+    def _calculate_relationship_statistics(self, dependency_graph: Dict[str, List[str]], 
+    def get_critical_files(self, project_path: str) -> List[Dict[str, Any]]:
+theme_operations 4
+    def __init__(self, db_manager: DatabaseManager):
+    def update_file_theme_associations(
+    def get_files_by_theme(self, theme_name: str) -> List[Dict[str, Any]]:
+    def get_theme_file_coverage(self, theme_name: str) -> Dict[str, Any]:
+initialization_tracking 10
+    def __init__(self, db_manager: DatabaseManager):
+    def create_or_update_file_metadata(
+    def get_file_metadata(self, file_path: str) -> Optional[Dict[str, Any]]:
+    def mark_file_analyzed(self, file_path: str) -> bool:
+    def get_initialization_progress(self, session_id: str = None) -> Dict[str, Any]:
+    def get_unanalyzed_files(self, limit: int = 100) -> List[Dict[str, Any]]:
+    def analyze_and_store_file_metadata(self, file_path: str) -> bool:
+    def _detect_language_from_extension(self, extension: str) -> str:
+    def _determine_file_purpose(self, file_path: str, dependency_analysis: Dict[str, Any]) -> str:
+    def _generate_file_description(self, file_path: str, dependency_analysis: Dict[str, Any], language: str) -> str:
+    def batch_analyze_files(self, file_paths: List[str], batch_size: int = 10) -> Dict[str, Any]:

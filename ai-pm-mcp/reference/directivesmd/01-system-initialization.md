@@ -6,7 +6,44 @@ This directive ensures proper system initialization with Git integration, instan
 
 **Key Triggers**: MCP server startup, first connection, system boot, session start, instance initialization, Git repository setup needed
 
-## 1.1 MCP Server Connection Protocol
+## 1.1 Automatic State Detection and Notification
+
+**Directive**: Upon MCP server connection, immediately analyze project state and notify user with next-step options without waiting for user request.
+
+**Critical Requirement**: This must happen automatically during server initialization, not when the user first asks for something.
+
+**Implementation**:
+```
+1. Detect current project directory and structure
+2. Check for projectManagement/ directory existence and completeness
+3. Analyze component status (blueprint, themes, flows, database, tasks)
+4. Categorize state: none/partial/complete/unknown
+5. Present formatted state analysis directly to user via stderr
+6. Provide clear next-step options based on current state
+7. Wait for user choice before proceeding with any actions
+```
+
+**State Categories and Responses**:
+
+**No Project Structure**: 
+- Message: "No project management structure found"
+- Options: Initialize new project, Review project status, Check existing code
+
+**Partial Project Structure**:
+- Message: Show existing/missing components with status indicators
+- Options: Complete initialization, Review current state, Continue with existing
+
+**Complete Project Structure**:
+- Message: Show component summary and task counts
+- Options: Get detailed status, Start/resume session, View active tasks
+
+**Unknown State**:
+- Message: "Could not determine project state"
+- Options: Manual analysis, Force initialization, Check logs
+
+**Output Format**: Use stderr for user notifications to avoid interfering with MCP protocol on stdout.
+
+## 1.2 MCP Server Connection Protocol
 
 **Directive**: Always verify MCP server connectivity and tool availability before beginning any project work.
 

@@ -10,10 +10,10 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
 
-from core.mcp_api import ToolDefinition
-from database.task_status_queries import TaskStatusQueries
-from database.session_queries import SessionQueries
-from database.file_metadata_queries import FileMetadataQueries
+from ..core.mcp_api import ToolDefinition
+from ..database.task_status_queries import TaskStatusQueries
+from ..database.session_queries import SessionQueries
+from ..database.file_metadata_queries import FileMetadataQueries
 
 logger = logging.getLogger(__name__)
 

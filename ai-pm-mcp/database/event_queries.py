@@ -9,7 +9,7 @@ import json
 import logging
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timedelta
-from database.db_manager import DatabaseManager
+from .db_manager import DatabaseManager
 
 logger = logging.getLogger(__name__)
 

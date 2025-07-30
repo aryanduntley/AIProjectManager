@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Dict, List, Set, Optional, Tuple, Any
 from collections import defaultdict, Counter
 
-from utils.file_utils import FileAnalyzer
+from ..utils.file_utils import FileAnalyzer
 
 logger = logging.getLogger(__name__)
 

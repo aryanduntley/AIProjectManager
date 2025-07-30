@@ -10,8 +10,8 @@ import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
-from core.mcp_api import ToolDefinition
-from database.event_queries import EventQueries
+from ..core.mcp_api import ToolDefinition
+from ..database.event_queries import EventQueries
 
 logger = logging.getLogger(__name__)
 

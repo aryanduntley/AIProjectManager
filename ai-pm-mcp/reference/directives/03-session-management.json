@@ -19,6 +19,7 @@
   "workflows": {
     "sessionBootProtocol": {
       "directive": "Follow exact sequence when starting new sessions or 'continue development'",
+      "prerequisites": "This assumes automatic state detection (from 01-system-initialization) has already notified the user and they have chosen to proceed with session boot",
       "coreRequirements": [
         "Initialize database connection and restore session context from project.db",
         "Load projectManagement/ProjectBlueprint/blueprint.md",

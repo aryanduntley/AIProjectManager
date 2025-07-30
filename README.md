@@ -25,7 +25,8 @@ AI Project Manager is a sophisticated Model Context Protocol (MCP) server that e
 ### 🔧 **Smart Context Loading**
 - **Three-Tier Context Modes**: theme-focused → theme-expanded → project-wide
 - **Database-Enhanced Performance**: SQLite-powered relationship tracking
-- **Intelligent File Discovery**: Load only what's needed for each task
+- **File Metadata Intelligence**: Database-driven file analysis with automatic discovery
+- **Resumable Initialization**: Session-persistent file analysis with progress tracking
 - **Memory Optimization**: Efficient context management for large projects
 
 ### 🚀 **Developer Experience**
@@ -89,7 +90,7 @@ mv ai-pm-mcp /path/to/your/preferred/location/
 cd /path/to/your/preferred/location/ai-pm-mcp
 
 # Run the server (all dependencies are bundled)
-python3 start-mcp-server.py
+python3 -m ai-pm-mcp
 ```
 
 ### Alternative Startup Methods
@@ -98,14 +99,14 @@ python3 start-mcp-server.py
 # Navigate to the ai-pm-mcp directory
 cd path/to/ai-pm-mcp
 
-# Option 1: Using Python launcher (recommended)
+# Option 1: Using Python module (recommended)
+python3 -m ai-pm-mcp
+
+# Option 2: Using Python launcher
 python3 start-mcp-server.py
 
-# Option 2: Using bash script
+# Option 3: Using bash script
 ./start-mcp-server.sh
-
-# Option 3: Direct execution
-python3 server.py
 ```
 
 ### ✅ That's it!
@@ -120,8 +121,8 @@ The server will:
 
 1. **Start the MCP Server**:
    ```bash
-   cd ai-pm-mcp
-   python3 start-mcp-server.py
+   cd AIProjectManager
+   python3 -m ai-pm-mcp
    ```
 
 2. **Initialize a New Project** (via MCP tools):
@@ -135,15 +136,15 @@ The server will:
    "mcpServers": {
      "ai-project-manager": {
        "command": "python3",
-       "args": ["-m", "server"],
-       "cwd": "/path/to/your/ai-pm-mcp/"
+       "args": ["-m", "ai-pm-mcp"],
+       "cwd": "/path/to/your/project-root/"
      }
    }
    ```
    
-   **Important**: Replace `/path/to/your/ai-pm-mcp/` with the actual path to your ai-pm-mcp directory.
+   **Important**: Replace `/path/to/your/project-root/` with the actual path to your project root directory (where you want the AI to manage your project, not the ai-pm-mcp directory).
    
-   **Note**: Use the `-m server` module approach rather than `start-mcp-server.py` to avoid Python import issues.
+   **Note**: Use the `-m ai-pm-mcp` module approach for proper Python import resolution.
 
 4. **Restart Claude Code** to load the MCP server connection.
 
@@ -157,22 +158,24 @@ The server will:
 
 ```bash
 # Test basic functionality
-python3 test_basic.py
+python3 -m ai-pm-mcp
 
-# The server will start and show connection info
+# The server will start and show connection info including:
+# "Registered 53 tools successfully"
+# "AI Project Manager MCP Server initialized successfully"
 ```
 
 ### Troubleshooting Claude Code Integration
 
 **Problem**: "1 MCP server failed" message in Claude Code
 
-**Solution**: Ensure you're using the module approach in your `~/.claude.json`:
+**Solution**: Ensure you're using the correct module approach in your `~/.claude.json`:
 ```json
-"args": ["-m", "server"]
+"args": ["-m", "ai-pm-mcp"]
 ```
-**Not**: `"args": ["start-mcp-server.py"]`
+**Not**: `"args": ["-m", "server"]` or `"args": ["start-mcp-server.py"]`
 
-**Why**: The module approach (`-m server`) properly resolves Python relative imports, while running the script directly can cause import failures.
+**Why**: The module approach (`-m ai-pm-mcp`) properly resolves Python relative imports with the correct package name. The cwd should point to your project root, not the ai-pm-mcp directory.
 
 **Steps to Fix**:
 1. Update your `~/.claude.json` configuration as shown above
@@ -208,10 +211,17 @@ python3 test_basic.py
 The AI Project Manager exposes these tools through the MCP protocol:
 
 ### Project Management Tools
-- **`project_initialize`**: Initialize project management structure
+- **`project_initialize`**: Initialize project management structure with database-driven file metadata discovery
 - **`project_get_blueprint`**: Get current project blueprint  
 - **`project_update_blueprint`**: Update project blueprint
 - **`project_get_status`**: Get project status and structure info
+- **`project_init_database`**: Initialize database for an existing project
+
+### File Metadata & Initialization Tools
+- **`get_initialization_progress`**: Get current file metadata initialization progress with analytics
+- **`resume_initialization`**: Resume incomplete file metadata initialization from any interruption point
+- **`session_get_initialization_summary`**: Get detailed initialization summary with performance metrics
+- **`session_reset_initialization`**: Safely reset file metadata initialization (requires confirmation)
 
 ### Task Management  
 - **`task_create`**: Create new tasks with milestone integration
@@ -225,9 +235,13 @@ The AI Project Manager exposes these tools through the MCP protocol:
 - **`context_get_flows`**: Get relevant user experience flows
 
 ### Branch Management
-- **`create_instance_branch`**: Create parallel development branch with user attribution
+- **`create_instance_branch`**: Create parallel development branch for AI work
 - **`merge_instance_branch`**: Merge branch changes using native Git merge
-- **`list_instance_branches`**: List active work branches with user info
+- **`list_instance_branches`**: List active AI instance branches
+- **`delete_instance_branch`**: Delete completed AI instance branches
+- **`switch_to_branch`**: Switch to an AI instance branch
+- **`get_branch_status`**: Get detailed status of AI branches
+- **`check_user_code_changes`**: Check for user code changes outside AI management
 
 ### Configuration Tools
 - **`get_config`**: Get current configuration settings
@@ -372,14 +386,15 @@ AIProjectManager/
 ### ✅ Completed
 - Basic MCP server framework
 - Configuration management with environment variables
-- Project initialization tools
+- Project initialization tools with database-driven file metadata discovery
 - Tool registry system
 - Database integration with SQLite
 - Theme management and auto-discovery
 - Task management with sidequest support
-- Session management and persistence
+- Session management and persistence with initialization progress tracking
 - Git integration with branch management
 - Multi-flow architecture
+- File metadata initialization system with resumable progress tracking
 
 ### 🚧 In Progress
 - Advanced context loading optimization

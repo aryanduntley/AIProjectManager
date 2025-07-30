@@ -2,12 +2,23 @@
   "systemInitialization": {
     "triggers": ["MCP server startup", "First connection", "System boot"],
     "workflow": [
+      "AUTOMATIC STATE NOTIFICATION: Immediately analyze project state and notify user via stderr",
+      "Detect current project directory and check projectManagement/ completeness", 
+      "Categorize state (none/partial/complete/unknown) and present formatted analysis",
+      "Provide clear next-step options based on state (initialize/review/continue)",
+      "Wait for user choice before proceeding with any actions",
       "Validate MCP server connection and compatibility",
       "Load configuration from UserSettings/config.json",
-      "Check project directory structure existence",
       "Initialize Git repository if enabled and not present",
       "Initialize project detection and version checking"
     ],
+    "automaticStateNotification": "CRITICAL: Must happen during server initialization without waiting for user request",
+    "stateCategories": {
+      "none": "Options: Initialize new project, Review status, Check existing code",
+      "partial": "Options: Complete initialization, Review current state, Continue with existing", 
+      "complete": "Options: Get detailed status, Start/resume session, View active tasks",
+      "unknown": "Options: Manual analysis, Force initialization, Check logs"
+    },
     "criticalSettings": ["max_file_lines", "auto_modularize", "theme_discovery", "git.enabled", "git.auto_init_repo"],
     "failureAction": "Report clear error messages, require user intervention for critical issues"
   },
@@ -36,6 +47,7 @@
     "approvalRequired": ["ProjectBlueprint", "Theme definitions", "ProjectFlow outline"]
   },
   "sessionManagement": {
+    "prerequisites": "Assumes automatic state detection (from systemInitialization) has notified user and they chose to proceed",
     "bootSequence": [
       "Identify branch type (ai-pm-org-main vs work branch) using git branch --show-current",
       "Detect Git changes and perform organizational reconciliation if on ai-pm-org-main",

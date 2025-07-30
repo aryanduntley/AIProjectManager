@@ -193,7 +193,7 @@ The Logs directory contains a single primary file for notable events with automa
 
 ### Directory Documentation Requirements
 
-**Dual Documentation System**: Every significant directory must maintain both README.md (human-readable) and README.json (AI-optimized) files.
+**Documentation System**: Every significant directory must maintain README.md (human-readable) files with AI-optimized metadata stored in the database.
 
 #### README.md Management
 With every significant change to code, the README.md in the housing directory must be updated to reflect:
@@ -205,8 +205,8 @@ With every significant change to code, the README.md in the housing directory mu
 
 **Last Updated Section**: The "Last Updated" section should be overwritten each time with only the most recent changes. Do not accumulate historical changes - this avoids redundancy with existing change tracking systems (projectlogic.jsonl, noteworthy.json, task files, git history).
 
-#### README.json Management
-The README.json file provides structured AI-optimized directory metadata and must be updated whenever:
+#### Database Metadata Management
+The database file_metadata and directory_metadata tables provide structured AI-optimized metadata and must be updated whenever:
 
 - **File Changes**: Files are added, removed, or significantly modified
 - **Export Changes**: Functions, classes, or components are added/removed/modified
@@ -214,25 +214,24 @@ The README.json file provides structured AI-optimized directory metadata and mus
 - **Theme References**: Directory's theme association changes
 - **Implementation Status**: File implementation status changes (pending, complete, needs-refactor)
 
-**README.json Update Content**:
-- **File inventory**: Complete list of files with descriptions
-- **Exports**: Functions, classes, components that can be imported
-- **Dependencies**: Internal and external dependencies
-- **Theme references**: Which themes this directory relates to
-- **File chains**: Logical connections between files
-- **Implementation status**: Current state of files and components
+**Database Metadata Update Content**:
+- **File inventory**: Complete list of files with descriptions in file_metadata table
+- **Exports**: Functions, classes, components stored in important_exports field
+- **Dependencies**: Internal and external dependencies in dependencies field
+- **Theme references**: Which themes relate to files via theme_associations field
+- **File chains**: Logical connections tracked via database relationships
+- **Implementation status**: Current state tracked via initialization_analyzed flag
 
 **Configuration**: The `lastUpdatedBehavior` setting in config.json controls this behavior:
 - `"overwrite"` (default): Replace with most recent changes only - avoids duplicate tracking since we have comprehensive change tracking in projectlogic.jsonl, noteworthy.json, task files, and git history
 - `"append"`: Add new changes to existing list (if historical tracking needed for specific use cases)
 
-**Purpose**: Allow AI to assess folder state/files by reading structured metadata instead of investigating code every time.
+**Purpose**: Allow AI to assess folder state/files by reading structured database metadata instead of investigating code every time.
 
 **Templates available:**
 - `reference/templates/README-template.md`
-- `reference/templates/README-template.json`
 
-The README.json filename should be configurable in UserSettings/config.json to avoid conflicts if projects already use this naming convention.
+Database metadata is automatically managed and does not require filename configuration.
 
 ## 9.5 README Management Requirements
 

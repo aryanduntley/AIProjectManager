@@ -17,11 +17,11 @@ current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
 sys.path.insert(0, str(current_dir / "deps"))
 
-from core.config_manager import ConfigManager
-from core.mcp_api import MCPToolRegistry
-from tools.theme_tools import ThemeTools
-from utils.theme_discovery import ThemeDiscovery
-from core.scope_engine import ScopeEngine, ContextMode
+from .core.config_manager import ConfigManager
+from .core.mcp_api import MCPToolRegistry
+from .tools.theme_tools import ThemeTools
+from .utils.theme_discovery import ThemeDiscovery
+from .core.scope_engine import ScopeEngine, ContextMode
 
 
 async def create_test_project(temp_dir: Path) -> Path:

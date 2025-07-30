@@ -24,9 +24,7 @@ docs/forRemoval/phase2-completion-summary.md
 docs/forRemoval/branch-based-git-implementation-plan.md
 ai-pm-mcp/reference/directivesmd/directive-escalation-system.md
 docs/forRemoval/database-investigation-and-fix-plan.md
-
-
-database test is reflected in actual mcp code? Many fixes to database test, but code should have common database tasks and queries and should not be made up on the fly (normally), so we need to ensure that all database interactions follow the working method of the test to ensure the failures/issues of the test before fixes aren't duplicated in code.
+docs/forRemoval/file-metadata-initialization-implementation-plan.md
 
 context vs context_mode
 database sessions. How are sessions being assessed in code? We cannot track an "end" session (when user ends a session, there is no processing after to ensure a session is ended). We can only assess a session start or new session. We must make sure we aren't relying on sessions as actual sessions where a start and stop would need to be known. discuss "session" use.
@@ -43,26 +41,17 @@ config.json review, map to directives. Ensure all configurable options (eg. true
 
 review directives and mcp flow regarding directives. Does it follow the instructions well end escalate directives/instructions context well.
 
-ensure directives allow user to make decisions. project init should not be automatic. User should initiate. On init, we should have ai-pm-mcp discuss some user settings with user.
-begin auto management and project progression (tasks, etc) at session start or wait for user command depeningon settins in config.
-
 review directives escalation. How often should json be reviewed? How often should md? examples for escalation, directives on escalation. I am worried json will not be viewed as often as it should and compressed will likely be relied upon even when more directives context would likely be needed.
 
 user main branch, not mcp main branch, should never be automatically pushed to. Must be explicit user request. Ensure no code or directives mention anything to do with pushing to or modifying user's main branch. 
 
-node/npm ignore file update, and npm implementation update according to new git branch changes
+remove logger.error from mcp server files once working
 
-does "cwd": "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/" allow the mcp access to the project directory /home/eveningb4dawn/Desktop/Projects/AIProjectManager/
+ensure no code is readme.json related. ensure code is managing file based database entries well
 
-Installation steps in README.md, add claude setup instructions:
-~/user/.claude.json (linux)
-"mcpServers": {
-    "ai-project-manager": {
-        "command": "python3",
-        "args": ["start-mcp-server.py"],
-        "cwd": "pathToProjectRoot/ai-pm-mcp/"
-      }
-  }
+assess tools and ensure readme is up to date
+
+is ai-pm-mcp dir added to .gitignore? Should it be?
 
 ======================
 
@@ -76,11 +65,8 @@ ai-pm-mcp-production/
 "mcpServers": {
     "ai-project-manager": {
       "command": "python3",
-      "args": [
-        "-m",
-        "server"
-      ],
-      "cwd": "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/"
+      "args": ["-m", "ai-pm-mcp"],
+      "cwd": "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/"
     }
   }
   Step 3: Test & Debug Cycle

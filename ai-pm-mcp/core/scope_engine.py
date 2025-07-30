@@ -14,9 +14,9 @@ from enum import Enum
 import os
 
 # Database integration
-from database.theme_flow_queries import ThemeFlowQueries
-from database.session_queries import SessionQueries
-from database.file_metadata_queries import FileMetadataQueries
+from ..database.theme_flow_queries import ThemeFlowQueries
+from ..database.session_queries import SessionQueries
+from ..database.file_metadata_queries import FileMetadataQueries
 
 logger = logging.getLogger(__name__)
 

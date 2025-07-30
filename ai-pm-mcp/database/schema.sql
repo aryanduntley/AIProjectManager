@@ -19,7 +19,13 @@ CREATE TABLE IF NOT EXISTS sessions (
     project_path TEXT,
     status TEXT DEFAULT 'active', -- active, paused, completed, terminated
     metadata TEXT DEFAULT '{}', -- JSON: user preferences, session config
-    notes TEXT
+    notes TEXT,
+    -- Initialization tracking fields
+    initialization_phase TEXT DEFAULT 'not_started', -- not_started → discovering_files → analyzing_themes → building_flows → complete
+    files_processed INTEGER DEFAULT 0,
+    total_files_discovered INTEGER DEFAULT 0,
+    initialization_started_at TIMESTAMP NULL,
+    initialization_completed_at TIMESTAMP NULL
 );
 
 CREATE TABLE IF NOT EXISTS session_context (
@@ -213,7 +219,7 @@ CREATE TABLE IF NOT EXISTS file_modifications (
     FOREIGN KEY (session_id) REFERENCES sessions(session_id)
 );
 
--- Directory Metadata for README.json replacement
+-- Directory Metadata (replaces README.json approach)
 CREATE TABLE IF NOT EXISTS directory_metadata (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     directory_path TEXT UNIQUE NOT NULL,
@@ -221,6 +227,26 @@ CREATE TABLE IF NOT EXISTS directory_metadata (
     description TEXT,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Individual File Metadata (replaces README.json functionality)
+CREATE TABLE IF NOT EXISTS file_metadata (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    file_path TEXT UNIQUE NOT NULL,
+    file_purpose TEXT,
+    file_description TEXT,
+    important_exports TEXT DEFAULT '[]', -- JSON array of functions, classes, constants
+    dependencies TEXT DEFAULT '[]', -- JSON array of imports/dependencies
+    dependents TEXT DEFAULT '[]', -- JSON array of files that depend on this
+    language TEXT,
+    file_size INTEGER,
+    last_analyzed TIMESTAMP,
+    theme_associations TEXT DEFAULT '[]', -- JSON array of theme names
+    flow_references TEXT DEFAULT '[]', -- JSON array of flow IDs that reference this file
+    initialization_analyzed BOOLEAN DEFAULT FALSE, -- Track if analyzed during init
+    analysis_metadata TEXT DEFAULT '{}', -- JSON: complexity, key_functions, etc.
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Task Completion Metrics
@@ -333,6 +359,17 @@ CREATE INDEX IF NOT EXISTS idx_event_relationships_child ON event_relationships(
 
 -- Directory metadata indexes
 CREATE INDEX IF NOT EXISTS idx_directory_metadata_path ON directory_metadata(directory_path);
+
+-- File metadata indexes for performance
+CREATE INDEX IF NOT EXISTS idx_file_metadata_path ON file_metadata(file_path);
+CREATE INDEX IF NOT EXISTS idx_file_metadata_analyzed ON file_metadata(initialization_analyzed);
+CREATE INDEX IF NOT EXISTS idx_file_metadata_theme ON file_metadata(theme_associations);
+CREATE INDEX IF NOT EXISTS idx_file_metadata_updated ON file_metadata(updated_at);
+CREATE INDEX IF NOT EXISTS idx_file_metadata_language ON file_metadata(language);
+
+-- Enhanced session indexes for initialization tracking
+CREATE INDEX IF NOT EXISTS idx_sessions_init_phase ON sessions(initialization_phase);
+CREATE INDEX IF NOT EXISTS idx_sessions_files_processed ON sessions(files_processed);
 
 -- Views for Common Queries
 CREATE VIEW IF NOT EXISTS theme_flow_summary AS
@@ -480,6 +517,26 @@ CREATE TRIGGER IF NOT EXISTS update_user_preferences_timestamp
     FOR EACH ROW
 BEGIN
     UPDATE user_preferences SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- File Metadata Management Triggers
+CREATE TRIGGER IF NOT EXISTS update_file_metadata_timestamp
+    AFTER UPDATE ON file_metadata
+    FOR EACH ROW
+BEGIN
+    UPDATE file_metadata SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Update session files_processed count when file analyzed
+CREATE TRIGGER IF NOT EXISTS increment_files_processed
+    AFTER UPDATE OF initialization_analyzed ON file_metadata
+    FOR EACH ROW
+    WHEN NEW.initialization_analyzed = TRUE AND OLD.initialization_analyzed = FALSE
+BEGIN
+    UPDATE sessions 
+    SET files_processed = files_processed + 1,
+        last_activity = CURRENT_TIMESTAMP
+    WHERE status = 'active' AND initialization_phase != 'complete';
 END;
 
 -- Multiple Sidequest Management Triggers
