@@ -1,0 +1,386 @@
+{
+  "metadata": {
+    "purpose": "Database integration protocols for AI Project Manager hybrid architecture",
+    "version": "1.0.0",
+    "created": "2025-01-20",
+    "criticalFor": "Session continuity, state preservation, performance optimization"
+  },
+  "hybridArchitecture": {
+    "philosophy": "Files remain human-readable source of truth, database provides operational intelligence and performance optimization",
+    "filesPreserved": {
+      "humanReadable": [
+        "blueprint.md - Project overview and goals",
+        "projectlogic.jsonl - Decision history and reasoning",
+        "flow-index.json + individual flow files - User experience definitions",
+        "task definitions - Work item specifications",
+        "theme definitions - Project organization structure",
+        "config.json - User preferences and settings"
+      ],
+      "purpose": "Maintain human readability and version control compatibility"
+    },
+    "databaseEnhanced": {
+      "operationalData": [
+        "Real-time status tracking (tasks, subtasks, sidequests, flows)",
+        "Session persistence and context snapshots",
+        "Theme-flow relationship optimization",
+        "Event analytics and decision tracking",
+        "Performance metrics and user learning",
+        "File modification logging and impact analysis",
+        "File metadata and initialization tracking",
+        "Progress monitoring and resumption capabilities"
+      ],
+      "purpose": "Enable fast queries, session restoration, intelligent recommendations, and seamless initialization resumption"
+    }
+  },
+  "realTimeStateSynchronization": {
+    "mandatoryRequirement": "ALL organizational files MUST be synchronized with database records in real-time for seamless session restoration",
+    "atomicOperations": {
+      "principle": "File updates and database updates must succeed together or fail together",
+      "implementation": [
+        "Begin database transaction",
+        "Update organizational files",
+        "Update database records",
+        "Commit transaction if both succeed, rollback if either fails"
+      ],
+      "failureHandling": "If synchronization fails, retry entire operation or request user intervention"
+    },
+    "syncTriggers": {
+      "taskManagement": [
+        "Task status changes (pending → in-progress → completed)",
+        "Subtask completion and progress updates",
+        "Sidequest creation, activation, and completion",
+        "Task queue modifications and prioritization"
+      ],
+      "sessionManagement": [
+        "Session start and context loading",
+        "Context mode escalation",
+        "Theme switching and context updates",
+        "Session pause and termination"
+      ],
+      "projectManagement": [
+        "Theme modifications and file associations",
+        "Flow status updates and milestone integration",
+        "Blueprint changes and logic evolution",
+        "Implementation plan progress",
+        "File metadata updates and analysis tracking",
+        "Initialization phase transitions and progress"
+      ]
+    }
+  },
+  "sessionPersistence": {
+    "databaseTables": {
+      "sessions": {
+        "purpose": "Track session lifecycle and high-level context with initialization tracking",
+        "keyFields": ["session_id", "start_time", "context_mode", "active_themes", "active_tasks", "active_sidequests", "project_path", "initialization_phase", "files_processed", "total_files_discovered"],
+        "usage": "Session identification, basic context restoration, and initialization progress tracking"
+      },
+      "session_context": {
+        "purpose": "Detailed session context for complete restoration",
+        "keyFields": ["session_id", "loaded_themes", "loaded_flows", "context_escalations", "files_accessed"],
+        "usage": "Detailed context snapshots for exact session restoration"
+      }
+    },
+    "contextSnapshots": {
+      "whenToCapture": [
+        "Before creating sidequests (preserve parent task context)",
+        "During context escalation (preserve previous context)",
+        "At regular intervals during long tasks",
+        "Before session termination",
+        "After significant work completion"
+      ],
+      "whatToCapture": [
+        "Current subtask ID and progress position",
+        "Loaded themes and flow files",
+        "Active file contexts and modification state",
+        "User interaction history and preferences",
+        "AI reasoning state and decision context"
+      ],
+      "restorationProcess": [
+        "Query database for latest session context",
+        "Restore theme and flow context from snapshots",
+        "Load active tasks and subtasks with exact progress state",
+        "Resume from exact interruption point with full context"
+      ]
+    },
+    "sessionBootOptimization": {
+      "fastBootSequence": [
+        "Initialize database connection",
+        "Check initialization_phase and offer resumption if incomplete",
+        "Query latest session context from database",
+        "Load active tasks and implementation plans from database status",
+        "Restore theme-flow relationships from database cache",
+        "Load file metadata context for intelligent context decisions",
+        "Load only necessary files based on database intelligence",
+        "Resume exact work state with minimal user review"
+      ],
+      "performanceTargets": [
+        "Session restoration < 2 seconds",
+        "Context loading < 5 seconds for large projects",
+        "Database queries optimized with indexes and views"
+      ]
+    }
+  },
+  "taskStatusTracking": {
+    "databaseTables": {
+      "task_status": {
+        "purpose": "Real-time task lifecycle management",
+        "criticalFields": ["task_id", "status", "progress_percentage", "milestone_id", "primary_theme", "last_updated"],
+        "realTimeUpdates": "Updated immediately after every work completion unit"
+      },
+      "subtask_status": {
+        "purpose": "Detailed subtask progress and flow integration",
+        "criticalFields": ["subtask_id", "parent_id", "status", "flow_references", "context_mode", "progress_percentage"],
+        "flowIntegration": "Links subtasks to specific flow steps for user experience tracking"
+      },
+      "sidequest_status": {
+        "purpose": "Multiple sidequest coordination and limit enforcement",
+        "criticalFields": ["sidequest_id", "parent_task_id", "status", "impact_on_parent", "scope_description"],
+        "limitEnforcement": "Automatic triggers maintain sidequest count limits per task"
+      },
+      "task_queue": {
+        "purpose": "Multi-task coordination and context switching",
+        "criticalFields": ["task_id", "sidequest_id", "status", "context_snapshot", "queue_position"],
+        "contextSwitching": "Preserves complete context during task-sidequest transitions"
+      }
+    },
+    "multipleSidequestManagement": {
+      "limitEnforcement": {
+        "table": "task_sidequest_limits",
+        "automaticTracking": "Database triggers maintain active sidequest counts",
+        "limitChecking": "Check limits before creating new sidequests",
+        "userOptions": "Present options when limits exceeded (wait, modify, replace, increase)"
+      },
+      "contextPreservation": {
+        "sidequestCreation": [
+          "Save complete parent task context to task_queue.context_snapshot",
+          "Update subtask_sidequest_relationships for coordination",
+          "Switch AI focus to sidequest with preserved context"
+        ],
+        "sidequestCompletion": [
+          "Archive sidequest to completed status",
+          "Update parent task if sidequest changes requirements",
+          "Restore exact parent task context from snapshot",
+          "Resume parent task from exact pause point"
+        ]
+      }
+    },
+    "progressTracking": {
+      "realTimeUpdates": {
+        "requirement": "Progress updates immediately after EVERY work completion unit",
+        "granularity": "Subtask-level progress with percentage completion",
+        "rollupCalculation": "Task progress calculated from subtask completion percentages",
+        "milestoneIntegration": "Task completion updates milestone progress in completion-path.json"
+      },
+      "statusTransitions": {
+        "validTransitions": ["pending → in-progress → completed", "pending → blocked → in-progress", "in-progress → blocked → in-progress"],
+        "automaticTriggers": "Database triggers update timestamps and dependent records",
+        "notificationEvents": "Status changes trigger event logging and analytics"
+      }
+    }
+  },
+  "themeFlowIntelligence": {
+    "databaseTables": {
+      "theme_flows": {
+        "purpose": "Many-to-many theme-flow relationships with relevance ordering",
+        "criticalFields": ["theme_name", "flow_id", "flow_file", "relevance_order"],
+        "optimization": "Enables fast theme-based context loading queries"
+      },
+      "flow_status": {
+        "purpose": "Flow completion tracking and milestone integration",
+        "criticalFields": ["flow_id", "flow_file", "status", "completion_percentage", "primary_themes"],
+        "milestoneIntegration": "Flow progress contributes to milestone completion validation"
+      },
+      "flow_step_status": {
+        "purpose": "Step-level flow progress for detailed user experience tracking",
+        "criticalFields": ["flow_id", "step_id", "status", "dependencies", "implementation_status"],
+        "progressTracking": "Detailed step completion enables accurate flow progress calculation"
+      }
+    },
+    "contextOptimization": {
+      "fastLookups": [
+        "get_themes_for_flow() - Find all themes associated with a flow",
+        "get_flows_for_theme() - Get relevant flows for theme-based context loading",
+        "sync_theme_flows() - Synchronize file definitions with database relationships"
+      ],
+      "performanceQueries": [
+        "theme_flow_summary view - Aggregated theme-flow statistics",
+        "flow_theme_summary view - Flow association overview",
+        "Indexed queries for large project scalability"
+      ],
+      "selectiveLoading": {
+        "principle": "AI loads only relevant flow files based on task themes and database relationships",
+        "implementation": [
+          "Query theme_flows table for task's primary and related themes",
+          "Load only flow files with high relevance_order for current themes",
+          "Expand to additional flows only when context escalation needed"
+        ],
+        "memoryOptimization": "Prevents loading all flow files, focuses on task-relevant flows"
+      }
+    }
+  },
+  "fileMetadataIntegration": {
+    "databaseTables": {
+      "file_metadata": {
+        "purpose": "Comprehensive file-by-file tracking and metadata storage",
+        "criticalFields": ["file_path", "file_purpose", "file_description", "important_exports", "dependencies", "theme_associations", "flow_references", "initialization_analyzed", "last_analyzed"],
+        "usage": "Replaces README.json functionality with database-driven file intelligence"
+      }
+    },
+    "initializationTracking": {
+      "phases": {
+        "not_started": "No initialization work begun",
+        "discovering_files": "Scanning project for all files",
+        "analyzing_themes": "Categorizing files by themes",
+        "building_flows": "Creating flow associations",
+        "complete": "All files analyzed and categorized"
+      },
+      "progressMonitoring": {
+        "realTimeUpdates": "files_processed count updated via database triggers",
+        "completionPercentage": "Calculated as files_processed / total_files_discovered",
+        "resumptionCapability": "get_unanalyzed_files() method enables resumption from any interruption"
+      }
+    },
+    "intelligentContextLoading": {
+      "fileMetadataQueries": [
+        "get_file_metadata() - Retrieve analysis results for specific files",
+        "get_theme_files() - Get all files associated with specific themes",
+        "get_flow_files() - Get files referenced by specific flows",
+        "get_unanalyzed_files() - Get files needing analysis for resumption"
+      ],
+      "contextOptimization": [
+        "Load README files first for directory context",
+        "Use file metadata to determine specific files needed for tasks",
+        "Avoid unnecessary file loading based on database intelligence",
+        "Combine database insights with README context for informed decisions"
+      ]
+    },
+    "batchProcessing": {
+      "performanceOptimization": "Process files in batches of 50 for large projects",
+      "progressTracking": "Database triggers automatically update progress after each batch",
+      "errorRecovery": "Failed files logged for retry, successful files marked analyzed",
+      "memoryManagement": "Prevents memory overflow during large project analysis"
+    },
+    "toolIntegration": {
+      "projectTools": [
+        "get_initialization_progress - Current progress status with analytics",
+        "resume_initialization - Continue incomplete initialization from any point"
+      ],
+      "sessionTools": [
+        "session_get_initialization_summary - Comprehensive progress reporting",
+        "session_reset_initialization - Safe reset with confirmation"
+      ]
+    }
+  },
+  "eventAnalytics": {
+    "databaseTables": {
+      "noteworthy_events": {
+        "purpose": "Real-time event logging for fast queries and pattern analysis",
+        "criticalFields": ["event_id", "event_type", "primary_theme", "task_id", "session_id", "impact_level", "decision_data"],
+        "realTimeLogging": "Current events stored in database for immediate querying"
+      },
+      "event_relationships": {
+        "purpose": "Track cascading decisions and event dependencies",
+        "criticalFields": ["parent_event_id", "child_event_id", "relationship_type"],
+        "analytics": "Enables pattern recognition and decision impact analysis"
+      }
+    },
+    "hybridLogging": {
+      "currentEvents": {
+        "storage": "Database noteworthy_events table",
+        "benefits": ["Fast queries by theme, task, session", "Real-time pattern analysis", "Immediate event correlation"],
+        "archivalTrigger": "When database events exceed noteworthySizeLimit (default: 1MB)"
+      },
+      "archivedEvents": {
+        "storage": "noteworthy-archived-YYYY-MM-DD.json files",
+        "benefits": ["Long-term historical analysis", "Reduced database size", "Human-readable format"],
+        "retention": "Configurable retention policy for archived files"
+      }
+    },
+    "analyticsCapabilities": {
+      "patternRecognition": [
+        "Context escalation patterns by theme and task type",
+        "User correction and feedback patterns",
+        "Decision outcome tracking and success rates",
+        "Session productivity and workflow efficiency"
+      ],
+      "realTimeInsights": [
+        "Active event impact assessment",
+        "Theme-based decision clustering",
+        "Session activity correlation",
+        "Performance bottleneck identification"
+      ]
+    }
+  },
+  "performanceOptimization": {
+    "databaseDesign": {
+      "indexes": [
+        "theme_flows by theme_name and flow_id for fast lookups",
+        "task_status by status and milestone_id for progress queries",
+        "session_context by session_id for context restoration",
+        "noteworthy_events by theme, task, and timestamp for analytics"
+      ],
+      "views": [
+        "active_sidequests_by_task for sidequest limit management",
+        "theme_flow_summary for theme-flow relationship overview",
+        "session_activity_summary for productivity analytics"
+      ],
+      "triggers": [
+        "Automatic timestamp updates on record modifications",
+        "Sidequest count maintenance for limit enforcement",
+        "Theme-flow relationship cache updates"
+      ]
+    },
+    "queryOptimization": {
+      "sessionBoot": "Single query to restore complete session context",
+      "themeLoading": "Optimized joins for theme-flow-task relationships",
+      "progressTracking": "Efficient aggregation queries for milestone progress",
+      "analytics": "Pre-computed views for common analytics patterns"
+    },
+    "scalability": {
+      "largeProjects": "Handles 20+ themes, 50+ flows, 100+ tasks efficiently",
+      "concurrentSessions": "Multiple AI sessions with isolated context management",
+      "historicalData": "Automatic archiving prevents database bloat",
+      "crossPlatform": "SQLite compatibility across Windows, Mac, Linux"
+    }
+  },
+  "dataIntegrity": {
+    "consistencyChecks": [
+      "Task milestone references must exist in completion-path.json",
+      "Theme references must exist in Themes/ directory",
+      "Flow references must exist in ProjectFlow/ directory and flow-index.json",
+      "Database records must synchronize with organizational files"
+    ],
+    "validationProtocols": [
+      "Cross-reference validation before task execution",
+      "File-database synchronization validation",
+      "Theme-flow relationship consistency checks",
+      "Session context integrity validation"
+    ],
+    "recoveryProcedures": [
+      "Database corruption recovery from file definitions",
+      "File corruption recovery from database records",
+      "Session context recovery from multiple snapshot sources",
+      "Consistency repair utilities for data mismatches"
+    ]
+  },
+  "implementationRequirements": {
+    "mcpServerIntegration": [
+      "Database initialization during project setup",
+      "Connection management with thread safety",
+      "Transaction management for atomic operations",
+      "Error handling and recovery procedures"
+    ],
+    "toolIntegration": [
+      "All MCP tools must use database for status tracking",
+      "Session management tools must update database context",
+      "File operations must trigger database synchronization",
+      "Analytics tools must query database for insights"
+    ],
+    "configurationSupport": [
+      "Database file location configuration",
+      "Synchronization behavior settings",
+      "Performance tuning parameters",
+      "Archival and retention policies"
+    ]
+  }
+}

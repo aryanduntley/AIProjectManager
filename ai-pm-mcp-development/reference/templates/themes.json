@@ -1,0 +1,291 @@
+{
+  "lastUpdated": "2025-07-11T15:30:00Z",
+  "version": "1.0.0",
+  "autoDiscovery": true,
+  "themes": {
+    "authentication": {
+      "description": "User authentication, login, registration, and session management",
+      "keywords": ["auth", "login", "register", "jwt", "session", "token"],
+      "status": "active",
+      "priority": "high",
+      "owner": "backend-team",
+      "relatedThemes": ["user-management", "security"],
+      "files": [
+        "src/services/auth/",
+        "src/controllers/auth/",
+        "src/middleware/auth/",
+        "src/components/auth/",
+        "src/hooks/auth/"
+      ],
+      "sharedFiles": {
+        "src/types/User.ts": {
+          "sharedWith": ["user-management"],
+          "description": "Core user type definitions"
+        },
+        "src/utils/validation/UserValidator.ts": {
+          "sharedWith": ["user-management"],
+          "description": "User validation utilities"
+        }
+      }
+    },
+    "payment": {
+      "description": "Payment processing, billing, and transaction management",
+      "keywords": ["payment", "billing", "transaction", "stripe", "checkout"],
+      "status": "active",
+      "priority": "high",
+      "owner": "backend-team",
+      "relatedThemes": ["user-management", "security"],
+      "files": [
+        "src/services/payment/",
+        "src/controllers/payment/",
+        "src/components/checkout/",
+        "src/hooks/payment/"
+      ],
+      "sharedFiles": {
+        "src/types/Payment.ts": {
+          "sharedWith": ["user-management", "api"],
+          "description": "Payment type definitions"
+        },
+        "src/utils/currency/CurrencyFormatter.ts": {
+          "sharedWith": ["ui-components"],
+          "description": "Currency formatting utilities"
+        }
+      }
+    },
+    "user-management": {
+      "description": "User profiles, preferences, and account management",
+      "keywords": ["user", "profile", "account", "settings", "preferences"],
+      "status": "active",
+      "priority": "medium",
+      "owner": "frontend-team",
+      "relatedThemes": ["authentication", "ui-components"],
+      "files": [
+        "src/services/user/",
+        "src/controllers/user/",
+        "src/components/profile/",
+        "src/components/settings/",
+        "src/hooks/user/"
+      ],
+      "sharedFiles": {
+        "src/types/User.ts": {
+          "sharedWith": ["authentication"],
+          "description": "Core user type definitions"
+        },
+        "src/utils/validation/UserValidator.ts": {
+          "sharedWith": ["authentication"],
+          "description": "User validation utilities"
+        }
+      }
+    },
+    "ui-components": {
+      "description": "Reusable UI components, layouts, and styling",
+      "keywords": ["component", "ui", "layout", "style", "design"],
+      "status": "active",
+      "priority": "medium",
+      "owner": "frontend-team",
+      "relatedThemes": ["user-management", "dashboard"],
+      "files": [
+        "src/components/common/",
+        "src/components/layout/",
+        "src/styles/",
+        "src/assets/"
+      ],
+      "sharedFiles": {
+        "src/types/Props.ts": {
+          "sharedWith": ["authentication", "user-management"],
+          "description": "Common component prop types"
+        },
+        "src/utils/styling/StyleUtils.ts": {
+          "sharedWith": ["dashboard"],
+          "description": "Styling utility functions"
+        }
+      }
+    },
+    "api": {
+      "description": "API endpoints, controllers, and middleware",
+      "keywords": ["api", "endpoint", "controller", "middleware", "route"],
+      "status": "active",
+      "priority": "high",
+      "owner": "backend-team",
+      "relatedThemes": ["authentication", "payment", "user-management"],
+      "files": [
+        "src/controllers/",
+        "src/routes/",
+        "src/middleware/",
+        "src/services/api/"
+      ],
+      "sharedFiles": {
+        "src/types/ApiResponse.ts": {
+          "sharedWith": ["authentication", "payment", "user-management"],
+          "description": "API response type definitions"
+        },
+        "src/utils/responses/ApiResponses.ts": {
+          "sharedWith": ["authentication", "payment", "user-management"],
+          "description": "API response utilities"
+        }
+      }
+    },
+    "database": {
+      "description": "Database models, schemas, and data access layer",
+      "keywords": ["database", "model", "schema", "migration", "query"],
+      "status": "active",
+      "priority": "high",
+      "owner": "backend-team",
+      "relatedThemes": ["authentication", "payment", "user-management"],
+      "files": [
+        "src/models/",
+        "src/database/",
+        "src/migrations/",
+        "src/seeders/"
+      ],
+      "sharedFiles": {
+        "src/types/Database.ts": {
+          "sharedWith": ["authentication", "payment", "user-management"],
+          "description": "Database type definitions"
+        },
+        "src/utils/database/DatabaseUtils.ts": {
+          "sharedWith": ["authentication", "payment", "user-management"],
+          "description": "Database utility functions"
+        }
+      }
+    },
+    "security": {
+      "description": "Security measures, encryption, and access control",
+      "keywords": ["security", "encryption", "access", "permission", "auth"],
+      "status": "active",
+      "priority": "critical",
+      "owner": "security-team",
+      "relatedThemes": ["authentication", "api"],
+      "files": [
+        "src/middleware/security/",
+        "src/services/security/",
+        "src/utils/encryption/",
+        "src/utils/validation/"
+      ],
+      "sharedFiles": {
+        "src/types/Security.ts": {
+          "sharedWith": ["authentication", "api"],
+          "description": "Security type definitions"
+        },
+        "src/config/security.ts": {
+          "sharedWith": ["authentication", "api"],
+          "description": "Security configuration"
+        }
+      }
+    },
+    "testing": {
+      "description": "Test files, fixtures, and testing utilities",
+      "keywords": ["test", "spec", "mock", "fixture", "unit", "integration"],
+      "status": "active",
+      "priority": "medium",
+      "owner": "qa-team",
+      "relatedThemes": ["authentication", "payment", "api"],
+      "files": [
+        "src/tests/",
+        "src/__tests__/",
+        "src/mocks/",
+        "src/fixtures/"
+      ],
+      "sharedFiles": {
+        "src/tests/utils/TestUtils.ts": {
+          "sharedWith": ["authentication", "payment", "api"],
+          "description": "Testing utility functions"
+        },
+        "jest.config.js": {
+          "sharedWith": ["authentication", "payment", "api"],
+          "description": "Jest configuration"
+        }
+      }
+    },
+    "configuration": {
+      "description": "Configuration files, environment variables, and settings",
+      "keywords": ["config", "environment", "settings", "env", "constants"],
+      "status": "active",
+      "priority": "medium",
+      "owner": "devops-team",
+      "relatedThemes": ["security", "deployment"],
+      "files": [
+        "src/config/",
+        "src/utils/config/",
+        ".env*",
+        "*.config.js",
+        "*.config.ts"
+      ],
+      "sharedFiles": {
+        "src/types/Config.ts": {
+          "sharedWith": ["security", "deployment"],
+          "description": "Configuration type definitions"
+        },
+        "src/utils/environment/EnvUtils.ts": {
+          "sharedWith": ["security", "deployment"],
+          "description": "Environment utility functions"
+        }
+      }
+    },
+    "deployment": {
+      "description": "Deployment scripts, infrastructure, and CI/CD",
+      "keywords": ["deploy", "build", "docker", "ci", "cd", "pipeline"],
+      "status": "active",
+      "priority": "low",
+      "owner": "devops-team",
+      "relatedThemes": ["configuration", "security"],
+      "files": [
+        "docker/",
+        ".github/workflows/",
+        "scripts/",
+        "Dockerfile",
+        "docker-compose.yml"
+      ],
+      "sharedFiles": {
+        "package.json": {
+          "sharedWith": ["configuration", "testing"],
+          "description": "Project dependencies and scripts"
+        },
+        "tsconfig.json": {
+          "sharedWith": ["configuration", "testing"],
+          "description": "TypeScript configuration"
+        }
+      }
+    }
+  },
+  "themeRelationships": [
+    {
+      "theme1": "authentication",
+      "theme2": "security",
+      "relationship": "depends-on",
+      "strength": "high"
+    },
+    {
+      "theme1": "payment",
+      "theme2": "security",
+      "relationship": "depends-on",
+      "strength": "high"
+    },
+    {
+      "theme1": "user-management",
+      "theme2": "authentication",
+      "relationship": "depends-on",
+      "strength": "medium"
+    },
+    {
+      "theme1": "api",
+      "theme2": "authentication",
+      "relationship": "uses",
+      "strength": "high"
+    },
+    {
+      "theme1": "ui-components",
+      "theme2": "user-management",
+      "relationship": "presents",
+      "strength": "medium"
+    }
+  ],
+  "statistics": {
+    "totalThemes": 10,
+    "activeThemes": 10,
+    "totalFiles": 156,
+    "sharedFiles": 15,
+    "averageFilesPerTheme": 15.6,
+    "lastAnalysis": "2025-07-11T15:30:00Z"
+  }
+}

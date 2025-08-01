@@ -1,0 +1,69 @@
+{
+  "project": {
+    "name": "Example Project",
+    "version": "1.0.0",
+    "description": "Example project for AI Project Manager MCP Server",
+    "type": "web-application",
+    "status": "development"
+  },
+  "mcp": {
+    "version": "1.0.0",
+    "namespace": "project.management.organization.example-project",
+    "created": "2025-01-15T10:30:00Z",
+    "compatibilityVersion": "1.0.0",
+    "lastUpdated": "2025-01-15T10:30:00Z"
+  },
+  "technical": {
+    "language": "javascript",
+    "frameworks": ["react", "express", "node"],
+    "databases": ["postgresql"],
+    "testFramework": "jest",
+    "buildTool": "vite",
+    "packageManager": "npm",
+    "linter": "eslint",
+    "typeChecker": "typescript"
+  },
+  "deployment": {
+    "environment": "development",
+    "platform": "web",
+    "containerization": "docker",
+    "cicd": "github-actions",
+    "hosting": "aws"
+  },
+  "architecture": {
+    "pattern": "mvc",
+    "api": "rest",
+    "frontend": "spa",
+    "authentication": "jwt",
+    "database": "relational"
+  },
+  "integrations": {
+    "external": ["stripe", "auth0"],
+    "apis": ["payment-gateway", "email-service"],
+    "services": ["analytics", "monitoring"]
+  },
+  "compliance": {
+    "gdpr": true,
+    "hipaa": false,
+    "sox": false,
+    "pci": true,
+    "accessibility": "wcag-aa"
+  },
+  "team": {
+    "size": 3,
+    "methodology": "agile",
+    "codeStyle": "functional",
+    "reviewProcess": "mandatory"
+  },
+  "timeline": {
+    "startDate": "2025-01-01",
+    "estimatedCompletion": "2025-06-01",
+    "milestones": ["mvp", "beta", "production"]
+  },
+  "custom": {
+    "domain": "e-commerce",
+    "targetAudience": "consumers",
+    "scalability": "medium",
+    "performance": "high"
+  }
+}

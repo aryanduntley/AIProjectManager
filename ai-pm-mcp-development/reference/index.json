@@ -1,0 +1,357 @@
+{
+  "metadata": {
+    "version": "1.0.1",
+    "created": "2025-01-17T12:00:00Z",
+    "lastUpdated": "2025-01-20T12:00:00Z",
+    "description": "Flow-based index of AI Project Manager directives for MCP workflow navigation",
+    "totalDirectives": 17,
+    "flowPhases": 6,
+    "humanReadableDocs": "../docs/directives/",
+    "organizationReference": "reference/organization.json"
+  },
+  "projectLifecycleFlow": {
+    "phase1": {
+      "name": "System & Project Bootstrap",
+      "description": "Initial system setup, server connection, and project structure establishment",
+      "priority": "critical",
+      "prerequisites": ["MCP server available", "Project directory accessible"],
+      "directives": {
+        "01-system-initialization": {
+          "file": "reference/directives/01-system-initialization.json",
+          "purpose": "MCP server connection and compatibility verification",
+          "triggers": ["MCP server startup", "First connection", "System boot"],
+          "keyWorkflows": ["mcpServerConnection", "projectDetection", "configurationLoading"],
+          "criticalSettings": ["max_file_lines", "auto_modularize", "theme_discovery"]
+        },
+        "02-project-initialization": {
+          "file": "reference/directives/02-project-initialization.json",
+          "purpose": "Project setup for new and existing projects",
+          "triggers": ["New project creation", "Existing project analysis"],
+          "keyWorkflows": ["newProject", "existingProject"],
+          "criticalSettings": ["autoTaskCreation", "lastUpdatedBehavior"]
+        },
+        "database-integration": {
+          "file": "reference/directives/database-integration.json",
+          "purpose": "Database integration protocols for hybrid file-database architecture",
+          "triggers": ["Project initialization", "Database setup", "State synchronization"],
+          "keyWorkflows": ["hybridArchitecture", "realTimeStateSynchronization", "sessionPersistence"],
+          "criticalSettings": ["database.enabled", "synchronization.atomicOperations"]
+        },
+        "15-git-integration": {
+          "file": "reference/directives/15-git-integration.json",
+          "purpose": "Root-level Git tracking and code change detection with branch management",
+          "triggers": ["Session boot with project code changes", "Git repository state detection needed", "External code modifications detected"],
+          "keyWorkflows": ["sessionBootGitDetection", "organizationalReconciliation", "gitStateTracking", "branchGitIntegration"],
+          "criticalSettings": ["git.enabled", "git.auto_init_repo", "git.code_change_detection", "branch_management.enabled"]
+        }
+      },
+      "keyDecisionPoints": [
+        "New project vs existing project",
+        "Project structure compatibility",
+        "User approval for project blueprint"
+      ],
+      "nextPhase": "Session start or project continuation",
+      "errorHandling": "Fail gracefully with clear error messages, require user intervention for critical issues"
+    },
+    "phase2": {
+      "name": "Session Management",
+      "description": "Session boot, context restoration, and task resumption logic",
+      "priority": "high",
+      "prerequisites": ["Project structure initialized", "Configuration loaded"],
+      "directives": {
+        "03-session-management": {
+          "file": "reference/directives/03-session-management.json",
+          "purpose": "Handle database-enhanced session continuity and boot sequences",
+          "triggers": ["Session start", "Continue development", "Task resumption"],
+          "keyWorkflows": ["databaseSessionBootProtocol", "sessionContextRestoration", "implementationPlanIntegration"],
+          "criticalSettings": ["tasks.resumeTasksOnStart", "tasks.autoTaskCreation"]
+        },
+        "12-user-interaction": {
+          "file": "reference/directives/12-user-interaction.json",
+          "purpose": "User approval and communication protocols",
+          "triggers": ["User approval needed", "Communication requirements"],
+          "keyWorkflows": ["userApprovalRequirements", "communicationProtocol", "preferenceAdaptation"],
+          "criticalSettings": ["project.backwardsCompatibility"]
+        },
+        "database-integration": {
+          "file": "reference/directives/database-integration.json",
+          "purpose": "Database-enhanced session continuity and state preservation",
+          "triggers": ["Session boot", "Context restoration", "State synchronization"],
+          "keyWorkflows": ["sessionPersistence", "contextSnapshots", "taskStatusTracking"],
+          "criticalSettings": ["sessions.contextSnapshots", "synchronization.realTimeUpdates"]
+        }
+      },
+      "keyDecisionPoints": [
+        "Resume existing tasks or start new work",
+        "Context mode selection",
+        "Implementation plan continuation"
+      ],
+      "nextPhase": "Project understanding or direct task execution",
+      "errorHandling": "Graceful degradation with user guidance, preserve session state"
+    },
+    "phase3": {
+      "name": "Project Understanding",
+      "description": "Theme discovery, context loading, and project structure analysis",
+      "priority": "high",
+      "prerequisites": ["Project blueprint available", "Session context established"],
+      "directives": {
+        "04-theme-management": {
+          "file": "reference/directives/04-theme-management.json",
+          "purpose": "Theme discovery and validation",
+          "triggers": ["Theme discovery", "Theme validation", "Theme modification"],
+          "keyWorkflows": ["automaticThemeDiscovery", "themeValidation", "themeModification"],
+          "criticalSettings": ["themes.autoDiscovery", "themes.sharedFileThreshold"]
+        },
+        "05-context-loading": {
+          "file": "reference/directives/05-context-loading.json",
+          "purpose": "Database-enhanced context loading strategies with multi-flow support",
+          "triggers": ["Task execution", "Context escalation", "Memory optimization", "Multi-flow loading"],
+          "keyWorkflows": ["contextModeSelection", "databaseEnhancedLoading", "contextEscalation", "selectiveFlowLoading"],
+          "criticalSettings": ["contextLoading.defaultMode", "contextLoading.readmeFirst", "contextLoading.maxFlowFiles"]
+        },
+        "13-metadata-management": {
+          "file": "reference/directives/13-metadata-management.json",
+          "purpose": "Project metadata maintenance",
+          "triggers": ["Metadata updates", "Project characteristic changes"],
+          "keyWorkflows": ["metadataInitialization", "updateTriggers", "workflowIntegration"],
+          "criticalSettings": []
+        },
+        "directive-escalation-system": {
+          "file": "reference/directives/directive-escalation-system.json",
+          "purpose": "Directive escalation system for accessing detailed implementation specifications",
+          "triggers": ["Directive ambiguity", "User communication needed", "Complex workflow execution", "Edge case handling"],
+          "keyWorkflows": ["escalationChain", "userApprovalProcess", "contextPreservation"],
+          "criticalSettings": ["escalation.automaticJSON", "escalation.requireMDApproval"]
+        }
+      },
+      "keyDecisionPoints": [
+        "Theme approval by user",
+        "Context mode selection",
+        "Metadata update requirements"
+      ],
+      "nextPhase": "Active development cycle",
+      "errorHandling": "Require user approval for theme changes, fallback to project-wide context if needed"
+    },
+    "phase4": {
+      "name": "Active Development Cycle",
+      "description": "Task execution, implementation planning, and file operations",
+      "priority": "high",
+      "prerequisites": ["Themes established", "Context loaded", "Implementation plan active"],
+      "directives": {
+        "06-task-management": {
+          "file": "reference/directives/06-task-management.json",
+          "purpose": "Task lifecycle and execution management with multi-flow integration",
+          "triggers": ["Task creation", "Task execution", "Sidequest management", "Multi-flow task planning"],
+          "keyWorkflows": ["taskLifecycleManagement", "sidequestManagement", "completionPathIntegration", "multiFlowTaskIntegration"],
+          "criticalSettings": ["tasks.maxActiveSidequests", "tasks.parallelTasksEnabled"]
+        },
+        "07-implementation-plans": {
+          "file": "reference/directives/07-implementation-plans.json",
+          "purpose": "Strategic implementation planning",
+          "triggers": ["Milestone implementation", "Strategic planning"],
+          "keyWorkflows": ["planLifecycle", "versionControl", "archivalSystem"],
+          "criticalSettings": []
+        },
+        "10-file-operations": {
+          "file": "reference/directives/10-file-operations.json",
+          "purpose": "File modifications and line limit enforcement",
+          "triggers": ["File modification", "Code generation", "Line limit enforcement"],
+          "keyWorkflows": ["lineLimitEnforcement", "antiPlaceholderProtocol", "fileModificationProtocol"],
+          "criticalSettings": ["project.maxFileLineCount", "project.avoidPlaceholders"]
+        },
+        "11-quality-assurance": {
+          "file": "reference/directives/11-quality-assurance.json",
+          "purpose": "Code quality and validation standards",
+          "triggers": ["Code validation", "Testing requirements", "Quality checks"],
+          "keyWorkflows": ["testingProtocol", "validationRequirements", "codeQualityStandards"],
+          "criticalSettings": ["validation.enforceTaskMilestoneReference", "validation.validateJsonSchemas"]
+        },
+        "14-branch-management": {
+          "file": "reference/directives/14-branch-management.json",
+          "purpose": "Git branch lifecycle management with user attribution",
+          "triggers": ["Branch creation request", "Multiple developer scenario", "Parallel development needed", "Branch merge operations"],
+          "keyWorkflows": ["branchCreation", "branchIsolation", "branchMerging", "branchManagement"],
+          "criticalSettings": ["branch_management.enabled", "branch_management.canonical_branch_authority", "branch_management.max_active_branches"]
+        }
+      },
+      "keyDecisionPoints": [
+        "Task priority and execution order",
+        "File modularization triggers",
+        "Quality validation requirements",
+        "Implementation plan phase completion"
+      ],
+      "nextPhase": "Ongoing maintenance or completion validation",
+      "errorHandling": "Validate all changes, require user approval for structural changes, maintain data integrity"
+    },
+    "phase5": {
+      "name": "Ongoing Maintenance",
+      "description": "Project management updates, logging, and continuous maintenance",
+      "priority": "medium",
+      "prerequisites": ["Active development in progress", "Organizational files established"],
+      "directives": {
+        "08-project-management": {
+          "file": "reference/directives/08-project-management.json",
+          "purpose": "Project blueprint and multi-flow management",
+          "triggers": ["Blueprint updates", "Flow changes", "Logic modifications", "Flow file creation"],
+          "keyWorkflows": ["blueprintManagement", "multiFlowDocumentation", "logicTracking", "flowIndexManagement"],
+          "criticalSettings": ["validation.requireApprovalForStructureChanges", "contextLoading.maxFlowFiles"]
+        },
+        "09-logging-documentation": {
+          "file": "reference/directives/09-logging-documentation.json",
+          "purpose": "Logging and documentation maintenance",
+          "triggers": ["Significant decisions", "Documentation updates"],
+          "keyWorkflows": ["simplifiedLogging", "automaticArchiving", "documentationUpdates"],
+          "criticalSettings": ["archiving.projectlogicSizeLimit", "archiving.deleteArchivesOlderThan"]
+        }
+      },
+      "keyDecisionPoints": [
+        "Documentation update requirements",
+        "Log archival triggers",
+        "Project structure modifications"
+      ],
+      "nextPhase": "Completion validation or return to active development",
+      "errorHandling": "Preserve historical data, require user approval for structural changes"
+    },
+    "phase6": {
+      "name": "Completion & Validation",
+      "description": "Project completion tracking, TODO resolution, and final validation",
+      "priority": "high",
+      "prerequisites": ["All milestones approaching completion", "TODO review required"],
+      "directives": {
+        "06-task-management": {
+          "file": "reference/directives/06-task-management.json",
+          "purpose": "TODO review and resolution before completion",
+          "triggers": ["TODO review", "Project completion preparation"],
+          "keyWorkflows": ["todoReviewRequirements", "completionPathIntegration"],
+          "criticalSettings": []
+        },
+        "08-project-management": {
+          "file": "reference/directives/08-project-management.json",
+          "purpose": "Final project validation and completion",
+          "triggers": ["Completion tracking", "Final validation"],
+          "keyWorkflows": ["completionPathManagement"],
+          "criticalSettings": []
+        }
+      },
+      "keyDecisionPoints": [
+        "TODO review completion",
+        "Final milestone validation",
+        "Project archival decisions"
+      ],
+      "nextPhase": "Project completion or return to active development",
+      "errorHandling": "Ensure all TODOs are resolved, require user confirmation for completion"
+    }
+  },
+  "flowTransitions": {
+    "phase1_to_phase2": {
+      "trigger": "Project structure initialized successfully",
+      "validation": ["Project blueprint approved", "Themes basic structure created"],
+      "failureAction": "Return to phase1 with error details"
+    },
+    "phase2_to_phase3": {
+      "trigger": "Session context established",
+      "validation": ["Configuration loaded", "User preferences applied"],
+      "failureAction": "Restart session boot sequence"
+    },
+    "phase3_to_phase4": {
+      "trigger": "Project understanding complete",
+      "validation": ["Themes approved", "Context mode selected", "Implementation plan ready"],
+      "failureAction": "Return to theme discovery or context loading"
+    },
+    "phase4_to_phase5": {
+      "trigger": "Development cycle maintenance needed",
+      "validation": ["Active tasks in progress", "Documentation updates required"],
+      "failureAction": "Continue active development"
+    },
+    "phase4_to_phase6": {
+      "trigger": "Project nearing completion",
+      "validation": ["All milestones near completion", "TODO review required"],
+      "failureAction": "Return to active development"
+    },
+    "phase5_to_phase4": {
+      "trigger": "Return to active development",
+      "validation": ["New tasks created", "Implementation plan updated"],
+      "failureAction": "Continue maintenance activities"
+    },
+    "phase6_to_phase4": {
+      "trigger": "Additional work required",
+      "validation": ["New tasks identified", "TODOs converted to tasks"],
+      "failureAction": "Complete TODO resolution first"
+    }
+  },
+  "commonWorkflows": {
+    "userApprovalRequired": [
+      "Project blueprint changes",
+      "Theme modifications",
+      "Completion path updates",
+      "Implementation plan creation",
+      "Structural changes to project organization"
+    ],
+    "automaticUpdates": [
+      "Session summary maintenance",
+      "Task status tracking",
+      "File modification logging",
+      "Context escalation",
+      "Log archival when size limits reached"
+    ],
+    "criticalValidations": [
+      "Theme-task-milestone integration",
+      "File line limits and modularization",
+      "Cross-reference consistency",
+      "TODO resolution before completion"
+    ]
+  },
+  "quickReference": {
+    "systemStart": "phase1.01-system-initialization",
+    "sessionBoot": "phase2.03-session-management",
+    "databaseIntegration": "phase1.database-integration + phase2.database-integration",
+    "stateSynchronization": "phase1.database-integration + phase2.database-integration",
+    "sessionPersistence": "phase2.database-integration",
+    "directiveEscalation": "phase3.context-escalation-system",
+    "contextEscalation": "phase3.05-context-loading + phase3.context-escalation-system",
+    "themeDiscovery": "phase3.04-theme-management",
+    "contextLoading": "phase3.05-context-loading",
+    "multiFlowResourceOptimization": "phase3.05-context-loading",
+    "taskExecution": "phase4.06-task-management",
+    "multiFlowTaskIntegration": "phase4.06-task-management",
+    "fileOperations": "phase4.10-file-operations",
+    "qualityCheck": "phase4.11-quality-assurance",
+    "userInteraction": "phase2.12-user-interaction",
+    "projectCompletion": "phase6.06-task-management",
+    "logging": "phase5.09-logging-documentation",
+    "flowIndexManagement": "phase5.08-project-management",
+    "gitIntegration": "phase1.15-git-integration",
+    "branchManagement": "phase4.14-branch-management"
+  },
+  "configurationHierarchy": {
+    "critical": [
+      "project.maxFileLineCount",
+      "project.avoidPlaceholders",
+      "tasks.resumeTasksOnStart",
+      "themes.autoDiscovery",
+      "git.enabled",
+      "git.auto_init_repo",
+      "git.code_change_detection",
+      "branch_management.enabled",
+      "branch_management.canonical_branch_authority"
+    ],
+    "important": [
+      "tasks.maxActiveSidequests",
+      "contextLoading.defaultMode",
+      "contextLoading.maxFlowFiles",
+      "validation.enforceTaskMilestoneReference",
+      "validation.requireApprovalForStructureChanges",
+      "git.auto_init_repo",
+      "git.code_change_detection",
+      "branch_management.max_active_branches",
+      "branch_management.branch_naming_validation",
+      "branch_management.auto_delete_merged"
+    ],
+    "optional": [
+      "archiving.deleteArchivesOlderThan",
+      "themes.conflictResolution",
+      "project.backwardsCompatibility",
+      "project.minifyJson"
+    ]
+  }
+}

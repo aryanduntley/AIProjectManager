@@ -1,0 +1,61 @@
+{
+  "flowFiles": [
+    {
+      "flowId": "authentication-flow",
+      "filePath": "authentication-flow.json",
+      "status": "in-progress",
+      "priority": "high",
+      "primaryTheme": "authentication",
+      "lastUpdated": "2024-01-16T11:45:00Z",
+      "dependencies": ["security-flow"],
+      "crossFlowDependencies": ["database-flow", "api-flow"]
+    },
+    {
+      "flowId": "payment-flow", 
+      "filePath": "payment-flow.json",
+      "status": "pending",
+      "priority": "high",
+      "primaryTheme": "payment",
+      "lastUpdated": "2024-01-10T14:00:00Z",
+      "dependencies": ["authentication-flow", "security-flow"],
+      "crossFlowDependencies": ["database-flow", "api-flow"]
+    },
+    {
+      "flowId": "api-flow",
+      "filePath": "api-flow.json", 
+      "status": "in-progress",
+      "priority": "medium",
+      "primaryTheme": "api",
+      "lastUpdated": "2024-01-13T12:00:00Z",
+      "dependencies": ["authentication-flow"],
+      "crossFlowDependencies": ["database-flow", "payment-flow"]
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "description": "Master flow index for multi-flow coordination",
+    "totalFlows": 3,
+    "activeFlows": 2,
+    "completedFlows": 0,
+    "lastUpdated": "2024-01-16T11:45:00Z",
+    "crossFlowDependencyMap": {
+      "authentication-flow": ["api-flow", "payment-flow"],
+      "payment-flow": ["authentication-flow", "api-flow"], 
+      "api-flow": ["authentication-flow", "payment-flow"]
+    }
+  },
+  "themes": {
+    "authentication": ["authentication-flow"],
+    "payment": ["payment-flow"],
+    "api": ["api-flow"],
+    "security": ["authentication-flow", "payment-flow"],
+    "user-experience": ["payment-flow"],
+    "backend": ["api-flow"]
+  },
+  "loadingStrategy": {
+    "selectiveLoading": true,
+    "maxFlowsPerContext": 3,
+    "dependencyAutoLoad": true,
+    "themeBasedFiltering": true
+  }
+}

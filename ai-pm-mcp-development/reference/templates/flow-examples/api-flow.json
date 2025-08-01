@@ -1,0 +1,72 @@
+{
+  "flowId": "api-flow", 
+  "flowName": "REST API System",
+  "version": "1.0.0",
+  "description": "Complete REST API implementation with authentication, rate limiting, and documentation",
+  "primaryTheme": "api",
+  "relatedThemes": ["backend", "security", "documentation"],
+  "dependencies": ["authentication-flow"],
+  "crossFlowDependencies": {
+    "authentication-flow": ["auth-middleware", "token-validation"],
+    "database-flow": ["data-models", "query-optimization"],
+    "payment-flow": ["payment-endpoints"]
+  },
+  "status": "in-progress",
+  "priority": "medium",
+  "steps": [
+    {
+      "stepId": "api-001",
+      "title": "API Framework Setup",
+      "description": "Setup Express.js with middleware and routing",
+      "status": "completed",
+      "completedAt": "2024-01-12T16:00:00Z",
+      "subtasks": [
+        {"id": "api-001-01", "title": "Express.js setup", "status": "completed"},
+        {"id": "api-001-02", "title": "Middleware configuration", "status": "completed"},
+        {"id": "api-001-03", "title": "Route organization", "status": "completed"}
+      ]
+    },
+    {
+      "stepId": "api-002",
+      "title": "Authentication Endpoints",
+      "description": "Login, register, and token management endpoints",
+      "status": "in-progress", 
+      "startedAt": "2024-01-13T09:00:00Z",
+      "subtasks": [
+        {"id": "api-002-01", "title": "Login endpoint", "status": "completed"},
+        {"id": "api-002-02", "title": "Registration endpoint", "status": "in-progress"},
+        {"id": "api-002-03", "title": "Token refresh endpoint", "status": "pending"}
+      ]
+    },
+    {
+      "stepId": "api-003",
+      "title": "Rate Limiting & Security",
+      "description": "Implement rate limiting and security headers",
+      "status": "pending",
+      "subtasks": [
+        {"id": "api-003-01", "title": "Rate limiting middleware", "status": "pending"},
+        {"id": "api-003-02", "title": "Security headers", "status": "pending"},
+        {"id": "api-003-03", "title": "Request validation", "status": "pending"}
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "milestoneId": "api-auth",
+      "title": "API Authentication Ready",
+      "description": "Authentication endpoints fully functional",
+      "targetDate": "2024-01-25",
+      "status": "in-progress",
+      "completedSteps": ["api-001"],
+      "requiredSteps": ["api-001", "api-002"]
+    }
+  ],
+  "metadata": {
+    "createdAt": "2024-01-10T14:00:00Z",
+    "lastUpdated": "2024-01-13T12:00:00Z",
+    "estimatedHours": 35,
+    "actualHours": 12,
+    "complexity": "medium",
+    "riskLevel": "low"
+  }
+}

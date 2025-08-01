@@ -1,0 +1,312 @@
+{
+  "metadata": {
+    "id": "04-theme-management",
+    "title": "Theme Management Directives",
+    "priority": "high",
+    "frequency": "project-setup,ongoing",
+    "version": "1.0.0",
+    "humanReadable": "../docs/directives/04-theme-management.md"
+  },
+  "triggers": [
+    "Theme discovery",
+    "Theme validation",
+    "Theme modification",
+    "File structure changes",
+    "Git changes affecting project structure",
+    "Instance merge operations requiring theme reconciliation"
+  ],
+  "workflows": {
+    "automaticThemeDiscovery": {
+      "directive": "Theme discovery is mandatory for new projects and must follow user review process",
+      "critical": "NEVER create theme files without user approval",
+      "discoverySequence": [
+        "Analyze project structure using FileAnalyzer",
+        "Identify themes across 6 categories",
+        "Calculate confidence scores with evidence collection",
+        "Identify custom themes from project-specific patterns",
+        "MANDATORY: Present to user for review",
+        "Incorporate user feedback and modifications",
+        "Get explicit approval before creating theme files",
+        "Document theme decisions in projectlogic.jsonl"
+      ],
+      "categories": [
+        "Functional Domains (auth, payment, user-management)",
+        "Technical Layers (database, api, security, testing)",
+        "User Interface (components, pages, layout, styling)",
+        "External Integrations (social-media, analytics, maps)",
+        "Data Management (validation, transformation)",
+        "Operational (logging, monitoring, deployment)"
+      ],
+      "discoveryProcess": {
+        "initialDiscovery": {
+          "analyzeFileStructure": "Examine directory names, file names, and folder organization",
+          "parseImportGraphs": "Analyze import/export relationships to identify functional clusters",
+          "keywordMatching": "Use predefined keywords and patterns to identify thematic areas",
+          "codeAnalysis": "Examine function names, class names, and component names for thematic patterns"
+        },
+        "userReviewProcess": {
+          "presentCompleteList": "Show all discovered themes with descriptions",
+          "requestUserInput": "Explicitly ask for modifications, additions, or removals",
+          "iterativeRefinement": "Allow multiple rounds of theme adjustment",
+          "confirmFinalList": "Get explicit user approval before proceeding",
+          "documentChanges": "Log all user-requested theme modifications in projectlogic.jsonl"
+        },
+        "userDrivenAdditions": {
+          "domainSpecific": "transactionRequests, transactionMonitoring, transactionSigning",
+          "businessLogic": "coinSelection, userSettings, affiliateManagement",
+          "workflowSpecific": "qrCodeProcessing, walletConnectFlow, recoveryProcess"
+        },
+        "validationRules": {
+          "noOverlappingDomains": "Each theme has distinct responsibility",
+          "balancedGranularity": "Themes are neither too broad nor too narrow",
+          "clearDescriptions": "Each theme has unambiguous purpose",
+          "fileCoverage": "All project files belong to at least one theme",
+          "logicalRelationships": "Related themes are properly linked"
+        },
+        "themeFileCreation": {
+          "onlyAfterApproval": "Create individual theme JSON files in Themes/ directory",
+          "generateMasterIndex": "Generate master themes.json index file",
+          "updateProjectLogic": "Update projectlogic.jsonl with theme decisions",
+          "linkToFlows": "Link themes to existing user flows and tasks",
+          "updateFileMetadata": "Store theme associations in file_metadata table for database-driven context intelligence"
+        }
+      }
+    },
+    "autoMaintenance": {
+      "directive": "Automatically maintain theme files when project structure changes",
+      "triggers": ["file creation", "file deletion", "file movement", "Git changes affecting project structure"],
+      "actions": [
+        "Reassess related theme files and update paths/links",
+        "Flag conflicts or duplicates",
+        "Propose merges if overlapping themes detected",
+        "Maintain themes.json root-level theme index",
+        "Handle shared files across multiple themes",
+        "Update theme_associations field in file_metadata table",
+        "Update Git tracking for theme changes"
+      ],
+      "logicDetails": {
+        "keywordMatching": "Use keyword matching, folder path structure, and import reference graphs to discover thematic relevance",
+        "sharedFileHandling": "If a file clearly belongs to multiple themes, it may appear in both and be flagged as shared",
+        "impactAssessment": "When AI modifies a shared file, it should assess impact on all listed themes before proceeding",
+        "gitIntegration": "Track theme changes in database for Git merge analysis"
+      }
+    },
+    "themePresentation": {
+      "directive": "Always present discovered themes using exact format",
+      "format": "## Discovered Project Themes\n\nI've analyzed your project and identified the following themes:\n\n**Functional Domains:**\n**Technical Layers:**\n**User Interface:**\n**External Integrations:**\n\nWould you like to:\n- Add additional themes I may have missed?\n- Modify descriptions of existing themes?\n- Remove themes that aren't relevant?\n- Rename themes to better match your project terminology?"
+    },
+    "themeValidation": {
+      "directive": "Validate theme files for consistency and correctness",
+      "checks": [
+        "All referenced files and paths exist",
+        "Linked themes are valid",
+        "No circular dependencies",
+        "Shared files properly documented",
+        "Theme coverage is complete"
+      ]
+    },
+    "themeModification": {
+      "directive": "Handle theme modifications with user approval",
+      "userApprovalRequired": true,
+      "process": [
+        "Present proposed changes to user",
+        "Get explicit approval before modification",
+        "Update theme files",
+        "Update themes.json index",
+        "Document changes in projectlogic.jsonl"
+      ]
+    },
+    "gitReconciliation": {
+      "directive": "Reconcile themes with Git changes detected during session boot",
+      "triggers": ["ai-pm-org-main session boot", "Git changes detected affecting project structure"],
+      "process": [
+        "Analyze Git changes for theme impact using file path analysis",
+        "Identify affected themes based on modified/added/deleted files",
+        "Update theme file paths and references to reflect code changes",
+        "Present reconciliation changes to user for approval",
+        "Update database with Git-theme relationship tracking"
+      ],
+      "themeImpactAnalysis": [
+        "Direct file mapping to existing themes",
+        "Directory structure inference for new themes",
+        "Naming pattern analysis for thematic relevance",
+        "Deletion impact assessment on theme completeness"
+      ]
+    },
+    "branchMergeThemeConflicts": {
+      "directive": "Handle theme conflicts during Git branch merging (ai-pm-org-main authority)",
+      "authority": "ai-pm-org-main has ultimate decision authority",
+      "process": [
+        "Detect theme conflicts between ai-pm-org-main and work branch states",
+        "Present conflicts in Git-like format with theme-specific context",
+        "Provide resolution options: accept_branch, accept_main, manual_merge, split_themes",
+        "Apply chosen resolution atomically to ai-pm-org-main themes",
+        "Update database tracking for Git merge history"
+      ],
+      "conflictTypes": [
+        "Theme definition changes (paths, linkedThemes, descriptions)",
+        "New themes added in both branches",
+        "Theme deletions vs modifications",
+        "Shared file reference conflicts"
+      ]
+    }
+  },
+  "configSettings": {
+    "themes.autoDiscovery": {
+      "default": true,
+      "type": "boolean",
+      "description": "Enable automatic theme discovery"
+    },
+    "themes.sharedFileThreshold": {
+      "default": 3,
+      "type": "number",
+      "description": "Maximum themes a single file can be shared by before requiring reorganization"
+    },
+    "themes.conflictResolution": {
+      "default": "prompt",
+      "type": "string",
+      "enum": ["prompt", "merge", "separate"],
+      "description": "How to handle theme conflicts"
+    }
+  },
+  "integrations": [
+    "05-context-loading",
+    "11-quality-assurance",
+    "13-metadata-management",
+    "14-branch-management",
+    "15-git-integration"
+  ],
+  "dependencies": [
+    "Themes/ directory",
+    "themes.json",
+    "projectlogic.jsonl"
+  ],
+  "keyOperations": [
+    "Theme discovery",
+    "User approval",
+    "File validation",
+    "Threshold monitoring",
+    "Database-driven theme associations",
+    "File metadata synchronization"
+  ],
+  "fileStructure": {
+    "themeFile": {
+      "required": ["theme", "category", "description", "confidence", "paths", "files"],
+      "optional": ["linkedThemes", "sharedFiles", "evidence", "frameworks", "keywords", "createdDate", "lastModified"],
+      "categories": ["functional_domains", "technical_layers", "user_interface", "external_integrations", "data_management", "operational", "user-defined"],
+      "exactStructure": {
+        "theme": "theme-name",
+        "category": "One of the predefined categories",
+        "description": "Clear description of theme purpose and scope",
+        "confidence": "0.0-1.0 confidence score",
+        "paths": "Array of directories related to theme",
+        "files": "Array of specific files related to theme",
+        "linkedThemes": "Array of related theme names",
+        "sharedFiles": "Object mapping shared files to their sharing relationships",
+        "frameworks": "Array of frameworks used in theme",
+        "keywords": "Array of relevant keywords",
+        "createdDate": "ISO timestamp of creation",
+        "lastModified": "ISO timestamp of last modification"
+      }
+    },
+    "themesJson": {
+      "purpose": "Root-level theme index with descriptions",
+      "structure": "{ \"theme-name\": \"description\" }",
+      "example": "{ \"transaction\": \"Handles all transaction-related logic, UI, and service calls\", \"wallet\": \"Internal wallet, key signing, connection flows\" }"
+    }
+  },
+  "sharedFileHandling": {
+    "detection": "File appears in multiple themes",
+    "flagging": "Mark as shared with themes array",
+    "impact": "Assess impact on all listed themes before modification",
+    "thresholdEnforcement": "No single file should be shared by more than themes.sharedFileThreshold themes",
+    "thresholdExceeded": "When threshold exceeded, suggest theme reorganization or file refactoring"
+  },
+  "themeFlowRelationship": {
+    "complementaryPurpose": "Themes and user flows serve complementary but distinct purposes",
+    "themesFunction": "Organize code structure and implementation files (what - static organization)",
+    "flowsFunction": "Define user experience journeys (how - dynamic processes)",
+    "directReferences": "Themes reference flows they implement, creating clear relationships",
+    "flowReferenceStructure": {
+      "flowsArray": "Themes maintain flows array listing relevant flow IDs in order of relevance",
+      "flowIdResolution": "MCP uses flow-index.json to resolve flow IDs to specific flow files",
+      "maxFlowsConfiguration": "Maximum flows per theme configurable via themes.maxFlowsPerTheme setting",
+      "exampleStructure": "{ \"flows\": [\"most-relevant-flow-id\", \"second-most-relevant-flow-id\", \"least-relevant-flow-id\"] }"
+    },
+    "manyToManyRelationship": {
+      "oneThemeMultipleFlows": "One theme can contain multiple flows",
+      "oneFlowMultipleThemes": "One flow can be used by multiple themes",
+      "databaseMaintenance": "MCP maintains theme-flow relationships in project database",
+      "relationshipDiscovery": "Relationships discovered by evaluating theme files during session boot"
+    },
+    "integrationThroughTasks": "Tasks reference both themes (for context) and flows (for user experience)",
+    "aiUsageGuidelines": {
+      "useThemes": "To understand code organization when implementing flow steps",
+      "useFlows": "To understand user experience when working within theme contexts",
+      "queryDatabase": "Query database for efficient which themes use this flow lookups",
+      "updateDatabase": "Update database when theme flow references change"
+    }
+  },
+  "databaseIntegration": {
+    "purpose": "Maintain persistent theme-flow relationships and session tracking via SQLite database",
+    "databaseLocation": "projectManagement/project.db",
+    "themeFlowStorage": {
+      "table": "theme_flows",
+      "purpose": "Maintains many-to-many relationships",
+      "updateTriggers": "Updated when theme files are modified",
+      "benefits": "Provides fast lookups without re-reading all theme files"
+    },
+    "sessionTracking": {
+      "trackSessionStarts": "Track session start times and context",
+      "maintainHistory": "Maintain session history for debugging and analysis",
+      "noSessionEnd": "No session end detection required"
+    },
+    "updateTriggers": [
+      "When theme files are created, modified, or deleted",
+      "When flow references in theme files change",
+      "During session boot to ensure data consistency",
+      "When file_metadata.theme_associations field is updated",
+      "During initialization when files are analyzed and categorized"
+    ]
+  },
+  "ongoingThemeManagement": {
+    "userRequestedChanges": {
+      "addNewThemes": "We need a theme for currency selection",
+      "modifyExistingThemes": "The payment theme should include subscription logic",
+      "removeThemes": "The testing theme isn't needed anymore",
+      "reorganizeThemes": "Move wallet integration from payment to security theme"
+    },
+    "aiResponseToUserRequests": {
+      "assessProjectStructure": "Analyze existing files and structure for the requested theme",
+      "presentThemeProposal": "Show proposed theme structure with files and relationships",
+      "getUserApproval": "Confirm theme structure before implementation",
+      "updateThemeFiles": "Create or modify theme JSON files after approval",
+      "documentChanges": "Log theme modifications in projectlogic.jsonl"
+    },
+    "aiInitiatedUpdates": {
+      "identifyOpportunity": "If AI identifies theme improvements during development",
+      "presentProposedChange": "Present proposed changes to user with clear reasoning",
+      "explainBenefits": "Explain why the modification would improve project organization",
+      "getExplicitApproval": "Get explicit approval before updating theme files",
+      "documentRationale": "Document all changes with rationale"
+    }
+  },
+  "basicThemeIssues": {
+    "directive": "Handle common theme management issues with basic user communication and escalation awareness",
+    "commonIssues": {
+      "themeConflicts": {
+        "basicResponse": "Theme overlap detected between [THEME1] and [THEME2]. Shared files: [FILE_LIST]. Proceeding with theme separation and file organization.",
+        "escalationTrigger": "IF theme conflicts complex or affect multiple workflows → ESCALATE to reference/directivesmd/04-theme-management.md for advanced theme organization strategies"
+      },
+      "autoDiscoveryUncertain": {
+        "basicResponse": "Theme auto-discovery found [N] potential themes. Requires user review before proceeding.",
+        "escalationTrigger": "IF theme discovery yields complex or unclear results → ESCALATE for comprehensive theme analysis procedures"
+      },
+      "sharedFileThreshold": {
+        "basicResponse": "File [FILE] shared across [N] themes (threshold: [LIMIT]). Flagged for shared file management.",
+        "escalationTrigger": "IF shared file management affects multiple workflows → ESCALATE for detailed shared file strategies"
+      }
+    },
+    "escalationAwareness": "WHEN theme management encounters complexity beyond basic handling → ESCALATE to reference/directivesmd/04-theme-management.md for comprehensive theme management protocols"
+  }
+}

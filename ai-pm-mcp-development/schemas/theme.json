@@ -1,0 +1,228 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "theme.json",
+  "title": "Theme File Schema",
+  "description": "Schema for theme files in Themes/ directory",
+  "type": "object",
+  "properties": {
+    "theme": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Theme name (should match filename without .json extension)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of what this theme encompasses"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Functional Domains",
+        "Technical Layers",
+        "UI Components", 
+        "External Integrations",
+        "Data Management",
+        "Operational"
+      ],
+      "description": "Theme category for organization"
+    },
+    "paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "description": "Directory paths associated with this theme"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "description": "Specific files associated with this theme"
+    },
+    "flows": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "description": "Flow IDs associated with this theme, ordered by relevance (most relevant first)"
+    },
+    "linkedThemes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "description": "Other themes that are closely related to this one"
+    },
+    "sharedFiles": {
+      "type": "object",
+      "patternProperties": {
+        "^.+$": {
+          "type": "object",
+          "properties": {
+            "sharedWith": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true,
+              "description": "List of other themes this file is shared with"
+            },
+            "description": {
+              "type": "string",
+              "description": "Description of why this file is shared"
+            },
+            "primaryTheme": {
+              "type": "string",
+              "description": "The primary theme responsible for this file"
+            }
+          },
+          "required": ["sharedWith"],
+          "additionalProperties": false
+        }
+      },
+      "description": "Files that are shared with other themes"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "description": "Keywords associated with this theme for auto-discovery"
+    },
+    "discoveryPatterns": {
+      "type": "object",
+      "properties": {
+        "filePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "File name patterns that indicate this theme (e.g., '*auth*', '*login*')"
+        },
+        "directoryPatterns": {
+          "type": "array", 
+          "items": {
+            "type": "string"
+          },
+          "description": "Directory name patterns that indicate this theme"
+        },
+        "importPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Import statement patterns that indicate this theme"
+        }
+      },
+      "additionalProperties": false
+    },
+    "dependencies": {
+      "type": "object",
+      "properties": {
+        "requiredThemes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "Themes that must exist for this theme to function"
+        },
+        "optionalThemes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "Themes that enhance this theme but aren't required"
+        },
+        "conflictsWith": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "Themes that conflict with this theme"
+        }
+      },
+      "additionalProperties": false
+    },
+    "contextLoading": {
+      "type": "object",
+      "properties": {
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 5,
+          "description": "Loading priority (1=highest, 10=lowest)"
+        },
+        "loadWithThemes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "Other themes that should typically be loaded with this one"
+        },
+        "memoryEstimate": {
+          "type": "string",
+          "pattern": "^\\d+(\\.\\d+)?[KMG]?B$",
+          "description": "Estimated memory usage when loading this theme"
+        }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Theme creation timestamp"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification timestamp"
+        },
+        "autoGenerated": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this theme was auto-discovered"
+        },
+        "userApproved": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether user has approved this theme definition"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "default": "1.0.0",
+          "description": "Theme definition version"
+        },
+        "discoveryMethod": {
+          "type": "string",
+          "enum": ["manual", "keyword_matching", "folder_analysis", "import_graph", "hybrid"],
+          "description": "How this theme was discovered"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence score for auto-discovered themes"
+        }
+      },
+      "required": ["createdAt", "lastUpdated", "version"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["theme", "paths", "files", "metadata"],
+  "additionalProperties": false
+}

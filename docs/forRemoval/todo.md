@@ -3,8 +3,8 @@
 READ:
 README.md
 ai-pm-mcp/reference/organization.md
-ai-pm-mcp/reference/organization.json
 ai-pm-mcp/reference/index.json
+ai-pm-mcp/reference/organization.json
 ai-pm-mcp/database/schema.sql
 ai-pm-mcp/core/mcp_api.py
 ai-pm-mcp/core-context/directive-compressed.json
@@ -64,6 +64,8 @@ ai-pm-mcp-production/
       "cwd": "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/"
     }
   }
+
+ claude mcp add ai-project-manager python3 -- -m ai-pm-mcp-production
 
  cd .. && timeout 10 python3 -m ai-pm-mcp 2>&1 | head   │
 │    -20 

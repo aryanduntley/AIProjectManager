@@ -1,0 +1,214 @@
+{
+  "metadata": {
+    "flowFile": "authentication-flow.json",
+    "description": "User authentication, registration, and account management flows",
+    "primaryThemes": ["authentication", "user-management"],
+    "secondaryThemes": ["security", "ui-components"],
+    "created": "2025-07-10T14:00:00Z",
+    "lastUpdated": "2025-07-11T16:45:00Z",
+    "version": "1.0.0"
+  },
+  "flows": [
+    {
+      "flowId": "user-registration-flow",
+      "name": "User Registration",
+      "description": "Complete user registration process from signup to profile completion",
+      "status": "in-progress",
+      "completionPercentage": 75,
+      "primaryThemes": ["authentication", "user-management"],
+      "secondaryThemes": ["ui-components", "api"],
+      "trigger": {
+        "type": "user-action",
+        "action": "signup_button_click",
+        "files": ["src/components/auth/SignupPage.tsx"]
+      },
+      "steps": [
+        {
+          "stepId": "URF-001",
+          "step": 1,
+          "description": "User clicks 'Sign Up' button on landing page",
+          "status": "complete",
+          "userExperience": "User sees 'Sign Up' button and clicks it to start registration",
+          "page": "/landing",
+          "elements": ["signup_button"],
+          "files": [
+            "src/components/landing/LandingPage.tsx",
+            "src/components/auth/SignupButton.tsx"
+          ],
+          "nextPage": "/signup",
+          "completedDate": "2025-07-10T14:30:00Z"
+        },
+        {
+          "stepId": "URF-002",
+          "step": 2,
+          "description": "User fills out registration form",
+          "status": "complete",
+          "userExperience": "User sees registration form with fields for name, email, password and submits",
+          "page": "/signup",
+          "elements": ["name_field", "email_field", "password_field", "confirm_password_field", "submit_button"],
+          "files": [
+            "src/components/auth/SignupPage.tsx",
+            "src/components/forms/RegistrationForm.tsx"
+          ],
+          "userActions": ["enter_name", "enter_email", "enter_password", "confirm_password", "click_submit"],
+          "validations": ["email_format", "password_strength", "password_match"],
+          "dependencies": ["URF-001"],
+          "completedDate": "2025-07-11T09:15:00Z"
+        },
+        {
+          "stepId": "URF-003",
+          "step": 3,
+          "description": "User receives email verification",
+          "status": "complete",
+          "userExperience": "User sees success message and receives verification email",
+          "page": "/verify-email",
+          "elements": ["success_message", "email_sent_notification", "resend_button"],
+          "files": [
+            "src/components/auth/EmailVerification.tsx",
+            "src/components/notifications/SuccessMessage.tsx"
+          ],
+          "userActions": ["check_email", "click_verification_link", "resend_email"],
+          "dependencies": ["URF-002"],
+          "completedDate": "2025-07-11T16:45:00Z"
+        },
+        {
+          "stepId": "URF-004",
+          "step": 4,
+          "description": "User is redirected based on profile completion status",
+          "status": "pending",
+          "userExperience": "User is automatically redirected to appropriate next step",
+          "condition": "email_verified",
+          "branches": [
+            {
+              "condition": "profile_complete",
+              "page": "/dashboard",
+              "userExperience": "User sees dashboard with welcome message and navigation",
+              "elements": ["welcome_message", "navigation_menu", "dashboard_content", "user_avatar"],
+              "files": ["src/components/dashboard/Dashboard.tsx", "src/components/layout/Navigation.tsx"]
+            },
+            {
+              "condition": "profile_incomplete",
+              "page": "/profile-setup",
+              "userExperience": "User sees profile setup form to complete registration",
+              "elements": ["profile_form", "avatar_upload", "bio_field", "preferences_section", "save_button"],
+              "files": ["src/components/profile/ProfileSetup.tsx", "src/components/forms/ProfileForm.tsx"],
+              "crossFlowReference": {
+                "flowId": "profile-setup-flow",
+                "flowFile": "profile-flow.json",
+                "reason": "Profile setup is handled by dedicated profile flow"
+              }
+            }
+          ],
+          "dependencies": ["URF-003"]
+        }
+      ],
+      "outcome": "User successfully registered and redirected to appropriate next step",
+      "userTestingScenarios": [
+        "Test successful registration flow",
+        "Test email verification process", 
+        "Test profile completion branching"
+      ],
+      "crossFlowDependencies": [
+        {
+          "flowId": "profile-setup-flow",
+          "flowFile": "profile-flow.json",
+          "relationship": "triggers",
+          "condition": "profile_incomplete"
+        }
+      ]
+    },
+    {
+      "flowId": "user-login-flow",
+      "name": "User Login",
+      "description": "User authentication and session establishment",
+      "status": "complete",
+      "completionPercentage": 100,
+      "primaryThemes": ["authentication"],
+      "secondaryThemes": ["security", "ui-components"],
+      "trigger": {
+        "type": "user-action",
+        "action": "login_button_click",
+        "files": ["src/components/auth/LoginPage.tsx"]
+      },
+      "steps": [
+        {
+          "stepId": "ULF-001",
+          "step": 1,
+          "description": "User clicks 'Login' button and sees login form",
+          "status": "complete",
+          "userExperience": "User sees login form with email and password fields",
+          "page": "/login",
+          "elements": ["email_field", "password_field", "login_button", "forgot_password_link"],
+          "files": [
+            "src/components/auth/LoginPage.tsx",
+            "src/components/forms/LoginForm.tsx"
+          ],
+          "userActions": ["enter_email", "enter_password", "click_login"],
+          "completedDate": "2025-07-08T10:00:00Z"
+        },
+        {
+          "stepId": "ULF-002",
+          "step": 2,
+          "description": "User submits login credentials",
+          "status": "complete",
+          "userExperience": "User enters credentials and clicks login button",
+          "page": "/login",
+          "validations": ["email_format", "password_required"],
+          "files": [
+            "src/services/auth/AuthService.ts",
+            "src/components/auth/LoginPage.tsx"
+          ],
+          "userActions": ["submit_login_form"],
+          "dependencies": ["ULF-001"],
+          "completedDate": "2025-07-08T14:30:00Z"
+        },
+        {
+          "stepId": "ULF-003",
+          "step": 3,
+          "description": "User receives authentication result",
+          "status": "complete",
+          "userExperience": "User is redirected based on authentication outcome",
+          "branches": [
+            {
+              "condition": "authentication_successful",
+              "page": "/dashboard",
+              "userExperience": "User sees dashboard with personalized content",
+              "elements": ["dashboard_content", "user_avatar", "navigation_menu"],
+              "files": ["src/components/dashboard/Dashboard.tsx"]
+            },
+            {
+              "condition": "authentication_failed",
+              "page": "/login",
+              "userExperience": "User sees error message and can retry login",
+              "elements": ["error_message", "retry_button"],
+              "files": ["src/components/auth/LoginPage.tsx", "src/components/errors/ErrorMessage.tsx"]
+            }
+          ],
+          "dependencies": ["ULF-002"],
+          "completedDate": "2025-07-08T16:00:00Z"
+        }
+      ],
+      "outcome": "User successfully authenticated and redirected to dashboard",
+      "userTestingScenarios": [
+        "Test successful login flow",
+        "Test failed login handling",
+        "Test form validation"
+      ]
+    }
+  ],
+  "globalFiles": [
+    "src/contexts/AuthContext.tsx",
+    "src/hooks/useAuth.ts",
+    "src/services/auth/AuthService.ts",
+    "src/utils/validation/AuthValidation.ts"
+  ],
+  "progressSummary": {
+    "totalSteps": 7,
+    "completedSteps": 6,
+    "overallProgress": 85.7,
+    "flowProgress": {
+      "user-registration-flow": 75,
+      "user-login-flow": 100
+    }
+  }
+}

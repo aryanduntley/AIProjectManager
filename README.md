@@ -131,6 +131,17 @@ The server will:
    - Use the project management tools to set up your project structure
 
 3. **Connect with Claude Code**:
+
+   **Recommended Method (Using Claude MCP Commands)**:
+   ```bash
+   # Navigate to your project root directory (where you want AI to manage your project)
+   cd /path/to/your/project-root/
+   
+   # Add the MCP server with proper scope
+   claude mcp add ai-project-manager python3 -- -m ai-pm-mcp
+   ```
+
+   **Alternative Method (Manual Configuration)**:
    Add the following configuration to your `~/.claude.json` file:
    ```json
    "mcpServers": {
@@ -142,7 +153,9 @@ The server will:
    }
    ```
    
-   **Important**: Replace `/path/to/your/project-root/` with the actual path to your project root directory (where you want the AI to manage your project, not the ai-pm-mcp directory).
+   **Important**: 
+   - Replace `/path/to/your/project-root/` with the actual path to your project root directory (where you want the AI to manage your project, not the ai-pm-mcp directory)
+   - The `cwd` should point to your project directory, not the AIProjectManager directory
    
    **Note**: Use the `-m ai-pm-mcp` module approach for proper Python import resolution.
 

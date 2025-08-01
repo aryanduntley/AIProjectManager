@@ -1,0 +1,555 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "created": "2025-01-15T18:00:00Z",
+    "lastUpdated": "2025-01-15T18:00:00Z",
+    "description": "Index of all AI Project Manager directives for AI reference",
+    "totalDirectives": 17
+  },
+  "directives": {
+    "01-system-initialization": {
+      "filename": "01-system-initialization.md",
+      "title": "System Initialization Directives",
+      "purpose": "Define startup procedures, MCP server connection, and initial system setup",
+      "priority": "critical",
+      "triggers": ["MCP server startup", "First connection", "System boot"],
+      "sections": [
+        "MCP Server Connection Protocol",
+        "Project Detection and Compatibility",
+        "Configuration Loading Protocol"
+      ],
+      "configSettings": [
+        "max_file_lines",
+        "auto_modularize",
+        "theme_discovery"
+      ],
+      "integrations": [
+        "02-project-initialization",
+        "13-metadata-management"
+      ],
+      "dependencies": ["UserSettings/config.json", "MCP server connectivity"],
+      "keyOperations": ["Server validation", "Compatibility checking", "Config loading"],
+      "frequency": "session-start"
+    },
+    "02-project-initialization": {
+      "filename": "02-project-initialization.md",
+      "title": "Project Initialization Directives",
+      "purpose": "Guide initial project setup for both new and existing projects",
+      "priority": "critical",
+      "triggers": ["New project creation", "Existing project analysis"],
+      "sections": [
+        "NEW PROJECT Process Flow",
+        "EXISTING PROJECT Process Flow",
+        "Project Evaluation",
+        "Scaffolding Creation"
+      ],
+      "configSettings": [
+        "autoTaskCreation"
+      ],
+      "integrations": [
+        "13-metadata-management",
+        "04-theme-management",
+        "06-task-management"
+      ],
+      "dependencies": ["ProjectBlueprint", "ProjectFlow", "ProjectLogic"],
+      "keyOperations": ["Blueprint creation", "Theme discovery", "Flow definition", "Metadata initialization"],
+      "frequency": "project-start"
+    },
+    "03-session-management": {
+      "filename": "03-session-management.md",
+      "title": "Session Management Directives",
+      "purpose": "Handle database-enhanced session boot, state management, and continuity",
+      "priority": "high",
+      "triggers": ["Session start", "Continue development", "Task resumption"],
+      "sections": [
+        "Database-Enhanced Session Boot Protocol",
+        "Session Context Snapshots and Restoration",
+        "Database Session Persistence Requirements"
+      ],
+      "configSettings": [
+        "tasks.resumeTasksOnStart",
+        "tasks.autoTaskCreation"
+      ],
+      "integrations": [
+        "06-task-management",
+        "07-implementation-plans",
+        "08-project-management"
+      ],
+      "dependencies": ["ProjectBlueprint", "projectManagement/Tasks/completion-path.json", "Tasks/active/"],
+      "keyOperations": ["Context loading", "Task resumption", "State preservation"],
+      "frequency": "session-start"
+    },
+    "04-theme-management": {
+      "filename": "04-theme-management.md",
+      "title": "Theme Management Directives",
+      "purpose": "Manage project themes, discovery, validation, and modification",
+      "priority": "high",
+      "triggers": ["Theme discovery", "Theme validation", "Theme modification"],
+      "sections": [
+        "Automatic Theme Discovery Protocol",
+        "Theme Presentation Format",
+        "Theme File Structure Requirements",
+        "Theme Validation Requirements",
+        "Theme Modification Protocol"
+      ],
+      "configSettings": [
+        "themes.autoDiscovery",
+        "themes.sharedFileThreshold",
+        "themes.conflictResolution"
+      ],
+      "integrations": [
+        "05-context-loading",
+        "11-quality-assurance",
+        "13-metadata-management"
+      ],
+      "dependencies": ["Themes/ directory", "themes.json", "projectlogic.jsonl"],
+      "keyOperations": ["Theme discovery", "User approval", "File validation", "Threshold monitoring"],
+      "frequency": "project-setup,ongoing"
+    },
+    "05-context-loading": {
+      "filename": "05-context-loading.md",
+      "title": "Context Loading Directives",
+      "purpose": "Manage database-enhanced context loading strategies and memory optimization",
+      "priority": "high",
+      "triggers": ["Task execution", "Context escalation", "Memory optimization"],
+      "sections": [
+        "Context Mode Selection Protocol",
+        "Database-Enhanced Context Loading",
+        "Global File Access Protocol",
+        "Context Escalation Protocol",
+        "Memory Optimization Requirements"
+      ],
+      "configSettings": [
+        "contextLoading.defaultMode",
+        "contextLoading.readmeFirst",
+        "contextLoading.escalationEnabled"
+      ],
+      "integrations": [
+        "04-theme-management",
+        "06-task-management",
+        "10-file-operations"
+      ],
+      "dependencies": ["Theme files", "README.md files", "Task context"],
+      "keyOperations": ["Context mode selection", "README loading", "Memory management", "Context escalation"],
+      "frequency": "task-execution"
+    },
+    "06-task-management": {
+      "filename": "06-task-management.md",
+      "title": "Task Management Directives",
+      "purpose": "Handle task lifecycle, parallel execution, completion tracking, and TODO review requirements",
+      "priority": "high",
+      "triggers": ["Task creation", "Task execution", "Task completion", "Sidequest management", "TODO review"],
+      "sections": [
+        "Task File Structure Requirements",
+        "Task Lifecycle Management",
+        "Sidequest Management Protocol",
+        "Completion Path Integration",
+        "Parallel Task Management",
+        "TODO Review Requirements"
+      ],
+      "configSettings": [
+        "tasks.parallelTasksEnabled",
+        "tasks.maxActiveSidequests",
+        "tasks.statusMarkers"
+      ],
+      "integrations": [
+        "07-implementation-plans",
+        "08-project-management",
+        "04-theme-management",
+        "10-file-operations"
+      ],
+      "dependencies": ["Tasks/ directory", "projectManagement/Tasks/completion-path.json", "Theme integration", "Placeholders/todos.jsonl"],
+      "keyOperations": ["Task creation", "Status management", "Parallel execution", "Completion tracking", "TODO review and resolution"],
+      "frequency": "ongoing"
+    },
+    "07-implementation-plans": {
+      "filename": "07-implementation-plans.md",
+      "title": "Implementation Plans Directives",
+      "purpose": "Manage strategic implementation planning and execution phases",
+      "priority": "high",
+      "triggers": ["Milestone implementation", "Strategic planning", "Phase execution"],
+      "sections": [
+        "Implementation Plan Lifecycle",
+        "File Naming Convention",
+        "Archival System",
+        "Integration with Session Boot",
+        "Template Structure"
+      ],
+      "configSettings": [],
+      "integrations": [
+        "06-task-management",
+        "08-project-management",
+        "03-session-management"
+      ],
+      "dependencies": ["Implementations/ directory", "projectManagement/Tasks/completion-path.json", "Milestone tracking"],
+      "keyOperations": ["Plan creation", "Phase execution", "Archival management", "Strategic continuity"],
+      "frequency": "milestone-driven"
+    },
+    "08-project-management": {
+      "filename": "08-project-management.md",
+      "title": "Project Management Directives",
+      "purpose": "Manage project blueprints, flows, logic, and completion paths",
+      "priority": "critical",
+      "triggers": ["Blueprint updates", "Flow changes", "Logic modifications", "Completion tracking"],
+      "sections": [
+        "Project Blueprint Management",
+        "Project Flow Documentation",
+        "Project Logic Tracking",
+        "Completion Path Management"
+      ],
+      "configSettings": [
+        "validation.requireApprovalForStructureChanges"
+      ],
+      "integrations": [
+        "13-metadata-management",
+        "06-task-management",
+        "07-implementation-plans"
+      ],
+      "dependencies": ["ProjectBlueprint/", "ProjectFlow/", "ProjectLogic/", "projectManagement/Tasks/completion-path.json"],
+      "keyOperations": ["Blueprint management", "Flow updates", "Logic tracking", "Completion validation"],
+      "frequency": "ongoing"
+    },
+    "09-logging-documentation": {
+      "filename": "09-logging-documentation.md",
+      "title": "Logging & Documentation Directives",
+      "purpose": "Manage hybrid file-database logging protocols, documentation updates, and audit trails",
+      "priority": "medium",
+      "triggers": ["Significant decisions", "Documentation updates", "Audit requirements"],
+      "sections": [
+        "Hybrid Logging Protocol",
+        "Database Event Management",
+        "Automatic Archiving Protocol",
+        "Documentation Update Requirements"
+      ],
+      "configSettings": [
+        "archiving.projectlogicSizeLimit",
+        "archiving.noteworthySizeLimit",
+        "archiving.deleteArchivesOlderThan"
+      ],
+      "integrations": [
+        "08-project-management",
+        "11-quality-assurance"
+      ],
+      "dependencies": ["Logs/ directory", "projectlogic.jsonl", "noteworthy.json"],
+      "keyOperations": ["Decision logging", "Archive management", "Documentation sync"],
+      "frequency": "decision-driven"
+    },
+    "10-file-operations": {
+      "filename": "10-file-operations.md",
+      "title": "File Operations Directives",
+      "purpose": "Handle file modifications, line limits, and anti-placeholder protocols",
+      "priority": "high",
+      "triggers": ["File modification", "Code generation", "Line limit enforcement"],
+      "sections": [
+        "Line Limit Enforcement",
+        "Anti-Placeholder Protocol",
+        "File Modification Protocol",
+        "README Management Requirements"
+      ],
+      "configSettings": [
+        "project.maxFileLineCount",
+        "project.avoidPlaceholders",
+        "project.autoModularize",
+        "project.backwardsCompatibility",
+        "project.productionMode"
+      ],
+      "integrations": [
+        "04-theme-management",
+        "11-quality-assurance",
+        "05-context-loading"
+      ],
+      "dependencies": ["Project files", "README.md files", "Theme validation"],
+      "keyOperations": ["Line count checking", "Modularization", "Placeholder avoidance", "README updates"],
+      "frequency": "file-modification"
+    },
+    "11-quality-assurance": {
+      "filename": "11-quality-assurance.md",
+      "title": "Quality Assurance Directives",
+      "purpose": "Ensure code quality, validation, and testing standards",
+      "priority": "high",
+      "triggers": ["Code validation", "Testing requirements", "Quality checks"],
+      "sections": [
+        "Testing Protocol",
+        "Validation Requirements",
+        "Code Quality Standards",
+        "Data Integrity Protocol",
+        "Audit Trail Requirements"
+      ],
+      "configSettings": [
+        "validation.enforceTaskMilestoneReference",
+        "validation.enforceTaskThemeReference",
+        "validation.enforceSubtaskFlowReference",
+        "validation.validateFileExistence",
+        "validation.requireApprovalForStructureChanges",
+        "validation.validateJsonSchemas"
+      ],
+      "integrations": [
+        "04-theme-management",
+        "06-task-management",
+        "10-file-operations"
+      ],
+      "dependencies": ["All project files", "Schema validation", "Testing frameworks"],
+      "keyOperations": ["Validation checks", "Quality enforcement", "Testing guidelines", "Audit maintenance"],
+      "frequency": "continuous"
+    },
+    "12-user-interaction": {
+      "filename": "12-user-interaction.md",
+      "title": "User Interaction Directives",
+      "purpose": "Manage user approvals, communication, and preference learning",
+      "priority": "high",
+      "triggers": ["User approval needed", "Communication requirements", "Preference updates"],
+      "sections": [
+        "User Approval Requirements",
+        "User Communication Protocol",
+        "Preference Learning and Adaptation",
+        "Session Boot Configuration"
+      ],
+      "configSettings": [
+        "tasks.resumeTasksOnStart"
+      ],
+      "integrations": [
+        "03-session-management",
+        "08-project-management",
+        "04-theme-management"
+      ],
+      "dependencies": ["UserSettings/config.json", "User preferences", "Session state"],
+      "keyOperations": ["Approval management", "Communication", "Preference tracking", "Session behavior"],
+      "frequency": "user-driven"
+    },
+    "13-metadata-management": {
+      "filename": "13-metadata-management.md",
+      "title": "Metadata Management Directives",
+      "purpose": "Manage dynamic project characteristics and metadata lifecycle",
+      "priority": "medium",
+      "triggers": ["Metadata updates", "Project characteristic changes", "Blueprint updates"],
+      "sections": [
+        "Project Metadata Overview",
+        "Metadata Structure and Content",
+        "Metadata Update Triggers",
+        "Metadata vs Configuration Distinction",
+        "Integration with Project Workflows"
+      ],
+      "configSettings": [],
+      "integrations": [
+        "02-project-initialization",
+        "08-project-management",  
+        "04-theme-management"
+      ],
+      "dependencies": ["ProjectBlueprint/metadata.json", "ProjectLogic updates", "Theme discovery"],
+      "keyOperations": ["Metadata initialization", "Characteristic tracking", "Workflow integration"],
+      "frequency": "project-evolution"
+    },
+    "14-branch-management": {
+      "filename": "14-branch-management.md",
+      "title": "Git Branch Management Directives",
+      "purpose": "Manage Git branch lifecycle with automatic user identification and Git-native operations",
+      "priority": "high",
+      "triggers": ["Branch creation request", "Multiple developer scenario", "Parallel development needed", "Branch merge operations", "User identification needed"],
+      "sections": [
+        "Branch Naming Conventions",
+        "User Identification System",
+        "Branch Creation Workflow",
+        "Branch Development Phase",
+        "Branch Merging Workflow",
+        "Branch Management Tools"
+      ],
+      "configSettings": [
+        "branch_management.enabled",
+        "branch_management.max_active_branches",
+        "branch_management.auto_delete_merged",
+        "branch_management.branch_naming_validation"
+      ],
+      "integrations": [
+        "15-git-integration",
+        "03-session-management",
+        "09-logging-documentation"
+      ],
+      "dependencies": ["Git repository", "ai-pm-org-main branch", "ai_instance_branches database table"],
+      "keyOperations": ["User detection", "Branch creation", "Git merge", "User attribution", "Branch cleanup"],
+      "frequency": "branch-operations"
+    },
+    "15-git-integration": {
+      "filename": "15-git-integration.md",
+      "title": "Git Integration Directives",
+      "purpose": "Root-level Git tracking, code change detection, and organizational reconciliation",
+      "priority": "high",
+      "triggers": ["Session boot with project code changes", "Git repository state detection needed", "External code modifications detected"],
+      "sections": [
+        "Git Repository Structure",
+        "Code Change Detection",
+        "Organizational Reconciliation",
+        "Git Configuration Management"
+      ],
+      "configSettings": [
+        "git.enabled",
+        "git.auto_init_repo", 
+        "git.code_change_detection",
+        "git.auto_reconcile_on_boot"
+      ],
+      "integrations": [
+        "14-branch-management",
+        "03-session-management",
+        "04-theme-management"
+      ],
+      "dependencies": ["Git repository", "Project root access", "Theme impact analysis"],
+      "keyOperations": ["Change detection", "Theme reconciliation", "Git state tracking", "Repository initialization"],
+      "frequency": "session-boot"
+    },
+    "database-integration": {
+      "filename": "database-integration.md",
+      "title": "Database Integration Directives",
+      "purpose": "Database integration protocols for hybrid file-database architecture",
+      "priority": "critical",
+      "triggers": ["Project initialization", "Database setup", "State synchronization"],
+      "sections": [
+        "Hybrid Architecture Protocol",
+        "Real-Time State Synchronization",
+        "Session Persistence",
+        "Database Operations"
+      ],
+      "configSettings": [
+        "database.enabled",
+        "synchronization.atomicOperations",
+        "sessions.contextSnapshots",
+        "synchronization.realTimeUpdates"
+      ],
+      "integrations": [
+        "03-session-management",
+        "06-task-management",
+        "05-context-loading"
+      ],
+      "dependencies": ["project.db", "Database schema", "SQLite support"],
+      "keyOperations": ["State synchronization", "Session snapshots", "Database queries", "Context preservation"],
+      "frequency": "continuous"
+    },
+    "directive-escalation-system": {
+      "filename": "directive-escalation-system.md",
+      "title": "Directive Escalation System",
+      "purpose": "Directive escalation system for accessing detailed implementation specifications",
+      "priority": "critical",
+      "triggers": ["Directive ambiguity", "User communication needed", "Complex workflow execution", "Edge case handling"],
+      "sections": [
+        "Three-Tier Escalation System",
+        "Forced Escalation Operations",
+        "Escalation Protocol",
+        "Context Preservation"
+      ],
+      "configSettings": [
+        "escalation.automaticJSON",
+        "escalation.requireMDApproval"
+      ],
+      "integrations": [
+        "All directives - provides escalation framework"
+      ],
+      "dependencies": ["All directive files", "Escalation chain integrity"],
+      "keyOperations": ["Escalation chain", "User approval process", "Context preservation", "Directive navigation"],
+      "frequency": "as-needed"
+    }
+  },
+  "relationships": {
+    "critical_path": [
+      "01-system-initialization",
+      "02-project-initialization",
+      "03-session-management",
+      "08-project-management"
+    ],
+    "configuration_heavy": [
+      "10-file-operations",
+      "11-quality-assurance",
+      "05-context-loading",
+      "12-user-interaction"
+    ],
+    "workflow_integration": [
+      "06-task-management",
+      "07-implementation-plans",
+      "04-theme-management"
+    ],
+    "supporting_systems": [
+      "09-logging-documentation",
+      "13-metadata-management"
+    ]
+  },
+  "config_settings_map": {
+    "project.maxFileLineCount": ["10-file-operations"],
+    "project.avoidPlaceholders": ["10-file-operations"],
+    "project.backwardsCompatibility": ["10-file-operations"],
+    "project.productionMode": ["10-file-operations"],
+    "contextLoading.readmeFirst": ["05-context-loading"],
+    "contextLoading.defaultMode": ["05-context-loading"],
+    "contextLoading.escalationEnabled": ["05-context-loading"],
+    "tasks.resumeTasksOnStart": ["03-session-management", "12-user-interaction"],
+    "tasks.autoTaskCreation": ["02-project-initialization", "03-session-management"],
+    "tasks.parallelTasksEnabled": ["06-task-management"],
+    "tasks.maxActiveSidequests": ["06-task-management"],
+    "themes.sharedFileThreshold": ["04-theme-management"],
+    "themes.autoDiscovery": ["04-theme-management"],
+    "validation.enforceTaskMilestoneReference": ["11-quality-assurance"],
+    "validation.enforceTaskThemeReference": ["11-quality-assurance"],
+    "validation.enforceSubtaskFlowReference": ["11-quality-assurance"],
+    "validation.validateFileExistence": ["11-quality-assurance"],
+    "validation.requireApprovalForStructureChanges": ["11-quality-assurance"],
+    "validation.validateJsonSchemas": ["11-quality-assurance"],
+    "archiving.projectlogicSizeLimit": ["09-logging-documentation"],
+    "archiving.noteworthySizeLimit": ["09-logging-documentation"],
+    "archiving.deleteArchivesOlderThan": ["09-logging-documentation"],
+    "branch_management.enabled": ["14-branch-management"],
+    "branch_management.max_active_branches": ["14-branch-management"],
+    "branch_management.auto_delete_merged": ["14-branch-management"],
+    "branch_management.branch_naming_validation": ["14-branch-management"],
+    "git.enabled": ["15-git-integration"],
+    "git.auto_init_repo": ["15-git-integration"],
+    "git.code_change_detection": ["15-git-integration"],
+    "git.auto_reconcile_on_boot": ["15-git-integration"],
+    "database.enabled": ["database-integration"],
+    "synchronization.atomicOperations": ["database-integration"],
+    "sessions.contextSnapshots": ["database-integration"],
+    "synchronization.realTimeUpdates": ["database-integration"],
+    "escalation.automaticJSON": ["directive-escalation-system"],
+    "escalation.requireMDApproval": ["directive-escalation-system"]
+  },
+  "usage_patterns": {
+    "session_start": [
+      "01-system-initialization",
+      "03-session-management",
+      "12-user-interaction"
+    ],
+    "project_setup": [
+      "02-project-initialization",
+      "04-theme-management",
+      "13-metadata-management"
+    ],
+    "task_execution": [
+      "06-task-management",
+      "05-context-loading",
+      "10-file-operations"
+    ],
+    "ongoing_maintenance": [
+      "08-project-management",
+      "09-logging-documentation",
+      "11-quality-assurance"
+    ],
+    "milestone_work": [
+      "07-implementation-plans",
+      "08-project-management",
+      "06-task-management"
+    ],
+    "branch_operations": [
+      "14-branch-management",
+      "15-git-integration",
+      "03-session-management"
+    ]
+  },
+  "quick_reference": {
+    "file_operations": "10-file-operations",
+    "user_approval": "12-user-interaction",
+    "theme_validation": "04-theme-management",
+    "task_creation": "06-task-management",
+    "session_boot": "03-session-management",
+    "quality_checks": "11-quality-assurance",
+    "metadata_updates": "13-metadata-management",
+    "context_loading": "05-context-loading",
+    "project_structure": "08-project-management",
+    "logging_decisions": "09-logging-documentation",
+    "todo_review": "06-task-management"
+  }
+}
