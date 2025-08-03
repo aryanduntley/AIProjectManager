@@ -25,6 +25,8 @@ from mcp.types import Tool
 
 from .core.config_manager import ConfigManager
 from .core.mcp_api import MCPToolRegistry
+from .core.state_analyzer import ProjectStateAnalyzer
+from .core.user_communication import UserCommunicationService
 
 
 # Configure enhanced debugging logging
@@ -51,6 +53,9 @@ class AIProjectManagerServer:
         self.server = Server("ai-project-manager")
         self.config_manager = ConfigManager()
         self.tool_registry = MCPToolRegistry(self.config_manager)
+        self.state_analyzer = ProjectStateAnalyzer()
+        self.user_comm = UserCommunicationService()
+        self.initial_state = None
         
     async def initialize(self):
         """Initialize the server and register tools."""
@@ -67,9 +72,10 @@ class AIProjectManagerServer:
             await self.tool_registry.register_all_tools(self.server)
             logger.debug("Tools registered successfully")
             
-            # Perform automatic session boot sequence
-            logger.debug("Starting automatic session boot sequence")
-            await self.perform_session_boot()
+            # Store initial state analysis but don't auto-execute
+            logger.debug("Analyzing initial project state")
+            self.initial_state = await self.analyze_initial_state()
+            logger.info("MCP Server ready - use get_project_state_analysis to see initialization options")
             
             logger.info("AI Project Manager MCP Server initialized successfully")
             
@@ -77,119 +83,36 @@ class AIProjectManagerServer:
             logger.error(f"Failed to initialize server: {e}", exc_info=True)
             raise
     
-    async def perform_session_boot(self):
-        """Perform automatic session boot sequence using MCP tools."""
+    async def analyze_initial_state(self):
+        """Analyze initial project state without auto-executing actions."""
         try:
             project_path = Path.cwd()
-            logger.info(f"Performing session boot for project at: {project_path}")
+            logger.info(f"Analyzing initial state for project at: {project_path}")
             
-            # Check for projectManagement structure
-            project_mgmt_dir = project_path / "projectManagement"
+            # Use state analyzer for comprehensive analysis
+            state_analysis = await self.state_analyzer.analyze_project_state(project_path)
             
-            # Check for Git repository and AI branches
-            git_analysis = await self.analyze_git_project_state(project_path)
-            
-            # Execute appropriate MCP tool based on analysis
-            if not project_mgmt_dir.exists():
-                # No project structure found - check for Git branch history
-                if git_analysis.get("has_ai_branches"):
-                    await self.execute_git_history_recovery(project_path, git_analysis)
-                else:
-                    await self.execute_project_initialization(project_path)
-            else:
-                # Project structure exists - check completeness and boot session
-                await self.execute_existing_project_boot(project_path, project_mgmt_dir, git_analysis)
+            logger.debug(f"Initial state determined: {state_analysis['state']}")
+            return state_analysis
                 
         except Exception as e:
-            logger.error(f"Error during session boot: {e}")
-            # Continue anyway - don't block server startup
-    
-    async def execute_git_history_recovery(self, project_path: Path, git_analysis: dict):
-        """Execute MCP tools for Git history recovery scenario."""
-        try:
-            from .tools.session_manager import SessionManager
-            session_manager = SessionManager(db_manager=None)
-            
-            # Execute session boot with git detection - this will be visible to Claude
-            arguments = {
-                "project_path": str(project_path),
-                "context_mode": "theme-focused", 
-                "force_git_check": True
+            logger.error(f"Error during initial state analysis: {e}")
+            return {
+                "state": "unknown",
+                "project_path": str(Path.cwd()),
+                "details": {"error": str(e)},
+                "git_analysis": {},
+                "recommended_actions": ["project_get_status", "check_logs"]
             }
-            result = await session_manager.boot_session_with_git_detection(arguments)
-            
-            logger.info("Git history recovery session boot completed")
-            return result
-            
-        except Exception as e:
-            logger.error(f"Error during Git history recovery: {e}")
     
-    async def execute_project_initialization(self, project_path: Path):
-        """Execute MCP tools for new project initialization."""
-        try:
-            from .tools.project_tools import ProjectTools
-            project_tools = ProjectTools(db_manager=None)
-            
-            # Check if this looks like a software project
-            project_indicators = [
-                'package.json', 'requirements.txt', 'Cargo.toml', 'go.mod', 
-                'composer.json', 'pom.xml', 'src/', 'app/', 'lib/', 'README.md'
-            ]
-            
-            has_indicators = any((project_path / indicator).exists() for indicator in project_indicators)
-            
-            if has_indicators:
-                # Auto-determine project name
-                project_name = project_path.name
-                readme_path = project_path / "README.md"
-                if readme_path.exists():
-                    try:
-                        content = readme_path.read_text(encoding='utf-8')[:1000]
-                        for line in content.split('\n'):
-                            if line.startswith('# '):
-                                project_name = line[2:].strip()
-                                break
-                    except:
-                        pass
-                
-                # Execute project initialization - this will be visible to Claude
-                arguments = {
-                    "project_path": str(project_path),
-                    "project_name": project_name,
-                    "force": False
-                }
-                result = await project_tools.initialize_project(arguments)
-                
-                logger.info(f"Auto-initialized project: {project_name}")
-                return result
-            else:
-                # Execute project status check - this will be visible to Claude
-                arguments = {"project_path": str(project_path)}
-                result = await project_tools.get_project_status(arguments)
-                logger.info("Project status check completed")
-                return result
-                
-        except Exception as e:
-            logger.error(f"Error during project initialization: {e}")
+    # REMOVED: execute_git_history_recovery - now handled by initialization tools
+    # Use make_initialization_choice MCP tool with appropriate choice
     
-    async def execute_existing_project_boot(self, project_path: Path, project_mgmt_dir: Path, git_analysis: dict):
-        """Execute MCP tools for existing project session boot."""
-        try:
-            from .tools.session_manager import SessionManager
-            session_manager = SessionManager(db_manager=None)
-            
-            # Execute enhanced session boot - this will be visible to Claude
-            arguments = {
-                "project_path": str(project_path),
-                "context_mode": "theme-focused"
-            }
-            result = await session_manager.boot_session_with_git_detection(arguments)
-            
-            logger.info("Existing project session boot completed")
-            return result
-            
-        except Exception as e:
-            logger.error(f"Error during existing project boot: {e}")
+    # REMOVED: execute_project_initialization - now handled by initialization tools
+    # Use make_initialization_choice MCP tool with 'initialize_project' choice
+    
+    # REMOVED: execute_existing_project_boot - now handled by initialization tools
+    # Use make_initialization_choice MCP tool with appropriate choice based on state
     
     async def analyze_git_project_state(self, project_path: Path) -> Dict[str, Any]:
         """Analyze Git repository state for AI project management branches using proper branch manager logic."""
@@ -268,6 +191,12 @@ class AIProjectManagerServer:
             
         return analysis
     
+    async def get_initial_state_analysis(self) -> Dict[str, Any]:
+        """Get the stored initial state analysis for MCP tools."""
+        if self.initial_state is None:
+            self.initial_state = await self.analyze_initial_state()
+        return self.initial_state
+    
     async def check_auto_task_setting(self, project_mgmt_dir: Path) -> bool:
         """Check if auto task creation is enabled in user settings."""
         try:
@@ -281,288 +210,26 @@ class AIProjectManagerServer:
             logger.error(f"Error reading auto task setting: {e}")
         return False
     
-    def notify_user_git_history_found(self, project_path: Path, git_analysis: Dict[str, Any]):
-        """Notify user that AI project management Git history was found.""" 
-        current_branch = git_analysis.get("current_branch", "unknown")
-        current_branch_type = git_analysis.get("current_branch_type", "unknown")
-        ai_main_exists = git_analysis.get("ai_main_exists", False)
-        ai_instance_branches = git_analysis.get("ai_instance_branches", [])
-        remote_ai_branches = git_analysis.get("remote_ai_branches", [])
-        is_team_member = git_analysis.get("is_team_member", False)
-        
-        # Build branch information
-        branch_list = ""
-        if ai_main_exists:
-            marker = " (current)" if current_branch == "ai-pm-org-main" else ""
-            branch_list += f"• ai-pm-org-main{marker} - Canonical AI organizational state\n"
-        
-        if ai_instance_branches:
-            branch_list += "\n**AI Instance Branches (Team Members):**\n"
-            for branch in ai_instance_branches:
-                marker = " (current)" if branch == current_branch else ""
-                branch_list += f"• {branch}{marker}\n"
-        
-        if remote_ai_branches:
-            branch_list += "\n**Remote AI Branches:**\n"
-            for branch in remote_ai_branches:
-                branch_list += f"• {branch}\n"
-        
-        # Determine user scenario and recommendations
-        scenario_info = ""
-        recommendations = []
-        
-        if current_branch_type == "user_main":
-            if is_team_member:
-                scenario_info = "🏢 **Team Member Scenario**: You're on the user main branch with existing AI history."
-                recommendations = [
-                    "**Join Team**: Use 'switch_to_branch ai-pm-org-main' to access shared AI state",
-                    "**Create Work Branch**: Use 'create_instance_branch' for your own AI work space",
-                    "**Fresh Start**: Use 'project_initialize' to start independent AI management"
-                ]
-            else:
-                scenario_info = "👤 **Project Owner**: You have AI history but are on the user main branch."
-                recommendations = [
-                    "**Resume AI Work**: Use 'switch_to_branch ai-pm-org-main' to continue AI management",
-                    "**Create Instance**: Use 'create_instance_branch' for parallel AI work",
-                    "**Fresh Start**: Use 'project_initialize' to restart AI management"
-                ]
-        elif current_branch_type == "ai_main":
-            scenario_info = "🎯 **On AI Main Branch**: You're on the canonical AI organizational branch."
-            recommendations = [
-                "**Continue Work**: Use 'session_boot_with_git_detection' to resume AI management",
-                "**Create Instance**: Use 'create_instance_branch' for experimental work"
-            ]
-        elif current_branch_type == "ai_instance":
-            scenario_info = "🔧 **On AI Instance Branch**: You're on an AI work branch."
-            recommendations = [
-                "**Continue Instance Work**: Use 'session_boot_with_git_detection' to resume work",
-                "**Switch to Main**: Use 'switch_to_branch ai-pm-org-main' to access main AI state",
-                "**Merge Changes**: Use 'merge_instance_branch' to integrate your work"
-            ]
-        
-        rec_list = "\n".join([f"{i+1}. {rec}" for i, rec in enumerate(recommendations)])
-        
-        message = f"""
-=== AI Project Manager - Session Boot ===
-📍 Project Directory: {project_path}
-🔍 AI project management history detected in Git branches!
-
-**AI Branches Found:**
-{branch_list}
-
-📊 **Current Status:**
-• Working Directory: No projectManagement/ structure  
-• Git Repository: ✅ Available
-• Current Branch: {current_branch} ({current_branch_type})
-• AI Project History: ✅ Found in Git branches
-• Team Member: {"✅ Yes" if is_team_member else "❌ No"}
-
-{scenario_info}
-
-🎯 **Recommended Next Steps:**
-{rec_list}
-
-4. **Analyze History**: Use 'get_branch_status' to understand branch contents
-
-ℹ️  Choose your approach based on your role and collaboration needs.
-==========================================
-"""
-        print(message, file=sys.stderr)
-        logger.info(f"User notified: AI Git history found (branch: {current_branch}, type: {current_branch_type}, team: {is_team_member})")
+    # REMOVED: notify_user_git_history_found - replaced with MCP tools
+    # All user communication now goes through get_project_state_analysis MCP tool
     
-    def notify_user_no_project_structure(self, project_path: Path):
-        """Notify user that no project management structure was found."""
-        message = f"""
-=== AI Project Manager - Session Boot ===
-📍 Project Directory: {project_path}
-⚠️  No project management structure found.
-
-🎯 **Next Steps Available:**
-1. Initialize new project: Use 'project_initialize' tool
-2. Review project status: Use 'project_get_status' tool  
-3. Check for existing code: Use 'check_user_code_changes' tool
-
-ℹ️  The AI Project Manager is ready to help you set up project management for this directory.
-==========================================
-"""
-        print(message, file=sys.stderr)
-        logger.info("User notified: No project management structure found")
+    # REMOVED: notify_user_no_project_structure - replaced with MCP tools
+    # All user communication now goes through get_project_state_analysis MCP tool
     
-    async def check_and_notify_project_state(self, project_path: Path, project_mgmt_dir: Path, git_analysis: Optional[Dict[str, Any]] = None):
-        """Check existing project state and notify user."""
-        try:
-            # Check component completeness
-            components = {
-                "blueprint": project_mgmt_dir / "ProjectBlueprint" / "blueprint.md",
-                "metadata": project_mgmt_dir / "ProjectBlueprint" / "metadata.json", 
-                "flow_index": project_mgmt_dir / "ProjectFlow" / "flow-index.json",
-                "themes": project_mgmt_dir / "Themes" / "themes.json",
-                "completion_path": project_mgmt_dir / "Tasks" / "completion-path.json",
-                "database": project_mgmt_dir / "project.db"
-            }
-            
-            existing = {}
-            missing = {}
-            
-            for name, path in components.items():
-                if path.exists() and path.stat().st_size > 0:
-                    existing[name] = str(path)
-                else:
-                    missing[name] = str(path)
-            
-            # Count tasks
-            active_tasks = list((project_mgmt_dir / "Tasks" / "active").glob("*.json")) if (project_mgmt_dir / "Tasks" / "active").exists() else []
-            sidequests = list((project_mgmt_dir / "Tasks" / "sidequests").glob("*.json")) if (project_mgmt_dir / "Tasks" / "sidequests").exists() else []
-            
-            # Determine project state and check auto-task settings
-            auto_task_enabled = await self.check_auto_task_setting(project_mgmt_dir)
-            
-            if len(missing) == 0:
-                await self.notify_user_complete_project(project_path, existing, len(active_tasks), len(sidequests), git_analysis, auto_task_enabled)
-            elif len(existing) > len(missing):
-                self.notify_user_partial_project(project_path, existing, missing, len(active_tasks), len(sidequests), git_analysis)
-            else:
-                self.notify_user_incomplete_project(project_path, existing, missing, git_analysis)
-                
-        except Exception as e:
-            logger.error(f"Error checking project state: {e}")
-            self.notify_user_unknown_project_state(project_path)
+    # REMOVED: check_and_notify_project_state - replaced by state_analyzer
+    # All project state analysis now handled by ProjectStateAnalyzer class
     
-    async def notify_user_complete_project(self, project_path: Path, existing: dict, active_tasks: int, sidequests: int, git_analysis: Optional[Dict[str, Any]] = None, auto_task_enabled: bool = False):
-        """Notify user that project structure is complete."""
-        
-        # Git branch info
-        git_info = ""
-        if git_analysis and git_analysis.get("is_git_repo"):
-            current_branch = git_analysis.get("current_branch", "unknown")
-            current_branch_type = git_analysis.get("current_branch_type", "unknown")
-            is_team_member = git_analysis.get("is_team_member", False)
-            git_info = f"• Git Branch: {current_branch} ({current_branch_type})\n"
-            git_info += f"• Team Member: {'✅ Yes' if is_team_member else '❌ No'}\n"
-        
-        # Auto-task logic
-        action_message = ""
-        if auto_task_enabled and active_tasks == 0:
-            action_message = "\n🚀 **Auto-task enabled**: Use 'session_boot_with_git_detection' to automatically continue work."
-        elif auto_task_enabled and active_tasks > 0:
-            action_message = "\n🚀 **Auto-task enabled**: Use 'session_boot_with_git_detection' to resume existing tasks."
-        else:
-            action_message = "\n🎯 **Manual mode**: Choose your next action from the options below."
-        
-        message = f"""
-=== AI Project Manager - Session Boot ===
-📍 Project Directory: {project_path}
-✅ Complete project management structure found.
-
-📊 **Project Status:**
-• Blueprint: ✅ Available
-• Themes: ✅ Available  
-• Flows: ✅ Available
-• Database: ✅ Available
-{git_info}• Active Tasks: {active_tasks}
-• Sidequests: {sidequests}
-• Auto-task: {"✅ Enabled" if auto_task_enabled else "❌ Disabled"}{action_message}
-
-🎯 **Available Actions:**
-• 'session_boot_with_git_detection' - Enhanced session boot with Git integration
-• 'project_get_status' - Detailed project information  
-• 'session_start' - Begin/resume work session
-• 'task_list_active' - See current tasks
-
-ℹ️  Project is ready for continued development.
-==========================================
-"""
-        print(message, file=sys.stderr)
-        logger.info(f"User notified: Complete project structure found (auto-task: {auto_task_enabled})")
+    # REMOVED: notify_user_complete_project - replaced with MCP tools
+    # All user communication now goes through get_project_state_analysis MCP tool
     
-    def notify_user_partial_project(self, project_path: Path, existing: dict, missing: dict, active_tasks: int, sidequests: int, git_analysis: Optional[Dict[str, Any]] = None):
-        """Notify user that project structure is partially complete."""
-        existing_list = "• " + "\n• ".join([f"{name}: ✅" for name in existing.keys()])
-        missing_list = "• " + "\n• ".join([f"{name}: ❌" for name in missing.keys()])
-        
-        # Git branch info
-        git_info = ""
-        if git_analysis and git_analysis.get("is_git_repo"):
-            current_branch = git_analysis.get("current_branch", "unknown")
-            current_branch_type = git_analysis.get("current_branch_type", "unknown")
-            is_team_member = git_analysis.get("is_team_member", False)
-            git_info = f"• Git Branch: {current_branch} ({current_branch_type})\n"
-            git_info += f"• Team Member: {'✅ Yes' if is_team_member else '❌ No'}\n"
-        
-        message = f"""
-=== AI Project Manager - Session Boot ===
-📍 Project Directory: {project_path}
-⚠️  Partial project management structure found.
-
-📊 **Current Status:**
-{existing_list}
-{missing_list}
-{git_info}• Active Tasks: {active_tasks}
-• Sidequests: {sidequests}
-
-🎯 **Next Steps Available:**
-1. **Complete initialization**: Use 'project_initialize' with force=true
-2. **Review current state**: Use 'project_get_status' tool
-3. **Restore missing components**: Initialize individual components
-4. **Continue with existing**: Use 'session_start' tool
-5. **Git integration**: Use 'session_boot_with_git_detection' for enhanced boot
-
-ℹ️  Project can be completed or continued with partial state.
-==========================================
-"""
-        print(message, file=sys.stderr)
-        logger.info("User notified: Partial project structure found")
+    # REMOVED: notify_user_partial_project - replaced with MCP tools
+    # All user communication now goes through get_project_state_analysis MCP tool
     
-    def notify_user_incomplete_project(self, project_path: Path, existing: dict, missing: dict, git_analysis: Optional[Dict[str, Any]] = None):
-        """Notify user that project structure is mostly incomplete."""
-        existing_list = "• " + "\n• ".join([f"{name}: ✅" for name in existing.keys()]) if existing else "• None"
-        
-        # Git branch info
-        git_info = ""
-        if git_analysis and git_analysis.get("is_git_repo"):
-            current_branch = git_analysis.get("current_branch", "unknown")
-            current_branch_type = git_analysis.get("current_branch_type", "unknown")
-            is_team_member = git_analysis.get("is_team_member", False)
-            git_info = f"• Git Branch: {current_branch} ({current_branch_type})\n"
-            git_info += f"• Team Member: {'✅ Yes' if is_team_member else '❌ No'}\n"
-        
-        message = f"""
-=== AI Project Manager - Session Boot ===
-📍 Project Directory: {project_path}
-⚠️  Incomplete project management structure found.
-
-📊 **Found Components:**
-{existing_list}
-{git_info}
-🎯 **Recommended Next Steps:**
-1. **Initialize Project**: Use 'project_initialize' tool to set up complete structure
-2. **Check Status**: Use 'project_get_status' for detailed analysis
-3. **Review Existing**: Check what can be preserved before reinitializing
-4. **Git Integration**: Use 'session_boot_with_git_detection' if you have Git history
-
-ℹ️  Project needs initialization to enable full AI project management.
-==========================================
-"""
-        print(message, file=sys.stderr)
-        logger.info("User notified: Incomplete project structure found")
+    # REMOVED: notify_user_incomplete_project - replaced with MCP tools
+    # All user communication now goes through get_project_state_analysis MCP tool
     
-    def notify_user_unknown_project_state(self, project_path: Path):
-        """Notify user that project state could not be determined."""
-        message = f"""
-=== AI Project Manager - Session Boot ===
-📍 Project Directory: {project_path}
-❓ Could not determine project management state.
-
-🎯 **Available Actions:**
-• Use 'project_get_status' to analyze current state
-• Use 'project_initialize' to set up project management
-• Check server logs for detailed error information
-
-ℹ️  Manual project analysis recommended.
-==========================================
-"""
-        print(message, file=sys.stderr)
-        logger.info("User notified: Unknown project state")
+    # REMOVED: notify_user_unknown_project_state - replaced with MCP tools
+    # All user communication now goes through get_project_state_analysis MCP tool
     
     async def run(self):
         """Run the MCP server with stdio transport."""

@@ -37,23 +37,28 @@ def main():
         # Import and run the server
         from server import main as server_main
         
-        print("🚀 Starting AI Project Manager MCP Server...")
-        print("📁 Server directory:", Path(__file__).parent.absolute())
-        print("🔧 Dependencies:", "bundled" if (Path(__file__).parent / "deps").exists() else "system")
-        print("⚡ Ready to connect with Claude or other MCP clients\n")
+        # Use logging for server startup messages (not user communication)
+        import logging
+        logging.basicConfig(level=logging.INFO, format='%(message)s')
+        logger = logging.getLogger(__name__)
+        
+        logger.info("🚀 Starting AI Project Manager MCP Server...")
+        logger.info(f"📁 Server directory: {Path(__file__).parent.absolute()}")
+        logger.info(f"🔧 Dependencies: {'bundled' if (Path(__file__).parent / 'deps').exists() else 'system'}")
+        logger.info("⚡ Ready to connect with Claude or other MCP clients\n")
         
         # Run the server
         asyncio.run(server_main())
         
     except KeyboardInterrupt:
-        print("\n✨ AI Project Manager MCP Server stopped by user")
+        logger.info("\n✨ AI Project Manager MCP Server stopped by user")
         sys.exit(0)
     except Exception as e:
-        print(f"❌ Error starting server: {e}")
-        print("\n🔍 Troubleshooting:")
-        print("1. Make sure you're running this from the ai-pm-mcp directory")
-        print("2. Check that all files are present (server.py, deps/, core/, etc.)")
-        print("3. Verify Python 3.8+ is installed")
+        logger.error(f"❌ Error starting server: {e}")
+        logger.error("\n🔍 Troubleshooting:")
+        logger.error("1. Make sure you're running this from the ai-pm-mcp directory")
+        logger.error("2. Check that all files are present (server.py, deps/, core/, etc.)")
+        logger.error("3. Verify Python 3.8+ is installed")
         sys.exit(1)
 
 if __name__ == "__main__":

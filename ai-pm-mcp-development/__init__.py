@@ -1,1 +1,0 @@
-# AI Project Manager MCP Server

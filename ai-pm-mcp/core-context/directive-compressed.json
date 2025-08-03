@@ -2,7 +2,7 @@
   "systemInitialization": {
     "triggers": ["MCP server startup", "First connection", "System boot"],
     "workflow": [
-      "AUTOMATIC STATE NOTIFICATION: Immediately analyze project state and notify user via stderr",
+      "AUTOMATIC STATE NOTIFICATION: Immediately analyze project state using optimized two-tier system (fast path for existing projects ~100ms, comprehensive analysis ~2-5s for new projects) and make available to user via MCP tools during server initialization",
       "Detect current project directory and check projectManagement/ completeness", 
       "Categorize state (none/partial/complete/unknown) and present formatted analysis",
       "Provide clear next-step options based on state (initialize/review/continue)",

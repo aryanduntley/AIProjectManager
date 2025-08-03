@@ -152,6 +152,11 @@ class MCPToolRegistry:
             from ..tools.branch_tools import BranchTools
             await self._register_tool_module(BranchTools())
             
+            # Import initialization tools for proper user interaction during server boot
+            from ..tools.initialization_tools import InitializationTools
+            initialization_tools = InitializationTools(self.db_manager)
+            await self._register_tool_module(initialization_tools)
+            
         except ImportError as e:
             logger.error(f"Critical tool modules not available: {e}")
             # Log missing modules and attempt fallback registration

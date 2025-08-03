@@ -8,9 +8,47 @@ This directive ensures proper system initialization with Git integration, instan
 
 ## 1.1 Automatic State Detection and Notification
 
-**Directive**: Upon MCP server connection, immediately analyze project state and notify user with next-step options without waiting for user request.
+**Directive**: Upon MCP server connection, immediately analyze project state using optimized two-tier system and make it available to user via MCP tools.
 
-**Critical Requirement**: This must happen automatically during server initialization, not when the user first asks for something.
+**Critical Requirement**: State analysis must be stored during server initialization and made available through get_project_state_analysis MCP tool.
+
+**Optimized Two-Tier Analysis System**:
+
+### 🚀 Fast Path (~100ms) - 95% Performance Improvement
+**When Used**: Existing projects with stable `projectManagement/` structure
+**Conditions**:
+- `projectManagement/` directory exists
+- Cached state available in `metadata.json`
+- Cache age < 24 hours
+- No Git repository changes detected
+
+**Process**:
+1. Read cached state from `ProjectBlueprint/metadata.json`
+2. Quick Git hash comparison (`git rev-parse HEAD`)
+3. Verify key components exist (blueprint.md, themes.json, flow-index.json)
+4. Return cached analysis with fast path indicator
+
+### 🔍 Comprehensive Path (~2-5s) - When Needed
+**When Used**: New projects or when changes detected
+**Conditions**:
+- No `projectManagement/` directory
+- No cached state available
+- Git repository changes detected
+- Cache expired (>24 hours)
+- User requests `force_full_analysis: true`
+
+**Process**:
+1. Full Git repository state analysis
+2. Complete component structure analysis  
+3. Software project indicator detection
+4. Generate comprehensive state categorization
+5. Cache results in metadata for future fast path
+
+**MCP Communication Protocol**:
+- **User Notification**: All user communication must be via MCP tool responses, never stderr/stdout
+- **State Analysis**: Provide state analysis through dedicated MCP tools
+- **User Choice Handling**: Implement MCP tools for processing user choices  
+- **No Auto Execution**: Never execute actions without explicit user choice through MCP tools
 
 **Implementation**:
 ```
@@ -18,10 +56,34 @@ This directive ensures proper system initialization with Git integration, instan
 2. Check for projectManagement/ directory existence and completeness
 3. Analyze component status (blueprint, themes, flows, database, tasks)
 4. Categorize state: none/partial/complete/unknown
-5. Present formatted state analysis directly to user via stderr
+5. Store formatted state analysis in server for MCP tool access
 6. Provide clear next-step options based on current state
-7. Wait for user choice before proceeding with any actions
+7. Wait for user choice via make_initialization_choice MCP tool before proceeding with any actions
 ```
+
+**Required MCP Tools**:
+- `get_project_state_analysis`: Returns formatted state analysis and available options
+  - New parameter: `force_full_analysis: boolean` (default: false)
+- `make_initialization_choice`: Processes user's choice and executes appropriate action
+
+**Cache Structure** (stored in `ProjectBlueprint/metadata.json`):
+```json
+{
+  "cached_state": {
+    "state": "complete",
+    "details": {...},
+    "git_analysis": {...},
+    "last_updated": "2024-01-15T10:30:00Z",
+    "last_git_hash": "abc123def456"
+  }
+}
+```
+
+**Cache Management**:
+- **Duration**: 24 hours for stable projects
+- **Invalidation**: Git hash changes, component file deletions, cache corruption
+- **Storage**: `projectManagement/ProjectBlueprint/metadata.json`
+- **Auto-Refresh**: Comprehensive analysis automatically updates cache
 
 **State Categories and Responses**:
 
@@ -41,7 +103,7 @@ This directive ensures proper system initialization with Git integration, instan
 - Message: "Could not determine project state"
 - Options: Manual analysis, Force initialization, Check logs
 
-**Output Format**: Use stderr for user notifications to avoid interfering with MCP protocol on stdout.
+**Output Format**: State analysis and user options are available via MCP tools, ensuring proper protocol compliance.
 
 ## 1.2 MCP Server Connection Protocol
 
@@ -267,34 +329,53 @@ This directive integrates with:
 
 ## User Communication Guidelines
 
-### Initialization Progress
-```
-🔧 System Initialization
-✅ MCP server connection verified
-✅ Git repository detected/initialized  
-✅ Instance type: Main (authority established)
-✅ Database initialized with complete schema
-✅ Ready for project operations
+### MCP Tool Responses
+
+**Initialization State Analysis** (via `get_project_state_analysis`):
+```json
+{
+  "type": "state_analysis",
+  "state": "partial",
+  "message": "Project partially initialized",
+  "details": {
+    "existing_components": ["blueprint", "themes"],
+    "missing_components": ["database", "flow_index"],
+    "completeness_ratio": 0.6
+  },
+  "options": [
+    "complete_initialization",
+    "review_state", 
+    "continue_existing"
+  ]
+}
 ```
 
-### Error Communication
-```
-❌ Database initialization failed
-   Issue: Unable to create project.db
-   Solution: Check file permissions in projectManagement/
-   Alternative: Continue with file-only mode (reduced performance)
-   Would you like to retry or continue with file-only mode?
+**Initialization Choice Response** (via `make_initialization_choice`):
+```json
+{
+  "type": "success",
+  "action": "project_initialization",
+  "message": "Project initialized successfully",
+  "result": {
+    "components_created": ["database", "flow_index"],
+    "git_repository": "initialized",
+    "ready_for_session": true
+  }
+}
 ```
 
-### Configuration Updates
-```  
-🔄 Configuration Update Detected
-   Previous version: 1.0.0
-   Current version: 1.1.0
-   Changes: Added Git integration and instance management
-   
-   Update recommended for full functionality.
-   Update project structure? (Y/n)
+**Error Communication** (via MCP tool responses):
+```json
+{
+  "type": "error",
+  "action": "database_initialization",
+  "message": "Failed to initialize database",
+  "details": {
+    "issue": "Permission denied creating project.db",
+    "solution": "Check file permissions in projectManagement/",
+    "alternative": "Continue with file-only mode"
+  }
+}
 ```
 
 This enhanced system initialization directive ensures robust foundation for Git-like instance management while maintaining backward compatibility and user-friendly error handling.

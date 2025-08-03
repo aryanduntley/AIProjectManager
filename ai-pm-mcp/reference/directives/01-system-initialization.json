@@ -17,8 +17,26 @@
   ],
   "workflows": {
     "automaticStateNotification": {
-      "directive": "Upon MCP server connection, immediately analyze project state and notify user with next-step options without waiting for user request",
-      "criticalRequirement": "This must happen automatically during server initialization, not when the user first asks for something",
+      "directive": "Upon MCP server connection, immediately analyze project state using optimized two-tier system and make it available to user via MCP tools",
+      "criticalRequirement": "State analysis must be stored during server initialization and made available through get_project_state_analysis MCP tool",
+      "optimizedAnalysis": {
+        "fastPath": {
+          "duration": "~100ms",
+          "conditions": ["projectManagement/ exists", "cached state available", "cache < 24 hours old", "no Git changes detected"],
+          "process": ["Read cached state from metadata.json", "Quick Git hash comparison", "Verify key components exist", "Return cached analysis"]
+        },
+        "comprehensivePath": {
+          "duration": "~2-5s", 
+          "conditions": ["New project", "No cached state", "Git changes detected", "Cache expired", "Force full analysis requested"],
+          "process": ["Full Git repository analysis", "Complete component structure analysis", "Software project detection", "Cache results for future sessions"]
+        }
+      },
+      "mcpCommunicationProtocol": {
+        "userNotification": "All user communication must be via MCP tool responses, never stderr/stdout",
+        "stateAnalysis": "Provide state analysis through dedicated MCP tools",
+        "userChoiceHandling": "Implement MCP tools for processing user choices",
+        "noAutoExecution": "Never execute actions without explicit user choice through MCP tools"
+      },
       "steps": [
         {
           "action": "detectProjectDirectory",
@@ -43,10 +61,10 @@
           "categories": ["none", "partial", "complete", "unknown"]
         },
         {
-          "action": "presentStateAnalysis",
-          "description": "Present formatted state analysis directly to user via stderr",
+          "action": "storeStateAnalysis",
+          "description": "Store formatted state analysis in server for MCP tool access",
           "required": true,
-          "outputFormat": "stderr to avoid interfering with MCP protocol"
+          "outputFormat": "Available via get_project_state_analysis MCP tool"
         },
         {
           "action": "provideClearOptions",
@@ -55,8 +73,9 @@
         },
         {
           "action": "waitForUserChoice",
-          "description": "Wait for user choice before proceeding with any actions",
-          "required": true
+          "description": "Wait for user choice via make_initialization_choice MCP tool before proceeding with any actions",
+          "required": true,
+          "mcpTools": ["get_project_state_analysis", "make_initialization_choice"]
         }
       ],
       "stateResponses": {
