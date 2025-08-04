@@ -6,7 +6,8 @@
     "autoModularize": true,
     "backwardsCompatibility": false,
     "productionMode": false,
-    "minifyJson": true
+    "minifyJson": true,
+    "managementFolderName": "projectManagement"
   },
   "documentation": {
     "readmeJsonFilename": "README",

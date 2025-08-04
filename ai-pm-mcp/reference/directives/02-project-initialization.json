@@ -9,9 +9,45 @@
   },
   "triggers": [
     "New project creation",
-    "Existing project analysis",
-    "First project setup"
+    "Existing project analysis", 
+    "First project setup",
+    "/init command execution"
   ],
+  "initCommandHandling": {
+    "statusCheckRequired": "CRITICAL: Always check project state before proceeding with any initialization",
+    "behaviorByState": {
+      "complete": {
+        "action": "block_initialization",
+        "message": "Project already has AI Project Manager fully set up and running",
+        "suggestions": [
+          "Use /resume to continue previous work",
+          "Use /tasks to see current work items", 
+          "Use /status to check project status",
+          "Use /branch to create work branch"
+        ],
+        "forceReinitInstructions": "If user really wants to re-initialize, instruct to backup existing projectManagement/ directory first"
+      },
+      "partial": {
+        "action": "complete_initialization",
+        "message": "Continuing incomplete initialization",
+        "workflow": "existingProject"
+      },
+      "no_structure": {
+        "action": "full_initialization", 
+        "message": "Setting up AI project management from scratch",
+        "workflow": "newProject"
+      },
+      "git_history_found": {
+        "action": "team_member_setup",
+        "message": "Detected existing AI project management, setting up for team collaboration",
+        "workflow": "teamMemberJoin"
+      }
+    },
+    "userCommunication": {
+      "blockMessage": "# ℹ️ Project Already Initialized\n\n## Current Status:\n[Project state details]\n\n## 🔄 Did you mean `/resume`?\n\nThis project appears to already have AI Project Manager fully set up and running.",
+      "suggestionFormat": "**If you want to:**\n- **Continue previous work** → Use `/resume`\n- **See current tasks** → Use `/tasks`\n- **Check project status** → Use `/status`\n- **Create work branch** → Use `/branch`"
+    }
+  },
   "workflows": {
     "newProject": {
       "directive": "Discuss with user goals of project. Be as detailed as needed to fulfil the goals and needs of the organization files",

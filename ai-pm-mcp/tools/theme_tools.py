@@ -13,6 +13,7 @@ from datetime import datetime
 from ..core.mcp_api import ToolDefinition
 from ..database.theme_flow_queries import ThemeFlowQueries
 from ..database.file_metadata_queries import FileMetadataQueries
+from ..utils.project_paths import get_themes_path, get_flows_path
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +21,10 @@ logger = logging.getLogger(__name__)
 class ThemeTools:
     """Tools for theme management and discovery."""
     
-    def __init__(self, theme_flow_queries: Optional[ThemeFlowQueries] = None, file_metadata_queries: Optional[FileMetadataQueries] = None):
+    def __init__(self, theme_flow_queries: Optional[ThemeFlowQueries] = None, file_metadata_queries: Optional[FileMetadataQueries] = None, config_manager=None):
         self.theme_flow_queries = theme_flow_queries
         self.file_metadata_queries = file_metadata_queries
+        self.config_manager = config_manager
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get all theme management tools."""
@@ -272,7 +274,7 @@ class ThemeTools:
                 return f"Project directory does not exist: {project_path}"
             
             # Check if themes already exist
-            themes_dir = project_path / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(project_path, self.config_manager)
             themes_file = themes_dir / "themes.json"
             
             if themes_file.exists() and not force_rediscovery:
@@ -321,7 +323,7 @@ class ThemeTools:
             files = arguments.get("files", [])
             linked_themes = arguments.get("linked_themes", [])
             
-            themes_dir = project_path / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(project_path, self.config_manager)
             if not themes_dir.exists():
                 return f"Project management structure not found. Initialize project first."
             
@@ -369,7 +371,7 @@ class ThemeTools:
             project_path = Path(arguments["project_path"])
             include_details = arguments.get("include_details", False)
             
-            themes_dir = project_path / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(project_path, self.config_manager)
             themes_index = themes_dir / "themes.json"
             
             if not themes_index.exists():
@@ -407,7 +409,7 @@ class ThemeTools:
             project_path = Path(arguments["project_path"])
             theme_name = arguments["theme_name"]
             
-            themes_dir = project_path / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(project_path, self.config_manager)
             theme_file = themes_dir / f"{theme_name}.json"
             
             if not theme_file.exists():
@@ -427,7 +429,7 @@ class ThemeTools:
             theme_name = arguments["theme_name"]
             updates = arguments["updates"]
             
-            themes_dir = project_path / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(project_path, self.config_manager)
             theme_file = themes_dir / f"{theme_name}.json"
             
             if not theme_file.exists():
@@ -472,7 +474,7 @@ class ThemeTools:
             if not confirm:
                 return f"Deletion not confirmed. Set confirm=true to delete theme '{theme_name}'."
             
-            themes_dir = project_path / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(project_path, self.config_manager)
             theme_file = themes_dir / f"{theme_name}.json"
             
             if not theme_file.exists():
@@ -506,7 +508,7 @@ class ThemeTools:
             primary_theme = arguments["primary_theme"]
             context_mode = arguments.get("context_mode", "theme-focused")
             
-            themes_dir = project_path / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(project_path, self.config_manager)
             
             # Load primary theme
             primary_theme_file = themes_dir / f"{primary_theme}.json"
@@ -570,7 +572,7 @@ class ThemeTools:
             project_path = Path(arguments["project_path"])
             specific_theme = arguments.get("theme_name")
             
-            themes_dir = project_path / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(project_path, self.config_manager)
             themes_index = themes_dir / "themes.json"
             
             if not themes_index.exists():
@@ -772,8 +774,8 @@ class ThemeTools:
             if not self.theme_flow_queries:
                 return "Database not available. Theme-flow synchronization requires database connection."
             
-            themes_dir = project_path / "projectManagement" / "Themes"
-            flow_dir = project_path / "projectManagement" / "ProjectFlow"
+            themes_dir = get_themes_path(project_path, self.config_manager)
+            flow_dir = get_flows_path(project_path, self.config_manager)
             
             if not themes_dir.exists():
                 return "No themes directory found. Initialize project first."

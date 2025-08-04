@@ -9,14 +9,16 @@ import fnmatch
 from pathlib import Path
 from typing import Dict, List
 from ..db_manager import DatabaseManager
+from ...utils.project_paths import get_management_folder_name
 
 
 class FileDiscovery:
     """File discovery and categorization operations."""
     
-    def __init__(self, db_manager: DatabaseManager):
+    def __init__(self, db_manager: DatabaseManager, config_manager=None):
         """Initialize with database manager."""
         self.db = db_manager
+        self.config_manager = config_manager
     
     def discover_project_files(
         self,
@@ -45,10 +47,11 @@ class FileDiscovery:
                 file_patterns = ['*']
             
             # Default exclude patterns
+            management_folder = get_management_folder_name(self.config_manager)
             default_excludes = [
                 '__pycache__/*', '*.pyc', '*.pyo', '.git/*', '.idea/*', '.vscode/*',
                 'node_modules/*', '*.log', '.DS_Store', '*.swp', '*.swo',
-                'projectManagement/UserSettings/*', 'projectManagement/database/backups/*'
+                f'{management_folder}/UserSettings/*', f'{management_folder}/database/backups/*'
             ]
             
             if exclude_patterns is None:

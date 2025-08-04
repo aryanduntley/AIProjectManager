@@ -2,12 +2,131 @@
 
 ## Overview
 
-This directive provides comprehensive guidance for managing Git branches in the AI Project Manager system. The system uses pure Git branch operations instead of complex directory-based instances, leveraging Git's native branching and merging capabilities with automatic team member detection and user attribution.
+This directive provides comprehensive guidance for managing Git branches in the AI Project Manager system. The system replaces complex directory-based instances with pure Git branch operations, achieving 71% code reduction through modular architecture while adding comprehensive Git safety features.
 
 **Key Principles**: 
 - ai-pm-org-main branch is the canonical organizational state and primary decision maker for all merge decisions
+- Comprehensive Git safety validation prevents dangerous operations in cloned/forked repositories
+- Pull request creation preferred over direct merges when GitHub CLI available
+- Modular architecture with specialized safety, detection, and collaboration modules
 - Team members are automatically detected and given work branches
 - Full user attribution in branch metadata and Git commits
+
+## Git Safety & Collaboration Features
+
+### Repository Type Detection
+The system automatically detects repository type to adapt workflows safely:
+
+**Detection Methods**:
+- **GitHub CLI Integration**: Uses `gh repo view --json isFork` when available
+- **Remote Analysis**: Analyzes `git remote -v` output for repository relationships
+- **Upstream Detection**: Checks for upstream relationships and fork indicators
+- **Caching**: Results stored in `metadata.json` with 24-hour cache validity
+
+**Repository Types**:
+- **`original`**: Repository owned by the user/organization
+- **`clone`**: Cloned from another repository
+- **`fork`**: Forked from another repository on GitHub
+
+### Workflow Safety Validation
+Comprehensive safety checks prevent dangerous Git operations:
+
+**High-Severity Blocking Issues**:
+- Working on main branch in cloned/forked repositories
+- Creating branches from wrong ancestry (not from ai-pm-org-main)
+- Attempting unsafe operations without proper repository permissions
+
+**Medium-Severity Warnings**:
+- Creating branches while on feature branch instead of ai-pm-org-main
+- GitHub CLI not available for GitHub repositories (PR creation not possible)
+- Network issues preventing remote repository validation
+
+**Auto-Correction Features**:
+- Automatic switching to ai-pm-org-main before branch creation
+- Clear recommendations for resolving safety issues
+- Comprehensive warnings with specific remediation steps
+
+### Branch Ancestry Validation
+All work branches must maintain proper Git ancestry:
+
+**Validation Requirements**:
+- Work branches MUST be created from ai-pm-org-main
+- Merge-base validation ensures proper branch relationships
+- Prevents branching from wrong bases that could cause merge conflicts
+
+**Auto-Switching**:
+- Detects when user is on wrong branch for safe operations
+- Automatically switches to ai-pm-org-main when needed
+- Provides clear communication about why switching occurred
+
+## Modular Architecture
+
+The Git Branch Manager has been refactored into specialized modules for better maintainability, testing, and 71% code reduction:
+
+### Core Modules
+
+#### GitSafetyChecker (`core/git_safety.py`)
+- **Purpose**: Comprehensive workflow safety validation and ancestry checking
+- **Key Functions**:
+  - `check_workflow_safety()`: Repository-aware safety validation
+  - `check_branch_ancestry()`: Validates proper branch relationships
+  - `validate_branch_creation()`: Pre-creation safety checks
+- **Safety Features**:
+  - High-severity blocking for dangerous operations
+  - Medium-severity warnings with recommendations
+  - Auto-correction suggestions and implementation
+
+#### RepositoryDetector (`core/repository_detector.py`)
+- **Purpose**: Repository analysis, user detection, and metadata management
+- **Key Functions**:
+  - `detect_repository_type()`: Analyzes fork/clone/original status
+  - `detect_user_info()`: Multi-source user identification
+  - `check_gh_cli_available()`: GitHub CLI availability checking
+- **Detection Sources**:
+  - Git configuration (user.name, user.email)
+  - Environment variables (USER, USERNAME)
+  - System calls (getpass.getuser())
+  - Fallback to 'ai-user'
+
+#### MergeOperations (`core/merge_operations.py`)
+- **Purpose**: Pull request creation and direct merge fallback
+- **Key Functions**:
+  - `merge_instance_branch()`: Orchestrates merge strategy selection
+  - `create_pull_request()`: GitHub CLI PR creation
+  - `direct_merge_fallback()`: Standard Git merge when PR not available
+- **Merge Strategy Priority**:
+  1. Pull request creation (when GitHub CLI available)
+  2. Direct merge fallback (comprehensive workflow)
+
+#### TeamCollaboration (`core/team_collaboration.py`)
+- **Purpose**: Team member detection and collaborative AI structure setup
+- **Key Functions**:
+  - `detect_team_member_scenario()`: Identifies team collaboration needs
+  - `ensure_ai_main_branch_exists()`: Remote-aware ai-pm-org-main setup
+  - `initialize_for_team_member()`: Automatic work branch creation
+- **Team Features**:
+  - Remote ai-pm-org-main branch detection and cloning
+  - Priority logic: Remote clone > Local restoration > Fresh creation
+  - Automatic user attribution and branch metadata
+
+#### GitUtils (`core/git_utils.py`)
+- **Purpose**: Common Git operations and utility functions
+- **Key Functions**:
+  - `get_current_branch()`: Current branch detection
+  - `branch_exists()`: Branch existence validation
+  - `get_next_branch_number()`: Sequential numbering
+  - `get_user_code_changes()`: Code change detection
+- **Utilities**:
+  - Branch number extraction and validation
+  - Standard Git operations with error handling
+  - User code change detection between branches
+
+### Architecture Benefits
+- **71% Code Reduction**: From monolithic branch manager to focused modules
+- **Single Responsibility**: Each module handles specific concerns
+- **Better Testability**: Individual modules can be tested in isolation
+- **Clearer Maintenance**: Changes isolated to relevant functionality
+- **Improved Reliability**: Specialized error handling per module
 
 ## When This Directive Applies
 
@@ -251,29 +370,61 @@ During development, Git branches provide **natural complete isolation**:
 
 ## Branch Merging Workflow
 
-### Step 1: Pre-Merge Validation
+The system prioritizes pull request creation for better team collaboration, with direct merge as a comprehensive fallback.
+
+### Primary Method: Pull Request Creation
+
+**When Available**:
+- GitHub CLI (`gh`) is available and authenticated
+- Repository is hosted on GitHub (github.com in remote URL)
+- Remote origin is configured
+- Not forced to use direct merge
+
+**Pull Request Workflow**:
+1. **Push Branch**: Ensure branch is pushed to origin if not already
+2. **Generate PR Title**: Include branch number and user attribution
+3. **Create PR Description**: Comprehensive description with commit log and metadata
+4. **Execute PR Creation**: `gh pr create --title "Title" --body "Description" --base ai-pm-org-main --head branch-name`
+5. **Return PR URL**: Provide next steps for team review and merge
+
+**Benefits**:
+- Better team collaboration and code review process
+- Merge history tracking through GitHub interface
+- Integration with existing team workflows
+- Automatic documentation of changes
+
+### Fallback Method: Direct Git Merge
+
+**When Used**:
+- GitHub CLI not available or not authenticated
+- Not a GitHub repository
+- No remote origin configured
+- User explicitly requests direct merge
+
+#### Step 1: Pre-Merge Validation
 **Purpose**: Ensure both ai-pm-org-main and work branch are ready for merge
 
 **Validation Checks**:
 - ai-pm-org-main is in clean state
 - Branch has committed all changes
 - Check for external user code changes since branch creation
-- Identify which branch work is being merged
+- Identify which user's work is being merged
 
 **User Communication**: Present validation results and show branch information.
 
-### Step 2: Execute Standard Git Merge
+#### Step 2: Execute Standard Git Merge
 **Purpose**: Use native Git merge operation with conflict detection
 
 **Git Operations**:
 1. Switch to ai-pm-org-main: `git checkout ai-pm-org-main`
-2. Execute merge: `git merge ai-pm-org-branch-{XXX}
+2. Execute merge: `git merge ai-pm-org-branch-{XXX}`
 3. Git handles conflict detection automatically
-4. Show which branch work is being merged
+4. Show which user's work is being merged
+5. Explain why direct merge was used (GitHub CLI unavailable, etc.)
 
 **Branch Identification**: All operations clearly show which branch is being processed.
 
-### Step 3: Handle Conflicts (If Any)
+#### Step 3: Handle Conflicts (If Any)
 **Purpose**: Use standard Git tools for conflict resolution
 
 **Conflict Handling**:
@@ -287,14 +438,14 @@ During development, Git branches provide **natural complete isolation**:
 - Manual editing of conflict markers
 - Standard Git workflow developers already know
 
-### Step 4: Complete Merge
+#### Step 4: Complete Merge
 **Purpose**: Finalize merge and update tracking
 
 **Completion Steps**:
 - Git merge completes successfully
 - Update `ai_instance_branches` table with merge timestamp
-- Report successful merge with branch identification
-- Optionally delete branch: `git branch -d ai-pm-org-branch-{XXX}
+- Report successful merge with user attribution
+- Optionally delete branch: `git branch -d ai-pm-org-branch-{XXX}`
 
 **User Communication**: Show merge success and branch that was integrated.
 

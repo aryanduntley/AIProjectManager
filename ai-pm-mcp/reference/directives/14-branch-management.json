@@ -12,8 +12,50 @@
     "Multiple developer scenario", 
     "Parallel development needed",
     "Branch merge operations",
-    "User identification needed"
+    "User identification needed",
+    "Git safety validation needed",
+    "Repository type detection required"
   ],
+  "gitSafetyFeatures": {
+    "repositoryDetection": {
+      "purpose": "Automatically detect repository type for safe workflow adaptation",
+      "types": ["original", "clone", "fork"],
+      "methods": [
+        "Use GitHub CLI when available: gh repo view --json isFork",
+        "Analyze remote configuration: git remote -v",
+        "Check upstream relationships",
+        "Store results in metadata.json with 24-hour cache"
+      ],
+      "caching": {
+        "duration": "24 hours",
+        "storage": "projectManagement/ProjectBlueprint/metadata.json",
+        "invalidation": "Git hash changes, remote changes"
+      }
+    },
+    "workflowSafety": {
+      "highSeverityBlocking": [
+        "Working on main branch in cloned/forked repository",
+        "Invalid branch ancestry (not from ai-pm-org-main)"
+      ],
+      "mediumSeverityWarnings": [
+        "On feature branch when creating new branch",
+        "GitHub CLI not available for GitHub repositories"
+      ],
+      "autoCorrection": [
+        "Auto-switch to ai-pm-org-main for safe branch creation",
+        "Provide clear recommendations for resolution"
+      ]
+    },
+    "branchAncestryValidation": {
+      "requirement": "All work branches must be created from ai-pm-org-main",
+      "validation": [
+        "Check current branch before creation",
+        "Validate merge-base relationship",
+        "Auto-switch when needed"
+      ],
+      "prevention": "Prevent branching from wrong bases that could cause merge conflicts"
+    }
+  },
   "workflows": {
     "aiMainBranchSetup": {
       "directive": "Initialize ai-pm-org-main branch (done once per project)",
@@ -161,43 +203,74 @@
       ]
     },
     "branchMerging": {
-      "directive": "Use standard Git merge operations with user attribution",
-      "steps": [
-        {
-          "action": "preMergeValidation",
-          "description": "Validate branch and main state before merge",
-          "required": true,
-          "validation": [
-            "ai-pm-org-main is in clean state",
-            "Branch has committed all changes", 
-            "Check for external user code changes",
-            "Identify whose work is being merged"
-          ]
-        },
-        {
-          "action": "executeGitMerge",
-          "description": "Standard Git merge with conflict detection",
-          "required": true,
-          "process": [
-            "Switch to ai-pm-org-main: git checkout ai-pm-org-main",
-            "Execute merge: git merge {branch-name}",
-            "Git handles all conflict detection automatically",
-            "Show which user's work is being merged"
-          ],
-          "conflict_handling": "If conflicts occur, use standard Git resolution tools (git mergetool, manual editing)"
-        },
-        {
-          "action": "postMergeCleanup",
-          "description": "Update database and optionally delete branch",
-          "required": true,
-          "cleanup": [
-            "Update ai_instance_branches table with merge timestamp",
-            "Optionally delete branch: git branch -d {branch-name}",
-            "Update Git state tracking",
-            "Report successful merge with user attribution"
-          ]
-        }
-      ]
+      "directive": "Use pull request creation when possible, direct merge as fallback",
+      "pullRequestCreation": {
+        "priority": "Primary merge method when GitHub CLI available and conditions met",
+        "conditions": [
+          "GitHub CLI available and authenticated",
+          "GitHub repository (github.com in remote URL)",
+          "Has remote origin configured",
+          "Not forced direct merge"
+        ],
+        "workflow": [
+          "Push branch to origin if not already pushed",
+          "Generate PR title with branch number and user attribution",
+          "Create comprehensive PR description with commit log and metadata",
+          "Execute: gh pr create --title 'Title' --body 'Description' --base ai-pm-org-main --head branch-name",
+          "Return PR URL and next steps for team review"
+        ],
+        "benefits": [
+          "Better team collaboration and code review process",
+          "Merge history tracking through GitHub",
+          "Integration with team workflows",
+          "Automatic documentation of changes"
+        ]
+      },
+      "directMergeFallback": {
+        "when": [
+          "GitHub CLI not available",
+          "Not a GitHub repository",
+          "No remote origin configured",
+          "User explicitly requests direct merge"
+        ],
+        "steps": [
+          {
+            "action": "preMergeValidation",
+            "description": "Validate branch and main state before direct merge",
+            "required": true,
+            "validation": [
+              "ai-pm-org-main is in clean state",
+              "Branch has committed all changes", 
+              "Check for external user code changes",
+              "Identify whose work is being merged"
+            ]
+          },
+          {
+            "action": "executeDirectMerge",
+            "description": "Standard Git merge with conflict detection",
+            "required": true,
+            "process": [
+              "Switch to ai-pm-org-main: git checkout ai-pm-org-main",
+              "Execute merge: git merge {branch-name}",
+              "Git handles all conflict detection automatically",
+              "Show which user's work is being merged",
+              "Explain why direct merge was used"
+            ],
+            "conflict_handling": "If conflicts occur, use standard Git resolution tools (git mergetool, manual editing)"
+          },
+          {
+            "action": "postMergeCleanup",
+            "description": "Update database and optionally delete branch",
+            "required": true,
+            "cleanup": [
+              "Update ai_instance_branches table with merge timestamp",
+              "Optionally delete branch: git branch -d {branch-name}",
+              "Update Git state tracking",
+              "Report successful merge with user attribution"
+            ]
+          }
+        ]
+      }
     },
     "branchManagement": {
       "directive": "Simple branch lifecycle management",

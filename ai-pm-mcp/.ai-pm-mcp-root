@@ -1,0 +1,13 @@
+# AI Project Manager MCP Server Root Marker
+# This file identifies the root directory of the AI Project Manager MCP server.
+# It enables path resolution for templates, configuration, and resources.
+# 
+# Structure from this root:
+# ./reference/templates/     - Template files
+# ./reference/directives/    - JSON directive specifications  
+# ./reference/directivesmd/  - Markdown directive documentation
+# ./core/                    - Core processing modules
+# ./database/                - Database schema and queries
+# ./tools/                   - MCP tool implementations
+# 
+# This file should never be deleted or moved as it's used for path resolution.

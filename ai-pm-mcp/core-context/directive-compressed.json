@@ -1,9 +1,10 @@
 {
+  "_configuration_note": "Throughout this document, $projectManagement refers to the configurable project management folder name. This defaults to '$projectManagement' but can be customized via the 'managementFolderName' setting in your project configuration to avoid naming conflicts.", 
   "systemInitialization": {
     "triggers": ["MCP server startup", "First connection", "System boot"],
     "workflow": [
       "AUTOMATIC STATE NOTIFICATION: Immediately analyze project state using optimized two-tier system (fast path for existing projects ~100ms, comprehensive analysis ~2-5s for new projects) and make available to user via MCP tools during server initialization",
-      "Detect current project directory and check projectManagement/ completeness", 
+      "Detect current project directory and check $projectManagement/ completeness", 
       "Categorize state (none/partial/complete/unknown) and present formatted analysis",
       "Provide clear next-step options based on state (initialize/review/continue)",
       "Wait for user choice before proceeding with any actions",
@@ -23,12 +24,23 @@
     "failureAction": "Report clear error messages, require user intervention for critical issues"
   },
   "projectInitialization": {
-    "triggers": ["New project creation", "Existing project analysis"],
+    "triggers": ["New project creation", "Existing project analysis", "/init command execution"],
+    "initCommandBehavior": {
+      "statusCheckFirst": "CRITICAL: Always check project state before proceeding with initialization",
+      "existingProjectDetection": "If state='complete', suggest /resume instead of proceeding with init",
+      "userGuidance": [
+        "State 'complete' → Block init, suggest /resume, /tasks, /status, /branch alternatives",
+        "State 'partial' → Proceed with completion initialization", 
+        "State 'no_structure' → Proceed with full initialization",
+        "State 'git_history_found' → Handle team member joining scenario"
+      ],
+      "safetyInstructions": "Provide clear guidance on backing up existing $projectManagement/ if user wants to force re-init"
+    },
     "workflows": {
       "newProject": [
         "Initialize Git repository at project root if enabled",
         "Initialize database: Create project.db from ai-pm-mcp/database/schema.sql with file_metadata table",
-        "Create projectManagement/ structure from templates on ai-pm-org-main branch",
+        "Create $projectManagement/ structure from templates on ai-pm-org-main branch",
         "Generate initial blueprint.md with user discussion",
         "Create basic theme structure and flow index", 
         "Initialize completion-path.json with project objectives",
@@ -151,7 +163,7 @@
     "naming": "M{milestone-id}-v{version}-{description}.md",
     "integration": "Active implementation plans loaded during session boot for strategic continuity"
   },
-  "projectManagement": {
+  "$projectManagement": {
     "blueprintManagement": "User approval required for all changes",
     "multiFlowDocumentation": {
       "flowIndex": "Master flow index with cross-flow dependencies",
@@ -290,6 +302,12 @@
   },
   "branchManagement": {
     "triggers": ["Branch creation request", "Multiple developer scenario", "Parallel development needed", "Branch merge operations"],
+    "gitSafetyFeatures": {
+      "repositoryDetection": "Automatically detect fork/clone/original repository type with GitHub CLI integration",
+      "workflowSafety": "Prevent working on main branch in cloned repositories with high-severity blocking",
+      "branchAncestry": "Validate proper branch ancestry from ai-pm-org-main before creation",
+      "safetyChecks": "Auto-switch to safe branches when needed, comprehensive warning system"
+    },
     "aiMainBranchSetup": {
       "priorityLogic": "Remote clone > Local restoration > Fresh creation",
       "workflow": [
@@ -303,6 +321,12 @@
     },
     "workBranchCreation": {
       "criticalPrinciple": "Work branches ALWAYS clone from ai-pm-org-main, NOT user's main",
+      "safetyValidation": [
+        "Run comprehensive safety checks using GitSafetyChecker module",
+        "Block creation for high-severity issues (working on main in cloned repo)",
+        "Auto-switch to ai-pm-org-main if on wrong branch",
+        "Validate branch ancestry and provide recommendations"
+      ],
       "workflow": [
         "Ensure ai-pm-org-main exists (may trigger remote clone for team scenarios)",
         "Switch to ai-pm-org-main first: git checkout ai-pm-org-main",
@@ -316,30 +340,60 @@
   },
   "gitMergeOperations": {
     "triggers": ["Branch merge requested", "Work completion", "Git conflicts detected"],
-    "workflow": [
-      "Switch to ai-pm-org-main: git checkout ai-pm-org-main",
-      "Execute merge: git merge ai-pm-org-branch-{XXX}",
-      "Use standard Git conflict resolution if conflicts occur",
-      "Update database with merge status and user attribution"
-    ],
-    "conflictHandling": "Use native Git merge tools (git mergetool, manual editing)",
-    "userAttribution": "All operations show which user's work is being processed",
-    "implementationNote": "Git handles all conflict detection and resolution - no custom logic needed"
+    "pullRequestCreation": {
+      "priority": "Create pull requests using GitHub CLI when available instead of direct merges",
+      "conditions": "GitHub CLI available + GitHub repository + has remote origin + not forced direct merge",
+      "workflow": [
+        "Push branch to origin if not already pushed",
+        "Generate PR title with branch number and user attribution",
+        "Create comprehensive PR description with commit log and metadata",
+        "Execute: gh pr create --title 'PR Title' --body 'Description' --base ai-pm-org-main --head branch-name",
+        "Return PR URL and next steps for team review"
+      ],
+      "benefits": "Better team collaboration, code review process, merge history tracking"
+    },
+    "directMergeFallback": {
+      "conditions": "GitHub CLI not available OR not GitHub repo OR no remote OR forced direct merge",
+      "workflow": [
+        "Switch to ai-pm-org-main: git checkout ai-pm-org-main",
+        "Execute merge: git merge ai-pm-org-branch-{XXX}",
+        "Use standard Git conflict resolution if conflicts occur",
+        "Update database with merge status and user attribution"
+      ],
+      "rationale": "Explain why direct merge was used (GitHub CLI unavailable, etc.)"
+    },
+    "conflictHandling": "Use native Git merge tools (git mergetool, manual editing) with comprehensive conflict resolution guidance",
+    "userAttribution": "All operations show which user's work is being processed with complete metadata tracking",
+    "implementationNote": "Git handles all conflict detection and resolution - no custom logic needed. Use MergeOperations module for PR creation."
   },
   "gitIntegration": {
     "triggers": ["Session boot with project code changes", "Git repository state detection needed", "External code modifications detected"],
+    "modularArchitecture": {
+      "repositoryDetector": "RepositoryDetector module handles user detection, GitHub CLI detection, repo type analysis",
+      "gitSafetyChecker": "GitSafetyChecker module provides workflow safety validation and ancestry checks",
+      "mergeOperations": "MergeOperations module handles PR creation and direct merge fallback",
+      "teamCollaboration": "TeamCollaboration module manages team member detection and AI structure setup",
+      "gitUtils": "GitUtils module provides common Git operations and branch utilities"
+    },
     "workflow": [
       "Detect Git repository and check for remote repository configuration (team collaboration)",
-      "Ensure ai-pm-org-main branch exists with remote clone support (NEW)",
+      "Use RepositoryDetector to analyze repository type (fork/clone/original) with GitHub CLI",
+      "Ensure ai-pm-org-main branch exists with remote clone support",
       "Compare current hash with last known state and detect project code changes",
       "Analyze changed files and perform theme impact analysis using directory structure and naming patterns",
       "Reconcile organizational state with code changes by updating affected themes and flows",
-      "Update database with Git state tracking and file change impacts"
+      "Update database and metadata with Git state tracking and file change impacts"
     ],
     "teamCollaborationSupport": {
       "remoteBranchDetection": "Check if ai-pm-org-main exists on remote origin",
       "remoteClone": "git checkout -b ai-pm-org-main origin/ai-pm-org-main for team scenarios",
       "networkResilience": "Handle network failures gracefully with timeout and fallback"
+    },
+    "repositoryTypeDetection": {
+      "methods": "Use GitHub CLI when available, analyze remote configuration, check upstream relationships",
+      "caching": "Store results in metadata.json with 24-hour cache validity and Git hash-based invalidation",
+      "types": ["original", "clone", "fork"],
+      "workflowAdaptations": "Different merge strategies based on repository type"
     },
     "themeImpactAnalysis": ["Direct file mapping", "Directory structure inference", "Naming pattern analysis", "Deletion impact assessment"],
     "reconciliation": "Update organizational files to reflect code changes, require user approval for significant changes",
@@ -352,7 +406,7 @@
       "triggers": ["Session startup", "New user joining project", "Clone detected"],
       "detection": [
         "Check if ai-pm-org-main exists (cloned project)",
-        "Check if projectManagement/ exists",
+        "Check if $projectManagement/ exists",
         "Check Git remote 'origin' exists",
         "Check currently on ai-pm-org-main"
       ],

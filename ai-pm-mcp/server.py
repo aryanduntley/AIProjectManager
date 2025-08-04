@@ -75,7 +75,7 @@ class AIProjectManagerServer:
             # Store initial state analysis but don't auto-execute
             logger.debug("Analyzing initial project state")
             self.initial_state = await self.analyze_initial_state()
-            logger.info("MCP Server ready - use get_project_state_analysis to see initialization options")
+            logger.info("MCP Server ready - try '/status' command or use get_project_state_analysis tool to see available options")
             
             logger.info("AI Project Manager MCP Server initialized successfully")
             

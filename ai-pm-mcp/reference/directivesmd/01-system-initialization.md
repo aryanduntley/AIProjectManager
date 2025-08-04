@@ -1,5 +1,7 @@
 # System Initialization Directives
 
+> **Note**: Throughout this document, `$$projectManagement` refers to the configurable project management folder name (defaults to "$projectManagement").
+
 ## Overview
 
 This directive ensures proper system initialization with Git integration, instance management, and database setup. The initialization process establishes the foundation for Git-like instance management while maintaining backward compatibility with existing projects.
@@ -15,9 +17,9 @@ This directive ensures proper system initialization with Git integration, instan
 **Optimized Two-Tier Analysis System**:
 
 ### 🚀 Fast Path (~100ms) - 95% Performance Improvement
-**When Used**: Existing projects with stable `projectManagement/` structure
+**When Used**: Existing projects with stable `$projectManagement/` structure
 **Conditions**:
-- `projectManagement/` directory exists
+- `$projectManagement/` directory exists
 - Cached state available in `metadata.json`
 - Cache age < 24 hours
 - No Git repository changes detected
@@ -31,7 +33,7 @@ This directive ensures proper system initialization with Git integration, instan
 ### 🔍 Comprehensive Path (~2-5s) - When Needed
 **When Used**: New projects or when changes detected
 **Conditions**:
-- No `projectManagement/` directory
+- No `$projectManagement/` directory
 - No cached state available
 - Git repository changes detected
 - Cache expired (>24 hours)
@@ -53,7 +55,7 @@ This directive ensures proper system initialization with Git integration, instan
 **Implementation**:
 ```
 1. Detect current project directory and structure
-2. Check for projectManagement/ directory existence and completeness
+2. Check for $projectManagement/ directory existence and completeness
 3. Analyze component status (blueprint, themes, flows, database, tasks)
 4. Categorize state: none/partial/complete/unknown
 5. Store formatted state analysis in server for MCP tool access
@@ -82,7 +84,7 @@ This directive ensures proper system initialization with Git integration, instan
 **Cache Management**:
 - **Duration**: 24 hours for stable projects
 - **Invalidation**: Git hash changes, component file deletions, cache corruption
-- **Storage**: `projectManagement/ProjectBlueprint/metadata.json`
+- **Storage**: `$projectManagement/ProjectBlueprint/metadata.json`
 - **Auto-Refresh**: Comprehensive analysis automatically updates cache
 
 **State Categories and Responses**:
@@ -131,7 +133,7 @@ This directive ensures proper system initialization with Git integration, instan
 **Directive**: Always detect existing project management structures and handle compatibility issues.
 
 **Rules**:
-- If `projectManagement/` exists, check version compatibility
+- If `$projectManagement/` exists, check version compatibility
 - If compatible, integrate existing data
 - If incompatible, ask user for migration approach (upgrade, backup, or overwrite)
 - Never overwrite existing data without explicit user permission
@@ -140,7 +142,7 @@ This directive ensures proper system initialization with Git integration, instan
 ## 1.3 Configuration Loading Protocol
 
 **Directive**: Load configuration in this priority order:
-1. Project-specific `projectManagement/UserSettings/config.json`
+1. Project-specific `$projectManagement/UserSettings/config.json`
 2. Current directory `config.json`
 3. User home `~/.ai-project-manager/config.json`
 4. System-wide `/etc/ai-project-manager/config.json`
@@ -156,7 +158,7 @@ This directive ensures proper system initialization with Git integration, instan
 
 ## 1.4 Compatibility Verification
 
-**Directive**: Verify compatibility of existing `projectManagement/` structures and handle version differences.
+**Directive**: Verify compatibility of existing `$projectManagement/` structures and handle version differences.
 
 **Required metadata.json fields for compatibility verification:**
 - `mcp.version`: MCP system version used to create the structure
@@ -165,7 +167,7 @@ This directive ensures proper system initialization with Git integration, instan
 - `mcp.compatibilityVersion`: Version for backward compatibility checking
 
 **Compatibility check process:**
-1. Check if `projectManagement/ProjectBlueprint/metadata.json` exists
+1. Check if `$projectManagement/ProjectBlueprint/metadata.json` exists
 2. Read `mcp.version` and `mcp.compatibilityVersion` fields
 3. Compare with current MCP version
 4. If version is lesser than current, ask user if they want to update existing structure
@@ -176,9 +178,9 @@ This directive ensures proper system initialization with Git integration, instan
 **Update process:**
 1. With any updates, directives will be added on how to approach updating outdated versions
 2. Handle update according to provided update directives
-3. Ask user if they want to run an initial complete evaluation which will compare the current state of the entire project to the projectManagement state
+3. Ask user if they want to run an initial complete evaluation which will compare the current state of the entire project to the $projectManagement state
 4. If yes, make updates to files according to analysis. Always assess existing files for each step of analyzing before making updates, if updates are needed
-5. Finally, continue with projectManagement as normal
+5. Finally, continue with $projectManagement as normal
 
 ## 1.5 Git Repository Setup
 
@@ -198,9 +200,9 @@ This directive ensures proper system initialization with Git integration, instan
 Update .gitignore with MCP-specific rules:
 ```gitignore
 # Project Management - Track Organizational State, Not User Data
-projectManagement/UserSettings/
-projectManagement/database/backups/
-projectManagement/.mcp-session-*
+$projectManagement/UserSettings/
+$projectManagement/database/backups/
+$projectManagement/.mcp-session-*
 
 # Temporary Files
 *.tmp
@@ -217,7 +219,7 @@ projectManagement/.mcp-session-*
 **Directive**: Identify whether running in main instance or branch instance and establish authority.
 
 **Instance Type Detection**:
-- **Main Instance**: Look for `.mcp-instance-main` file in `projectManagement/`
+- **Main Instance**: Look for `.mcp-instance-main` file in `$projectManagement/`
 - **Branch Instance**: Look for `.mcp-branch-info.json` in workspace directory
 - **Workspace Path**: Determine location to confirm instance type
 
@@ -372,7 +374,7 @@ This directive integrates with:
   "message": "Failed to initialize database",
   "details": {
     "issue": "Permission denied creating project.db",
-    "solution": "Check file permissions in projectManagement/",
+    "solution": "Check file permissions in $projectManagement/",
     "alternative": "Continue with file-only mode"
   }
 }

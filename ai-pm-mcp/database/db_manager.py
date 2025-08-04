@@ -14,6 +14,13 @@ from contextlib import contextmanager
 import logging
 import threading
 
+# Import ConfigManager for folder name configuration
+try:
+    from ..core.config_manager import ConfigManager
+except ImportError:
+    # Fallback if import fails
+    ConfigManager = None
+
 class DatabaseManager:
     """
     Enhanced database manager for AI Project Manager.
@@ -26,15 +33,27 @@ class DatabaseManager:
     - Analytics and metrics collection
     """
     
-    def __init__(self, project_path: str):
+    def __init__(self, project_path: str, config_manager: Optional['ConfigManager'] = None):
         """
         Initialize the database manager.
         
         Args:
             project_path: Path to the project root directory
+            config_manager: Optional ConfigManager instance for folder name configuration
         """
         self.project_path = Path(project_path)
-        self.project_mgmt_path = self.project_path / "projectManagement"
+        self.config_manager = config_manager
+        
+        # Get management folder name from config or use default
+        management_folder_name = "projectManagement"
+        if self.config_manager and ConfigManager:
+            try:
+                management_folder_name = self.config_manager.get_management_folder_name()
+            except Exception:
+                # Fall back to default if config is not loaded
+                pass
+        
+        self.project_mgmt_path = self.project_path / management_folder_name
         self.db_path = self.project_mgmt_path / "project.db"
         self.schema_path = Path(__file__).parent / "schema.sql"
         self.connection: Optional[sqlite3.Connection] = None
@@ -56,7 +75,7 @@ class DatabaseManager:
         """
         with self._lock:
             if self.connection is None:
-                # Ensure the projectManagement directory exists
+                # Ensure the project management directory exists
                 self.project_mgmt_path.mkdir(parents=True, exist_ok=True)
                 
                 # Connect to database with timeout and check_same_thread=False for threading

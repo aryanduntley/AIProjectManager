@@ -3,7 +3,7 @@
 Project State Analyzer
 
 Analyzes project state and categorizes according to directives:
-- none: No projectManagement folder
+- none: No project management folder
 - partial: Incomplete structure  
 - complete: Full structure with all components
 - unknown: Issues detected during analysis
@@ -14,14 +14,16 @@ import subprocess
 from pathlib import Path
 from typing import Dict, Any, Optional
 
+from ..utils.project_paths import get_project_management_path
+
 logger = logging.getLogger(__name__)
 
 
 class ProjectStateAnalyzer:
     """Analyzes project state and categorizes for user presentation."""
     
-    def __init__(self):
-        pass
+    def __init__(self, config_manager=None):
+        self.config_manager = config_manager
     
     async def analyze_project_state(self, project_path: Path, force_full_analysis: bool = False) -> Dict[str, Any]:
         """
@@ -44,7 +46,7 @@ class ProjectStateAnalyzer:
             logger.debug(f"Analyzing project state for: {project_path}")
             
             # Check basic directory structure
-            project_mgmt_dir = project_path / "projectManagement"
+            project_mgmt_dir = get_project_management_path(project_path, self.config_manager)
             
             # Fast Path: Existing projects with cached state
             if not force_full_analysis and project_mgmt_dir.exists():

@@ -9,11 +9,106 @@
   },
   "triggers": [
     "Session boot with project code changes",
-    "Git repository state detection needed",
+    "Git repository state detection needed", 
     "External code modifications detected",
     "Theme impact analysis required",
-    "Organizational reconciliation needed"
+    "Organizational reconciliation needed",
+    "Repository type detection required",
+    "Git safety validation needed",
+    "Pull request merge operations",
+    "Team collaboration initialization"
   ],
+  "modularArchitecture": {
+    "description": "Modular Git integration architecture with specialized components for 71% code reduction",
+    "components": {
+      "repositoryDetector": {
+        "module": "core/repository_detector.py",
+        "purpose": "Repository analysis, user detection, and metadata management",
+        "responsibilities": [
+          "Repository type detection (fork/clone/original)",
+          "GitHub CLI availability and authentication checking",
+          "Multi-source user information detection",
+          "Project metadata management with caching"
+        ],
+        "keyMethods": [
+          "detect_repository_type()",
+          "detect_user_info()",
+          "check_gh_cli_available()",
+          "load_metadata()", 
+          "save_metadata()"
+        ]
+      },
+      "gitSafetyChecker": {
+        "module": "core/git_safety.py", 
+        "purpose": "Comprehensive workflow safety validation and ancestry checking",
+        "responsibilities": [
+          "Repository type-aware safety validation",
+          "Branch ancestry validation with auto-switching",
+          "High-severity blocking for dangerous operations",
+          "Medium-severity warnings with recommendations"
+        ],
+        "keyMethods": [
+          "check_workflow_safety()",
+          "check_branch_ancestry()",
+          "validate_branch_creation()"
+        ]
+      },
+      "mergeOperations": {
+        "module": "core/merge_operations.py",
+        "purpose": "Pull request creation and direct merge fallback operations",
+        "responsibilities": [
+          "Pull request creation using GitHub CLI",
+          "Direct merge fallback with comprehensive workflow",
+          "User attribution and merge documentation",
+          "Merge strategy selection based on availability"
+        ],
+        "keyMethods": [
+          "merge_instance_branch()",
+          "create_pull_request()",
+          "direct_merge_fallback()"
+        ]
+      },
+      "teamCollaboration": {
+        "module": "core/team_collaboration.py",
+        "purpose": "Team member detection and collaborative AI structure setup",
+        "responsibilities": [
+          "Team member scenario detection",
+          "Remote ai-pm-org-main branch setup with priority logic",
+          "AI organizational structure initialization",
+          "Branch metadata creation with user attribution"
+        ],
+        "keyMethods": [
+          "detect_team_member_scenario()",
+          "ensure_ai_main_branch_exists()",
+          "initialize_for_team_member()",
+          "create_branch_metadata()"
+        ]
+      },
+      "gitUtils": {
+        "module": "core/git_utils.py",
+        "purpose": "Common Git operations and utility functions",
+        "responsibilities": [
+          "Branch existence checking and creation utilities",
+          "Sequential branch number generation",
+          "User code change detection",
+          "Standard Git operations with error handling"
+        ],
+        "keyMethods": [
+          "get_current_branch()",
+          "branch_exists()",
+          "get_next_branch_number()",
+          "get_user_code_changes()"
+        ]
+      }
+    },
+    "integrationBenefits": [
+      "71% code reduction from monolithic Git manager",
+      "Single responsibility principle for each component",
+      "Better testability with isolated modules",
+      "Clearer maintenance and debugging",
+      "Specialized error handling per component"
+    ]
+  },
   "workflows": {
     "sessionBootGitDetection": {
       "directive": "Detect project code changes during session boot and reconcile organizational state",
@@ -214,6 +309,130 @@
           ]
         }
       ]
+    },
+    "repositoryTypeDetection": {
+      "directive": "Detect repository type for safe workflow adaptation",
+      "steps": [
+        {
+          "action": "detectRepositoryType",
+          "description": "Analyze repository to determine fork/clone/original status",
+          "required": true,
+          "detectionMethods": [
+            "Use GitHub CLI when available: gh repo view --json isFork",
+            "Analyze remote configuration: git remote -v",
+            "Check upstream relationships and fork indicators",
+            "Network resilience with timeout handling"
+          ],
+          "caching": {
+            "duration": "24 hours",
+            "storage": "projectManagement/ProjectBlueprint/metadata.json",
+            "invalidation": "Git hash changes, remote changes"
+          }
+        },
+        {
+          "action": "adaptWorkflowsToRepositoryType",
+          "description": "Adapt Git workflows based on detected repository type",
+          "required": true,
+          "adaptations": {
+            "original": "Full workflow capabilities, direct merge and PR creation",
+            "clone": "Safety validation prevents main branch work, requires work branches",
+            "fork": "Enhanced safety checks, PR creation preferred over direct merge"
+          }
+        }
+      ]
+    },
+    "gitSafetyValidation": {
+      "directive": "Comprehensive Git safety validation before operations",
+      "steps": [
+        {
+          "action": "performWorkflowSafetyChecks",
+          "description": "Check current Git state for workflow safety issues",
+          "required": true,
+          "safetyChecks": [
+            "Validate current branch is appropriate for operation",
+            "Check repository type for operation compatibility",
+            "Verify branch ancestry relationships",
+            "Detect potential conflicts or dangerous operations"
+          ],
+          "severityLevels": {
+            "highSeverityBlocking": [
+              "Working on main branch in cloned/forked repository",
+              "Invalid branch ancestry (not from ai-pm-org-main)"
+            ],
+            "mediumSeverityWarnings": [
+              "On feature branch when creating new branch",
+              "GitHub CLI not available for GitHub repositories"
+            ]
+          }
+        },
+        {
+          "action": "performAutoCorrection",
+          "description": "Automatically correct safe issues or provide recommendations",
+          "required": true,
+          "autoCorrections": [
+            "Auto-switch to ai-pm-org-main for safe branch creation",
+            "Provide clear recommendations for manual resolution",
+            "Block operations that could cause data loss or conflicts"
+          ]
+        }
+      ]
+    },
+    "pullRequestMergeOperations": {
+      "directive": "Handle pull request creation and direct merge fallback",
+      "steps": [
+        {
+          "action": "determineMergeStrategy",
+          "description": "Select appropriate merge strategy based on availability",
+          "required": true,
+          "priorityOrder": [
+            "Pull request creation (preferred when conditions met)",
+            "Direct merge fallback (comprehensive workflow)"
+          ],
+          "pullRequestConditions": [
+            "GitHub CLI available and authenticated",
+            "GitHub repository (github.com in remote URL)",
+            "Has remote origin configured",
+            "Not forced direct merge"
+          ]
+        },
+        {
+          "action": "executePullRequestWorkflow",
+          "description": "Create pull request using GitHub CLI",
+          "required": false,
+          "workflow": [
+            "Push branch to origin if not already pushed",
+            "Generate PR title with branch number and user attribution",
+            "Create comprehensive PR description with commit log and metadata",
+            "Execute: gh pr create --title 'Title' --body 'Description' --base ai-pm-org-main --head branch-name",
+            "Return PR URL and next steps for team review"
+          ],
+          "benefits": [
+            "Better team collaboration and code review process",
+            "Merge history tracking through GitHub",
+            "Integration with team workflows",
+            "Automatic documentation of changes"
+          ]
+        },
+        {
+          "action": "executeDirectMergeFallback",
+          "description": "Perform direct Git merge when PR creation not available",
+          "required": false,
+          "fallbackConditions": [
+            "GitHub CLI not available",
+            "Not a GitHub repository", 
+            "No remote origin configured",
+            "User explicitly requests direct merge"
+          ],
+          "workflow": [
+            "Validate ai-pm-org-main and branch state",
+            "Switch to ai-pm-org-main: git checkout ai-pm-org-main",
+            "Execute merge: git merge branch-name",
+            "Use standard Git conflict resolution if conflicts occur",
+            "Update database with merge status and user attribution",
+            "Explain why direct merge was used"
+          ]
+        }
+      ]
     }
   },
   "themeImpactAnalysis": {
@@ -322,9 +541,50 @@
     "databaseUpdateFailure": "Roll back Git state updates and retry"
   },
   "integrationPoints": {
-    "branchManagement": "Coordinate with Git branch system for merge operations",
-    "gitMergeOperations": "Use native Git merge capabilities for conflict resolution",
-    "auditSystem": "Log all Git integration actions for compliance",
-    "themeManagement": "Update theme definitions based on code changes"
+    "branchManagement": "Coordinate with Git branch system for merge operations using modular architecture",
+    "gitMergeOperations": "Use native Git merge capabilities and pull request creation through MergeOperations module",
+    "repositoryDetection": "Repository type detection and user identification through RepositoryDetector module", 
+    "gitSafetyValidation": "Workflow safety checks and ancestry validation through GitSafetyChecker module",
+    "teamCollaboration": "Team member detection and AI structure setup through TeamCollaboration module",
+    "auditSystem": "Log all Git integration actions for compliance and debugging",
+    "themeManagement": "Update theme definitions based on code changes with modular impact analysis",
+    "modularErrorHandling": "Specialized error handling distributed across focused modules"
+  },
+  "configurationSettings": {
+    "gitSafetyFeatures": {
+      "repositoryDetection": {
+        "enabled": true,
+        "cacheValidityHours": 24,
+        "networkTimeoutSeconds": 30,
+        "fallbackBehavior": "assume_original"
+      },
+      "workflowSafety": {
+        "blockDangerousOperations": true,
+        "autoSwitchForSafety": true,
+        "requireBranchAncestry": true
+      },
+      "pullRequestCreation": {
+        "preferPROverDirectMerge": true,
+        "requireGitHubCLI": false,
+        "prDescriptionTemplate": "comprehensive"
+      }
+    },
+    "modularComponents": {
+      "repositoryDetector": {
+        "userDetectionSources": ["git_config", "environment", "system", "fallback"],
+        "metadataCaching": true,
+        "githubCliIntegration": true
+      },
+      "gitSafetyChecker": {
+        "severityLevels": ["high_blocking", "medium_warning", "low_info"],
+        "autoCorrection": true,
+        "validationScope": "comprehensive"
+      },
+      "mergeOperations": {
+        "strategyPriority": ["pull_request", "direct_merge"],
+        "userAttribution": true,
+        "operationLogging": true
+      }
+    }
   }
 }

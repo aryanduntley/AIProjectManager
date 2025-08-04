@@ -18,6 +18,7 @@ sys.path.insert(0, str(current_dir / "deps"))
 from .core.config_manager import ConfigManager
 from .core.mcp_api import MCPToolRegistry
 from .tools.project_tools import ProjectTools
+from .utils.project_paths import get_project_management_path
 
 
 async def test_config_manager():
@@ -54,7 +55,7 @@ async def test_project_tools():
         print(f"✓ Project initialization result: {result}")
         
         # Check if structure was created
-        project_mgmt_dir = temp_path / "projectManagement"
+        project_mgmt_dir = get_project_management_path(temp_path)
         if project_mgmt_dir.exists():
             print("✓ Project management structure created")
             

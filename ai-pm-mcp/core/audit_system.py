@@ -12,6 +12,7 @@ from enum import Enum
 import uuid
 
 from ..database.db_manager import DatabaseManager
+from ..utils.project_paths import get_project_management_path
 
 
 class AuditLevel(Enum):
@@ -180,7 +181,7 @@ class ComplianceTracker:
 
 class AuditTrail:
     """Main audit trail management system - adapted for Git branches"""
-    def __init__(self, project_root: Path, db_manager: DatabaseManager):
+    def __init__(self, project_root: Path, db_manager: DatabaseManager, config_manager=None):
         self.project_root = Path(project_root)
         self.db_manager = db_manager
         
@@ -189,7 +190,8 @@ class AuditTrail:
         self.compliance_tracker = ComplianceTracker()
         
         # Audit storage - use project management directory instead of instances
-        self.audit_dir = self.project_root / "projectManagement" / "audit"
+        project_mgmt_dir = get_project_management_path(self.project_root, config_manager)
+        self.audit_dir = project_mgmt_dir / "audit"
         self.audit_dir.mkdir(parents=True, exist_ok=True)
         
         self.main_audit_log = self.audit_dir / "audit.jsonl"

@@ -17,6 +17,7 @@ import os
 from ..database.theme_flow_queries import ThemeFlowQueries
 from ..database.session_queries import SessionQueries
 from ..database.file_metadata_queries import FileMetadataQueries
+from ..utils.project_paths import get_project_management_path, get_themes_path, get_flows_path
 
 logger = logging.getLogger(__name__)
 
@@ -333,7 +334,7 @@ class CompressedContextManager:
         }
         
         try:
-            pm_path = project_path / "projectManagement"
+            pm_path = get_project_management_path(project_path, self.config_manager)
             if pm_path.exists():
                 state["hasProjectManagement"] = True
                 
@@ -377,7 +378,8 @@ class ScopeEngine:
     def __init__(self, mcp_server_path: Optional[Path] = None, 
                  theme_flow_queries: Optional[ThemeFlowQueries] = None,
                  session_queries: Optional[SessionQueries] = None,
-                 file_metadata_queries: Optional[FileMetadataQueries] = None):
+                 file_metadata_queries: Optional[FileMetadataQueries] = None,
+                 config_manager=None):
         self.max_memory_mb = 100  # Maximum context memory in MB
         self.readme_priority_files = [
             'README.md', 'readme.md', 'Readme.md',
@@ -392,6 +394,7 @@ class ScopeEngine:
         self.theme_flow_queries = theme_flow_queries
         self.session_queries = session_queries
         self.file_metadata_queries = file_metadata_queries
+        self.config_manager = config_manager
     
     async def ensure_core_context_loaded(self):
         """Ensure compressed core context is loaded."""
@@ -424,7 +427,7 @@ class ScopeEngine:
                           force_mode: bool = False) -> ContextResult:
         """Load context based on theme and context mode."""
         try:
-            themes_dir = project_path / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(project_path, self.config_manager)
             
             # Load primary theme
             primary_theme_data = await self._load_theme(themes_dir, primary_theme)
@@ -879,7 +882,7 @@ class ScopeEngine:
                 return validation_results
             
             # Validate theme integrity
-            themes_dir = project_path / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(project_path, self.config_manager)
             for theme_name in context.loaded_themes:
                 theme_file = themes_dir / f"{theme_name}.json"
                 if not theme_file.exists():
@@ -1287,7 +1290,7 @@ class ScopeEngine:
             )
             
             # Load actual flow data
-            flow_dir = project_path / "projectManagement" / "ProjectFlow"
+            flow_dir = get_flows_path(project_path, self.config_manager)
             loaded_flows = {}
             flow_context = {
                 "selected_flows": [],

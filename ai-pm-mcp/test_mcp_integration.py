@@ -27,6 +27,7 @@ from .tools.project_tools import ProjectTools
 from .tools.theme_tools import ThemeTools
 from .tools.task_tools import TaskTools
 from .tools.session_manager import SessionManager
+from .utils.project_paths import get_database_path
 
 
 class MCPIntegrationTestSuite:
@@ -50,7 +51,7 @@ class MCPIntegrationTestSuite:
         await self.config_manager.load_config()
         
         # Setup database
-        db_path = self.project_path / "projectManagement" / "project.db"
+        db_path = get_database_path(self.project_path)
         db_path.parent.mkdir(parents=True, exist_ok=True)
         
         self.db_manager = DatabaseManager(str(db_path))
@@ -88,7 +89,7 @@ class MCPIntegrationTestSuite:
             print("✓ Project initialization with database")
             
             # Verify database was created
-            db_path = self.project_path / "projectManagement" / "project.db"
+            db_path = get_database_path(self.project_path)
             assert db_path.exists(), "Database should be created during initialization"
             print("✓ Database automatically created")
             

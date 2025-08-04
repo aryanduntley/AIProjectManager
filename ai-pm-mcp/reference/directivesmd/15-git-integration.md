@@ -2,9 +2,103 @@
 
 ## Overview
 
-This directive provides comprehensive guidance for integrating root-level Git repository tracking with the AI Project Manager's organizational state. It enables detection of external code changes and automatic reconciliation of organizational structure with project reality.
+This directive provides comprehensive guidance for integrating root-level Git repository tracking with the AI Project Manager's organizational state. It enables detection of external code changes, Git safety validation, pull request creation, and automatic reconciliation of organizational structure with project reality.
 
-**Core Purpose**: Bridge the gap between external code changes and internal AI project organization to maintain accurate, up-to-date project understanding.
+**Core Purpose**: Bridge the gap between external code changes and internal AI project organization while ensuring safe Git operations through modular architecture and comprehensive validation.
+
+## Git Safety & Collaboration Features
+
+### Repository Type Detection
+The system automatically detects repository type to ensure safe workflows:
+
+**Detection Methods**:
+- **GitHub CLI Integration**: Uses `gh repo view --json isFork` when available
+- **Remote Analysis**: Analyzes `git remote -v` output for repository relationships  
+- **Upstream Detection**: Checks for upstream relationships and fork indicators
+- **Caching**: Results stored in `metadata.json` with 24-hour cache validity
+
+**Repository Types & Adaptations**:
+- **`original`**: Full workflow capabilities, direct merge and PR creation available
+- **`clone`**: Safety validation prevents main branch work, requires work branches
+- **`fork`**: Enhanced safety checks, PR creation preferred over direct merge
+
+### Workflow Safety Validation
+Comprehensive safety checks prevent dangerous Git operations:
+
+**High-Severity Blocking**:
+- Working on main branch in cloned/forked repositories
+- Creating branches from wrong ancestry (not from ai-pm-org-main)
+- Attempting unsafe operations without proper repository permissions
+
+**Medium-Severity Warnings**:
+- Creating branches while on feature branch instead of ai-pm-org-main
+- GitHub CLI not available for GitHub repositories (limits PR creation)
+- Network issues preventing remote repository validation
+
+**Auto-Correction Features**:
+- Automatic switching to ai-pm-org-main before branch creation
+- Clear recommendations for resolving safety issues
+- Comprehensive warnings with specific remediation steps
+
+### Pull Request Integration
+The system prioritizes pull request creation for better team collaboration:
+
+**Pull Request Workflow**:
+1. **Availability Check**: GitHub CLI available and authenticated
+2. **Repository Validation**: GitHub repository with remote origin configured
+3. **Branch Push**: Ensure branch is pushed to origin if needed
+4. **PR Creation**: Generate comprehensive PR with user attribution
+5. **Team Integration**: Return PR URL for team review and merge
+
+**Direct Merge Fallback**: When GitHub CLI unavailable or not a GitHub repository
+
+## Modular Architecture
+
+The Git integration system has been refactored into specialized modules for 71% code reduction and better maintainability:
+
+### Core Modules
+
+#### RepositoryDetector (`core/repository_detector.py`)
+- **Purpose**: Repository analysis, user detection, and metadata management
+- **Key Functions**:
+  - `detect_repository_type()`: Analyzes fork/clone/original status
+  - `detect_user_info()`: Multi-source user identification  
+  - `check_gh_cli_available()`: GitHub CLI availability checking
+  - `load_metadata()` / `save_metadata()`: Project metadata management
+- **Detection Sources**: Git config, environment variables, system calls, fallback
+
+#### GitSafetyChecker (`core/git_safety.py`)
+- **Purpose**: Comprehensive workflow safety validation and ancestry checking
+- **Key Functions**:
+  - `check_workflow_safety()`: Repository-aware safety validation
+  - `check_branch_ancestry()`: Validates proper branch relationships
+  - `validate_branch_creation()`: Pre-creation safety checks
+- **Safety Features**: Blocking for dangerous operations, auto-correction, recommendations
+
+#### MergeOperations (`core/merge_operations.py`)
+- **Purpose**: Pull request creation and direct merge fallback operations
+- **Key Functions**:
+  - `merge_instance_branch()`: Orchestrates merge strategy selection
+  - `create_pull_request()`: GitHub CLI PR creation with attribution
+  - `direct_merge_fallback()`: Standard Git merge when PR not available
+- **Strategy Priority**: Pull request creation preferred, direct merge as fallback
+
+#### TeamCollaboration (`core/team_collaboration.py`)
+- **Purpose**: Team member detection and collaborative AI structure setup
+- **Key Functions**:
+  - `detect_team_member_scenario()`: Identifies team collaboration needs
+  - `ensure_ai_main_branch_exists()`: Remote-aware ai-pm-org-main setup
+  - `initialize_for_team_member()`: Automatic work branch creation
+- **Team Features**: Remote branch detection, priority logic, user attribution
+
+#### GitUtils (`core/git_utils.py`)
+- **Purpose**: Common Git operations and utility functions
+- **Key Functions**:
+  - `get_current_branch()`: Current branch detection
+  - `branch_exists()`: Branch existence validation
+  - `get_next_branch_number()`: Sequential numbering
+  - `get_user_code_changes()`: Code change detection
+- **Utilities**: Standard Git operations, error handling, branch utilities
 
 ## When This Directive Applies
 
@@ -14,6 +108,10 @@ This directive provides comprehensive guidance for integrating root-level Git re
 - **External code modifications detected** - Files changed by users or other tools
 - **Theme impact analysis required** - Code changes affect organizational themes
 - **Organizational reconciliation needed** - AI structure needs updating
+- **Repository type detection required** - Fork/clone/original analysis needed
+- **Git safety validation needed** - Workflow safety checks before operations
+- **Pull request merge operations** - PR creation and merge handling
+- **Team collaboration initialization** - Multi-developer setup and coordination
 
 ### Use Cases
 - Developer adds new authentication files while AI was offline
@@ -289,6 +387,128 @@ INSERT INTO git_change_impacts (
 
 **Cleanup Policy**: Archive records older than configurable threshold (default: 90 days)
 
+## Git Safety Validation Workflow
+
+### Step 1: Repository Type Detection
+**Purpose**: Analyze repository to determine safe workflow adaptations
+
+**Detection Process**:
+1. **GitHub CLI Check**: Use `gh repo view --json isFork` when available
+2. **Remote Analysis**: Analyze `git remote -v` for repository relationships
+3. **Upstream Detection**: Check for upstream relationships and fork indicators
+4. **Cache Results**: Store in metadata.json with 24-hour validity
+5. **Network Resilience**: Handle failures gracefully with timeout
+
+**User Communication Examples**:
+```
+🔍 Repository Analysis Complete
+📂 Type: Clone (cloned from upstream repository)
+⚠️  Safety: Work branches required, main branch protected
+🛡️  Workflow: Pull request creation enabled for safe collaboration
+```
+
+### Step 2: Workflow Safety Validation
+**Purpose**: Check current Git state for workflow safety issues
+
+**Safety Check Process**:
+1. **Current Branch Validation**: Ensure appropriate branch for operation
+2. **Repository Type Compatibility**: Verify operation safe for repo type
+3. **Branch Ancestry Verification**: Validate proper branch relationships
+4. **Conflict Detection**: Identify potential dangerous operations
+
+**Safety Response Levels**:
+- **High-Severity Blocking**: Block operation, require manual intervention
+- **Medium-Severity Warning**: Warn user, provide auto-correction options
+- **Low-Severity Info**: Informational messages, operation proceeds
+
+**Auto-Correction Examples**:
+```
+🔄 Auto-Correction Applied
+❌ Blocked: Cannot create branch from 'main' in cloned repository
+✅ Switched to 'ai-pm-org-main' for safe branch creation
+ℹ️  Recommendation: Work branches should always be created from ai-pm-org-main
+```
+
+### Step 3: Branch Ancestry Validation
+**Purpose**: Ensure proper Git branch relationships
+
+**Validation Process**:
+1. **Ancestry Check**: Verify branch created from ai-pm-org-main
+2. **Merge-Base Analysis**: Validate branch relationships using Git
+3. **Auto-Switch Logic**: Switch to safe branch when needed
+4. **User Communication**: Explain why switching occurred
+
+## Pull Request Integration Workflow
+
+### Step 1: Merge Strategy Determination
+**Purpose**: Select appropriate merge strategy based on capabilities
+
+**Strategy Selection Logic**:
+1. **Check GitHub CLI**: Available and authenticated?
+2. **Validate Repository**: GitHub repository with remote origin?
+3. **Assess Conditions**: All PR creation conditions met?
+4. **Select Strategy**: Pull request creation or direct merge fallback
+
+**Strategy Communication**:
+```
+🔀 Merge Strategy: Pull Request Creation
+✅ GitHub CLI available and authenticated
+✅ GitHub repository detected (origin: github.com/user/repo)
+✅ Remote origin configured
+📝 Creating pull request for team review...
+```
+
+### Step 2: Pull Request Creation Workflow
+**Purpose**: Create comprehensive pull request using GitHub CLI
+
+**PR Creation Process**:
+1. **Branch Push**: Ensure branch pushed to origin
+2. **Title Generation**: Include branch number and user attribution
+3. **Description Creation**: Comprehensive description with commit log
+4. **PR Execution**: `gh pr create --title "..." --body "..." --base ai-pm-org-main --head branch-name`
+5. **URL Return**: Provide PR URL and next steps
+
+**PR Description Template**:
+```
+## Branch: ai-pm-org-branch-003 by john-doe
+
+### Changes Summary
+- Enhanced authentication system with OAuth support
+- Added multi-factor authentication capabilities
+- Updated login flow with improved security
+
+### Commits
+- abc123: Add OAuth integration module
+- def456: Implement MFA verification system
+- ghi789: Update login flow with security enhancements
+
+### Testing
+- [ ] OAuth integration tested
+- [ ] MFA workflows verified
+- [ ] Security validation completed
+
+### AI Project Manager
+Created by AI Project Manager for user: john-doe
+Branch: ai-pm-org-branch-003
+Creation time: 2025-01-20T15:30:00Z
+```
+
+### Step 3: Direct Merge Fallback
+**Purpose**: Perform direct Git merge when PR creation not available
+
+**Fallback Triggers**:
+- GitHub CLI not available or not authenticated
+- Not a GitHub repository
+- No remote origin configured
+- User explicitly requests direct merge
+
+**Fallback Process**:
+1. **Pre-merge Validation**: Ensure branches ready for merge
+2. **User Attribution**: Show whose work is being merged
+3. **Git Merge**: Standard `git merge` with conflict handling
+4. **Explanation**: Explain why direct merge was used
+5. **Documentation**: Update tracking with merge details
+
 ## Instance Git Integration
 
 ### Step 1: Record Instance Git Base
@@ -423,29 +643,47 @@ projectManagement/.mcp-session-*
 
 ## Integration Points
 
-### Instance Management System
-Coordinate with instance management for:
-- Git-aware instance creation with base hash tracking
-- Merge conflict detection including code changes
-- Instance archival with Git state preservation
+### Branch Management System
+Coordinate with Git branch system using modular architecture:
+- Repository type detection through RepositoryDetector module
+- Workflow safety validation through GitSafetyChecker module
+- Pull request creation and merge operations through MergeOperations module
+- Team collaboration setup through TeamCollaboration module
 
-### Conflict Resolution Engine
-Provide Git context for:
-- Enhanced conflict detection including code changes
-- Resolution options that consider external modifications
-- Merge completion with Git state synchronization
+### Git Merge Operations
+Enhanced merge capabilities with pull request integration:
+- Native Git merge capabilities through GitUtils module
+- Pull request creation using GitHub CLI when available
+- Direct merge fallback with comprehensive workflow validation
+- User attribution and merge documentation across all strategies
+
+### Safety Validation System
+Comprehensive Git safety through GitSafetyChecker module:
+- Repository-aware workflow safety checks
+- Branch ancestry validation and auto-correction
+- High-severity blocking for dangerous operations
+- Auto-switching to safe branches when needed
+
+### Team Collaboration System
+Multi-developer support through TeamCollaboration module:
+- Team member detection and AI structure setup
+- Remote ai-pm-org-main branch detection and cloning
+- Priority logic for branch establishment (Remote > Local > Fresh)
+- Automatic user attribution and branch metadata
 
 ### Audit System
-Log Git integration actions for:
+Enhanced logging with modular error handling:
 - Compliance tracking of organizational changes
 - Performance analysis of reconciliation effectiveness
 - Historical analysis of code change patterns
+- Specialized error handling distributed across modules
 
 ### Theme Management System
-Update theme definitions based on:
-- Code structure changes detected through Git
+Update theme definitions based on modular impact analysis:
+- Code structure changes detected through Git integration
 - File addition/deletion/movement patterns
 - Directory structure evolution over time
+- Repository type-aware theme adaptations
 
 ## User Communication Guidelines
 

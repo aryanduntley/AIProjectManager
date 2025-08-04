@@ -1,5 +1,66 @@
 # Project Initialization Directives
 
+## `/init` Command Behavior
+
+### CRITICAL: Status Check First
+
+**The `/init` command MUST always check project state before proceeding with any initialization actions.**
+
+### Behavior by Project State
+
+#### State: `complete` - Project Already Initialized
+- **Action**: Block initialization and provide helpful alternatives
+- **Message Template**:
+```
+# ℹ️ Project Already Initialized
+
+## Current Status:
+[Display current project state analysis]
+
+## 🔄 Did you mean `/resume`?
+
+This project appears to already have AI Project Manager fully set up and running. 
+
+**If you want to:**
+- **Continue previous work** → Use `/resume` 
+- **See current tasks** → Use `/tasks`
+- **Check project status** → Use `/status`
+- **Create work branch** → Use `/branch`
+
+**If you really want to re-initialize:**
+- Move or backup the existing `projectManagement/` directory first
+- Then run `/init` again
+
+## 💡 Recommended Next Step:
+Try `/resume` to continue your previous work, or `/status` to see available options.
+```
+
+#### State: `partial` - Incomplete Initialization
+- **Action**: Continue with completion initialization using `existingProject` workflow
+- **Message**: "Continuing incomplete initialization"
+
+#### State: `no_structure` - Fresh Project
+- **Action**: Proceed with full initialization using `newProject` workflow
+- **Message**: "Setting up AI project management from scratch"
+
+#### State: `git_history_found` - Team Member Joining
+- **Action**: Set up for team collaboration using `teamMemberJoin` workflow
+- **Message**: "Detected existing AI project management, setting up for team collaboration"
+
+### User Communication Guidelines
+
+**For Blocked Initialization** (state: `complete`):
+1. Clearly explain why initialization was blocked
+2. Show current project state
+3. Provide specific alternative commands with descriptions
+4. Give instructions for force re-initialization if needed
+5. Make the recommended action clear
+
+**For Other States**:
+- Proceed with appropriate workflow
+- Inform user of the chosen action and why
+- Continue with normal initialization process
+
 ## Initial (First Install) Assessment
 
 ### NEW PROJECT

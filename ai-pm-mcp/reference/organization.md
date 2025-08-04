@@ -1,19 +1,21 @@
 # MCP-Generated Project Structure & Organization
 
+> **Note**: Throughout this document, `$$projectManagement` refers to the configurable project management folder name. This defaults to "$projectManagement" but can be customized via the `managementFolderName` setting in your project configuration to avoid naming conflicts.
+
 ## Purpose
 
-This structure is created automatically by the MCP server after it is installed and executed for the first time within a user's project. The MCP server itself is downloaded either as a ZIP archive (e.g. from GitHub) or via an NPM package. Upon running, it checks whether a `projectManagement/` folder already exists in the project root.
+This structure is created automatically by the MCP server after it is installed and executed for the first time within a user's project. The MCP server itself is downloaded either as a ZIP archive (e.g. from GitHub) or via an NPM package. Upon running, it checks whether a `$$projectManagement/` folder (configurable, defaults to "$projectManagement") already exists in the project root.
 
 ### MCP Initialization Behavior
 
-- If `projectManagement/` **does not exist**, MCP creates it fresh with the full structure below.
-- If `projectManagement/` **exists**, MCP checks:
+- If `$projectManagement/` **does not exist**, MCP creates it fresh with the full structure below.
+- If `$projectManagement/` **exists**, MCP checks:
   - Is it from the same MCP version?
   - If yes, MCP offers to **integrate** the existing data.
   - If no, MCP asks whether to **overwrite**, **rename** (based on a configurable default), or cancel.
 - MCP uses an internal `firstRun` flag to determine whether it has been initialized in this project context before.
 
-This document defines the structure that the MCP Server will generate inside a project's root directory (within `projectManagement/`) when it is initiated to manage that project.
+This document defines the structure that the MCP Server will generate inside a project's root directory (within `$projectManagement/`) when it is initiated to manage that project.
 
 The structure is designed to:
 
@@ -29,7 +31,7 @@ The structure is designed to:
 /projectRoot/
 ├── .git/                              # Root-level Git repository
 ├── [existing project files...]        # All project source code (tracked)
-├── projectManagement/                 # AI organizational state (on ai-pm-org-main branch)
+├── $projectManagement/                 # AI organizational state (on ai-pm-org-main branch)
 │   ├── ProjectBlueprint/              # Original structure preserved
 │   │   ├── blueprint.md               # High-level summary of the project (user-approved)
 │   │   └── metadata.json              # Metadata, tags, author, project date, etc.
@@ -80,7 +82,7 @@ The structure is designed to:
 .git/
 ├── main                              # User's project code (untouched)
 ├── ai-pm-org-main                   # ✅ Canonical AI organizational state
-│   ├── projectManagement/           # Complete AI organizational structure
+│   ├── $projectManagement/           # Complete AI organizational structure
 │   ├── project.db                   # Main database state
 │   └── [user project files...]      # User code context
 ├── ai-pm-org-branch-{XXX}
@@ -95,7 +97,7 @@ The structure is designed to:
 ```
 ```
 
-> **Note**: This structure is created inside `/projectRoot/projectManagement/` by the MCP server. It represents the project’s managed state and persists throughout development.
+> **Note**: This structure is created inside `/projectRoot/$projectManagement/` by the MCP server. It represents the project’s managed state and persists throughout development.
 
 ## 2. JSON Schemas & Examples
 
@@ -444,7 +446,7 @@ This implementation plans system provides the strategic planning layer that brid
 
 **Purpose**: Maintain persistent theme-flow relationships, session tracking, and project analytics using a cross-platform SQLite database.
 
-**Database Location**: `projectManagement/project.db`
+**Database Location**: `$projectManagement/project.db`
 
 **Key Features**:
 - **Theme-Flow Relationships**: Many-to-many relationships between themes and flows
@@ -478,8 +480,8 @@ This implementation plans system provides the strategic planning layer that brid
 
 ### 7.3 Database Architecture
 
-**Project Database Instance**: `projectManagement/project.db` (SQLite database file)
-**Database Backups**: `projectManagement/database/backups/` - Periodic database backups for recovery
+**Project Database Instance**: `$projectManagement/project.db` (SQLite database file)
+**Database Backups**: `$projectManagement/database/backups/` - Periodic database backups for recovery
 
 **MCP Server Database Infrastructure**: `ai-pm-mcp/database/`
 - `schema.sql` - Master schema definition (source of truth, never copied)
@@ -626,7 +628,7 @@ See complete example structure in `reference/templates/task-active.json` and `re
 
 - During initial project scan or when creating a project from scratch, the MCP will auto-discover and define "themes" based on folder clusters, naming patterns, imports, or user-designated categories.
 - For each new theme discovered:
-  - Create a file in `/projectManagement/Themes/` named after the theme (e.g. `transactions.json`, `walletconnect.json`)
+  - Create a file in `/$projectManagement/Themes/` named after the theme (e.g. `transactions.json`, `walletconnect.json`)
   - Define all file paths and folders related to that theme, even if they span across `components/`, `hooks/`, `services/`, etc.
   - These files are updated dynamically as new files/folders are added to the project
   - If a file/folder is removed or moved, the theme file must also be updated
@@ -776,9 +778,9 @@ The AI Project Manager uses a **root-level Git repository** to track both projec
 **Updated `.gitignore` for MCP Branch Management**:
 ```gitignore
 # Project Management - Track Organizational State, Not User Data
-projectManagement/UserSettings/
-projectManagement/database/backups/
-projectManagement/.mcp-session-*
+$projectManagement/UserSettings/
+$projectManagement/database/backups/
+$projectManagement/.mcp-session-*
 
 # Temporary Files
 *.tmp
@@ -787,7 +789,7 @@ projectManagement/.mcp-session-*
 
 **Tracked in Git**:
 - All project source code (existing behavior)
-- Main `projectManagement/` organizational state (on ai-pm-org-main)
+- Main `$projectManagement/` organizational state (on ai-pm-org-main)
 - Branch metadata (`.ai-pm-meta.json` on work branches)
 - Git merge history (native Git log)
 
@@ -903,7 +905,7 @@ projectManagement/.mcp-session-*
 
 ## 12. Key Interaction Directives (For MCP Server Only)
 
-> These are not part of the projectManagement structure. They live in the MCP server and govern AI behavior when managing any project.
+> These are not part of the $projectManagement structure. They live in the MCP server and govern AI behavior when managing any project.
 
 - `retrieval-guidelines.md`: how to determine what context to load
 - `file-construction.md`: rules for structuring and writing files

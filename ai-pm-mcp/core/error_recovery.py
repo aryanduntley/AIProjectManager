@@ -14,6 +14,7 @@ from enum import Enum
 import traceback
 
 from ..database.db_manager import DatabaseManager
+from ..utils.project_paths import get_project_management_path
 
 
 class RecoveryLevel(Enum):
@@ -70,10 +71,12 @@ class RecoveryPoint:
 
 class BackupManager:
     """Manages backups for rollback operations - adapted for Git branch system"""
-    def __init__(self, project_root: Path):
+    def __init__(self, project_root: Path, config_manager=None):
         self.project_root = Path(project_root)
+        self.config_manager = config_manager
         # Use project management directory instead of .mcp-instances
-        self.backup_dir = self.project_root / "projectManagement" / "backups"
+        project_mgmt_dir = get_project_management_path(self.project_root, config_manager)
+        self.backup_dir = project_mgmt_dir / "backups"
         self.backup_dir.mkdir(parents=True, exist_ok=True)
     
     def create_backup(self, backup_id: str, paths: List[Path]) -> Dict[str, Any]:
@@ -233,16 +236,18 @@ class BackupManager:
 
 class ErrorRecoveryManager:
     """Main error recovery and rollback system adapted for Git branches"""
-    def __init__(self, project_root: Path, db_manager: DatabaseManager):
+    def __init__(self, project_root: Path, db_manager: DatabaseManager, config_manager=None):
         self.project_root = Path(project_root)
         self.db_manager = db_manager
+        self.config_manager = config_manager
         
         # Recovery components
-        self.backup_manager = BackupManager(project_root)
+        self.backup_manager = BackupManager(project_root, config_manager)
         self.recovery_points = []
         
         # Use project management directory for recovery log
-        recovery_dir = self.project_root / "projectManagement" / "recovery"
+        project_mgmt_dir = get_project_management_path(self.project_root, config_manager)
+        recovery_dir = project_mgmt_dir / "recovery"
         recovery_dir.mkdir(parents=True, exist_ok=True)
         self.recovery_log_file = recovery_dir / "recovery_log.jsonl"
     
@@ -297,7 +302,7 @@ class ErrorRecoveryManager:
         if operation_type == OperationType.BRANCH_CREATION:
             # Backup main project management and git state
             backup_paths.extend([
-                self.project_root / "projectManagement",
+                get_project_management_path(self.project_root, self.config_manager),
                 self.project_root / ".git" / "refs" / "heads",
                 self.project_root / ".git" / "index"
             ])
@@ -305,7 +310,7 @@ class ErrorRecoveryManager:
         elif operation_type == OperationType.BRANCH_MERGE:
             # Backup main project management and git state
             backup_paths.extend([
-                self.project_root / "projectManagement",
+                get_project_management_path(self.project_root, self.config_manager),
                 self.project_root / ".git" / "refs" / "heads",
                 self.project_root / ".git" / "index"
             ])
@@ -319,14 +324,16 @@ class ErrorRecoveryManager:
         
         elif operation_type == OperationType.CONFLICT_RESOLUTION:
             # Backup main project management and any conflict workspace
+            project_mgmt_dir = get_project_management_path(self.project_root, self.config_manager)
             backup_paths.extend([
-                self.project_root / "projectManagement",
-                self.project_root / "projectManagement" / "conflicts"
+                project_mgmt_dir,
+                project_mgmt_dir / "conflicts"
             ])
         
         elif operation_type == OperationType.DATABASE_OPERATION:
             # Backup database
-            db_path = self.project_root / "projectManagement" / "project.db"
+            project_mgmt_dir = get_project_management_path(self.project_root, self.config_manager)
+            db_path = project_mgmt_dir / "project.db"
             if db_path.exists():
                 backup_paths.append(db_path)
         
@@ -340,13 +347,15 @@ class ErrorRecoveryManager:
         
         elif operation_type == OperationType.THEME_MODIFICATION:
             # Backup themes directory
-            themes_dir = self.project_root / "projectManagement" / "Themes"
+            project_mgmt_dir = get_project_management_path(self.project_root, self.config_manager)
+            themes_dir = project_mgmt_dir / "Themes"
             if themes_dir.exists():
                 backup_paths.append(themes_dir)
         
         elif operation_type == OperationType.FLOW_MODIFICATION:
             # Backup flows directory
-            flows_dir = self.project_root / "projectManagement" / "ProjectFlow"
+            project_mgmt_dir = get_project_management_path(self.project_root, self.config_manager)
+            flows_dir = project_mgmt_dir / "ProjectFlow"
             if flows_dir.exists():
                 backup_paths.append(flows_dir)
         
@@ -689,7 +698,8 @@ class ErrorRecoveryManager:
             
             elif recovery_point.operation_type == OperationType.CONFLICT_RESOLUTION:
                 # Clean up conflict workspace
-                conflict_dir = self.project_root / "projectManagement" / "conflicts"
+                project_mgmt_dir = get_project_management_path(self.project_root, self.config_manager)
+                conflict_dir = project_mgmt_dir / "conflicts"
                 if conflict_dir.exists():
                     shutil.rmtree(conflict_dir)
                     actions.append("Cleaned up conflict resolution workspace")

@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 
 from ..database.db_manager import DatabaseManager
+from ..utils.project_paths import get_project_management_path, get_themes_path, get_flows_path
 
 
 class PerformanceMetrics:
@@ -262,9 +263,10 @@ class DatabaseOptimizer:
 
 class LargeProjectOptimizer:
     """Main optimizer for large project performance - adapted for Git branches"""
-    def __init__(self, project_root: Path, db_manager: DatabaseManager):
+    def __init__(self, project_root: Path, db_manager: DatabaseManager, config_manager=None):
         self.project_root = Path(project_root)
         self.db_manager = db_manager
+        self.config_manager = config_manager
         
         # Performance components
         self.metrics = PerformanceMetrics()
@@ -298,12 +300,13 @@ class LargeProjectOptimizer:
                 return True
             
             # Check database size
-            db_path = self.project_root / "projectManagement" / "project.db"
+            project_mgmt_dir = get_project_management_path(self.project_root, self.config_manager)
+            db_path = project_mgmt_dir / "project.db"
             if db_path.exists() and db_path.stat().st_size > 100 * 1024 * 1024:  # 100MB+
                 return True
             
             # Check theme count
-            themes_dir = self.project_root / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(self.project_root, self.config_manager)
             if themes_dir.exists():
                 theme_files = list(themes_dir.glob("*.json"))
                 if len(theme_files) > 50:  # 50+ themes
@@ -370,7 +373,7 @@ class LargeProjectOptimizer:
     def _optimize_theme_files(self) -> Dict[str, Any]:
         """Optimize theme file structure and relationships"""
         try:
-            themes_dir = self.project_root / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(self.project_root, self.config_manager)
             if not themes_dir.exists():
                 return {"success": False, "reason": "Themes directory not found"}
             
@@ -434,7 +437,7 @@ class LargeProjectOptimizer:
     def _optimize_flow_files(self) -> Dict[str, Any]:
         """Optimize flow file structure and cross-references"""
         try:
-            flows_dir = self.project_root / "projectManagement" / "ProjectFlow"
+            flows_dir = get_flows_path(self.project_root, self.config_manager)
             if not flows_dir.exists():
                 return {"success": False, "reason": "ProjectFlow directory not found"}
             

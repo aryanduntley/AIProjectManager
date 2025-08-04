@@ -1,0 +1,233 @@
+#!/usr/bin/env python3
+"""
+Merge Operations Module
+
+Handles pull request creation and merge operations for AI Project Manager.
+Extracted from GitBranchManager to reduce file size.
+"""
+
+import subprocess
+import logging
+from pathlib import Path
+from typing import Dict, Any, Tuple
+
+logger = logging.getLogger(__name__)
+
+
+class MergeOperations:
+    """
+    Handles merge operations including pull request creation and direct merges.
+    """
+    
+    def __init__(self, project_root: Path, ai_main_branch: str = "ai-pm-org-main"):
+        self.project_root = Path(project_root)
+        self.ai_main_branch = ai_main_branch
+    
+    def merge_instance_branch(self, branch_name: str, branch_number: int, repo_info: Dict[str, Any], 
+                             user_info: Dict[str, Any], force_direct_merge: bool = False) -> Tuple[str, bool]:
+        """
+        Merge instance branch using pull request creation when possible, or direct merge as fallback.
+        
+        Args:
+            branch_name: Name of the branch to merge
+            branch_number: Sequential number of the branch
+            repo_info: Repository information from detector
+            user_info: User information from detector
+            force_direct_merge: Force direct merge instead of creating PR
+            
+        Returns:
+            Tuple of (result_message, success)
+        """
+        try:
+            gh_cli_available = repo_info.get("gh_cli_available", False)
+            is_github = repo_info.get("is_github", False)
+            has_origin = repo_info.get("has_origin", False)
+            
+            # If GitHub CLI is available and this is a GitHub repo, create PR
+            if gh_cli_available and is_github and has_origin and not force_direct_merge:
+                return self.create_pull_request(branch_name, branch_number, repo_info, user_info)
+            else:
+                # Fallback to direct merge
+                return self.direct_merge(branch_name, branch_number, repo_info)
+                
+        except Exception as e:
+            logger.error(f"Error in merge_instance_branch {branch_name}: {e}")
+            return f"Error during merge operation: {str(e)}", False
+    
+    def create_pull_request(self, branch_name: str, branch_number: int, repo_info: Dict[str, Any], 
+                           user_info: Dict[str, Any]) -> Tuple[str, bool]:
+        """Create a pull request using GitHub CLI."""
+        try:
+            # First, push the branch to origin if needed
+            logger.info(f"Preparing to create PR for branch {branch_name}")
+            
+            # Check if branch exists on remote
+            remote_check = subprocess.run([
+                'git', 'ls-remote', '--heads', 'origin', branch_name
+            ], cwd=self.project_root, capture_output=True, text=True)
+            
+            # Push branch if it doesn't exist on remote
+            if branch_name not in remote_check.stdout:
+                logger.info(f"Pushing branch {branch_name} to origin")
+                push_result = subprocess.run([
+                    'git', 'push', '-u', 'origin', branch_name
+                ], cwd=self.project_root, capture_output=True, text=True)
+                
+                if push_result.returncode != 0:
+                    logger.warning(f"Failed to push branch: {push_result.stderr}")
+                    return f"Failed to push branch {branch_name}: {push_result.stderr}", False
+            
+            # Generate PR title and description
+            pr_title = f"AI Work Branch #{branch_number:03d}"
+            if user_info["name"] != "ai-user":
+                pr_title += f" - {user_info['name']}"
+            
+            # Get commit messages for PR description
+            commit_log = subprocess.run([
+                'git', 'log', f'{self.ai_main_branch}..{branch_name}', '--oneline'
+            ], cwd=self.project_root, capture_output=True, text=True)
+            
+            pr_description = f"""# AI Project Manager Work Branch #{branch_number:03d}
+
+## Summary
+Automated pull request for AI project management work completed on branch `{branch_name}`.
+
+## Changes
+"""
+            
+            if commit_log.returncode == 0 and commit_log.stdout.strip():
+                pr_description += "### Commits:\n"
+                for line in commit_log.stdout.strip().split('\n'):
+                    pr_description += f"- {line}\n"
+            else:
+                pr_description += "- Branch contains AI project management changes\n"
+            
+            pr_description += f"""
+## Metadata
+- **Branch**: {branch_name}
+- **Created by**: {user_info['name']} ({user_info['source']})
+- **Repository type**: {repo_info.get('type', 'unknown')}
+- **Base branch**: {self.ai_main_branch}
+
+## Review Notes
+This PR was created automatically by AI Project Manager. Please review the changes and merge when ready.
+
+---
+*Generated by AI Project Manager MCP Server*
+"""
+            
+            # Create the PR using GitHub CLI
+            logger.info("Creating pull request with GitHub CLI")
+            pr_result = subprocess.run([
+                'gh', 'pr', 'create',
+                '--title', pr_title,
+                '--body', pr_description,
+                '--base', self.ai_main_branch,
+                '--head', branch_name
+            ], cwd=self.project_root, capture_output=True, text=True)
+            
+            if pr_result.returncode == 0:
+                pr_url = pr_result.stdout.strip()
+                logger.info(f"Successfully created PR: {pr_url}")
+                
+                return f"""✅ Pull Request Created Successfully!
+
+**PR Details:**
+- **Title**: {pr_title}
+- **URL**: {pr_url}
+- **Base**: {self.ai_main_branch}
+- **Head**: {branch_name}
+- **Branch Number**: #{branch_number:03d}
+
+**Next Steps:**
+1. Review the PR at the URL above
+2. Share with team members for review
+3. Merge when ready through GitHub interface
+
+**Repository Info:**
+- Type: {repo_info.get('type', 'unknown')}
+- GitHub CLI: ✅ Available
+- Remote: ✅ Connected""", True
+            else:
+                logger.error(f"Failed to create PR: {pr_result.stderr}")
+                # If PR creation fails, fallback to direct merge
+                logger.info("PR creation failed, falling back to direct merge")
+                return self.direct_merge(branch_name, branch_number, repo_info)
+                
+        except Exception as e:
+            logger.error(f"Error creating pull request: {e}")
+            # Fallback to direct merge on any error
+            logger.info("PR creation error, falling back to direct merge")
+            return self.direct_merge(branch_name, branch_number, repo_info)
+    
+    def direct_merge(self, branch_name: str, branch_number: int, repo_info: Dict[str, Any]) -> Tuple[str, bool]:
+        """Perform direct merge as fallback when PR creation isn't available."""
+        try:
+            logger.info(f"Performing direct merge for branch {branch_name}")
+            
+            # Switch to ai-pm-org-main
+            result = subprocess.run([
+                'git', 'checkout', self.ai_main_branch
+            ], cwd=self.project_root, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                return f"Failed to switch to {self.ai_main_branch}: {result.stderr}", False
+            
+            # Attempt merge
+            result = subprocess.run([
+                'git', 'merge', branch_name
+            ], cwd=self.project_root, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                logger.info(f"Successfully merged branch {branch_name}")
+                
+                merge_info = f"""✅ Direct Merge Completed Successfully!
+
+**Merge Details:**
+- **Branch**: {branch_name} (#{branch_number:03d})
+- **Target**: {self.ai_main_branch}  
+- **Method**: Direct Git merge
+
+**Why Direct Merge:**"""
+                
+                if not repo_info.get("gh_cli_available", False):
+                    merge_info += "\n- GitHub CLI not available"
+                if not repo_info.get("is_github", False):
+                    merge_info += "\n- Not a GitHub repository"
+                if not repo_info.get("has_origin", False):
+                    merge_info += "\n- No remote origin configured"
+                
+                merge_info += f"""
+
+**Repository Info:**
+- Type: {repo_info.get('type', 'unknown')}
+- GitHub CLI: {'✅' if repo_info.get('gh_cli_available') else '❌'} {'Available' if repo_info.get('gh_cli_available') else 'Not Available'}
+- Remote: {'✅' if repo_info.get('has_origin') else '❌'} {'Connected' if repo_info.get('has_origin') else 'Not Connected'}
+
+**Recommendation:**
+Consider setting up GitHub CLI and remote repository for better collaboration workflows."""
+                
+                return merge_info, True
+            else:
+                # Check if it's a merge conflict
+                if "CONFLICT" in result.stdout or "conflict" in result.stderr.lower():
+                    return f"""❌ Merge Conflicts Detected
+
+**Branch**: {branch_name} (#{branch_number:03d})
+**Issue**: Automatic merge failed due to conflicts
+
+**Resolution Steps:**
+1. Stay on branch {branch_name}: `git checkout {branch_name}`
+2. Merge {self.ai_main_branch} into your branch: `git merge {self.ai_main_branch}`
+3. Resolve conflicts in affected files
+4. Commit resolved changes: `git commit`
+5. Try merge again with this tool
+
+**Conflict Details:**
+{result.stdout}""", False
+                else:
+                    return f"Direct merge failed: {result.stderr}", False
+                    
+        except Exception as e:
+            logger.error(f"Error in direct merge: {e}")
+            return f"Error during direct merge: {str(e)}", False

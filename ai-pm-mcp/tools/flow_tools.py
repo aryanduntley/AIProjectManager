@@ -17,6 +17,7 @@ from ..core.mcp_api import ToolDefinition
 from ..database.theme_flow_queries import ThemeFlowQueries
 from ..database.session_queries import SessionQueries
 from ..database.file_metadata_queries import FileMetadataQueries
+from ..utils.project_paths import get_flows_path, get_themes_path
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +28,12 @@ class FlowTools:
     def __init__(self, 
                  theme_flow_queries: Optional[ThemeFlowQueries] = None,
                  session_queries: Optional[SessionQueries] = None,
-                 file_metadata_queries: Optional[FileMetadataQueries] = None):
+                 file_metadata_queries: Optional[FileMetadataQueries] = None,
+                 config_manager=None):
         self.theme_flow_queries = theme_flow_queries
         self.session_queries = session_queries
         self.file_metadata_queries = file_metadata_queries
+        self.config_manager = config_manager
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get available flow management tools."""
@@ -291,7 +294,7 @@ class FlowTools:
             flows = arguments["flows"]
             cross_flow_dependencies = arguments.get("cross_flow_dependencies", [])
             
-            flow_dir = project_path / "projectManagement" / "ProjectFlow"
+            flow_dir = get_flows_path(project_path, self.config_manager)
             flow_dir.mkdir(parents=True, exist_ok=True)
             
             flow_index_path = flow_dir / "flow-index.json"
@@ -380,7 +383,7 @@ class FlowTools:
             primary_themes = arguments.get("primary_themes", [])
             steps = arguments.get("steps", [])
             
-            flow_dir = project_path / "projectManagement" / "ProjectFlow"
+            flow_dir = get_flows_path(project_path, self.config_manager)
             flow_dir.mkdir(parents=True, exist_ok=True)
             
             # Create flow file name
@@ -482,7 +485,7 @@ class FlowTools:
             max_flows = arguments.get("max_flows", 5)
             session_id = arguments.get("session_id")
             
-            flow_dir = project_path / "projectManagement" / "ProjectFlow"
+            flow_dir = get_flows_path(project_path, self.config_manager)
             flow_index_path = flow_dir / "flow-index.json"
             
             if not flow_index_path.exists():
@@ -578,7 +581,7 @@ class FlowTools:
             flow_ids = arguments["flow_ids"]
             include_indirect = arguments.get("include_indirect", True)
             
-            flow_dir = project_path / "projectManagement" / "ProjectFlow"
+            flow_dir = get_flows_path(project_path, self.config_manager)
             flow_index_path = flow_dir / "flow-index.json"
             
             if not flow_index_path.exists():
@@ -835,7 +838,7 @@ class FlowTools:
                     logger.debug(f"Could not get historical patterns: {e}")
             
             # Analyze current flow index for optimization opportunities
-            flow_dir = project_path / "projectManagement" / "ProjectFlow"
+            flow_dir = get_flows_path(project_path, self.config_manager)
             flow_index_path = flow_dir / "flow-index.json"
             
             if flow_index_path.exists():
@@ -933,7 +936,7 @@ class FlowTools:
             if not self.theme_flow_queries:
                 return "Database not available. Flow synchronization requires database connection."
             
-            flow_dir = project_path / "projectManagement" / "ProjectFlow"
+            flow_dir = get_flows_path(project_path, self.config_manager)
             if not flow_dir.exists():
                 return "No ProjectFlow directory found. Initialize flows first."
             
@@ -993,7 +996,7 @@ class FlowTools:
             
             # Sync theme-flow relationships
             try:
-                themes_dir = project_path / "projectManagement" / "Themes"
+                themes_dir = get_themes_path(project_path, self.config_manager)
                 if themes_dir.exists():
                     theme_files = list(themes_dir.glob("*.json"))
                     theme_data = {}
@@ -1042,7 +1045,7 @@ class FlowTools:
                                              description: str, primary_themes: List[str], 
                                              domain: str):
         """Update flow index with newly created flow."""
-        flow_index_path = project_path / "projectManagement" / "ProjectFlow" / "flow-index.json"
+        flow_index_path = get_flows_path(project_path, self.config_manager) / "flow-index.json"
         
         if flow_index_path.exists():
             flow_index = json.loads(flow_index_path.read_text())
@@ -1235,7 +1238,7 @@ class FlowTools:
     
     async def _find_flow_file(self, project_path: Path, flow_id: str) -> Optional[Path]:
         """Find the flow file containing the specified flow ID."""
-        flow_dir = project_path / "projectManagement" / "ProjectFlow"
+        flow_dir = get_flows_path(project_path, self.config_manager)
         flow_index_path = flow_dir / "flow-index.json"
         
         if not flow_index_path.exists():

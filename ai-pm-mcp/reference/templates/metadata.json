@@ -65,5 +65,26 @@
     "targetAudience": "consumers",
     "scalability": "medium",
     "performance": "high"
+  },
+  "system": {
+    "gh_cli_available": false,
+    "gh_cli_version": null,
+    "gh_cli_last_check": null,
+    "git_version": null,
+    "python_version": null,
+    "os_type": null,
+    "last_environment_check": null
+  },
+  "repository": {
+    "type": "unknown",
+    "has_origin": false,
+    "has_upstream": false,
+    "origin_url": null,
+    "upstream_url": null,
+    "is_github": false,
+    "gh_cli_available": false,
+    "current_branch": null,
+    "ai_branch_exists": false,
+    "last_check": null
   }
 }

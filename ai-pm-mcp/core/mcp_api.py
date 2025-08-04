@@ -29,6 +29,7 @@ from ..database.theme_flow_queries import ThemeFlowQueries
 from ..database.file_metadata_queries import FileMetadataQueries
 from ..database.user_preference_queries import UserPreferenceQueries
 from ..database.event_queries import EventQueries
+from ..utils.project_paths import get_project_management_path, get_database_path
 
 logger = logging.getLogger(__name__)
 
@@ -157,6 +158,11 @@ class MCPToolRegistry:
             initialization_tools = InitializationTools(self.db_manager)
             await self._register_tool_module(initialization_tools)
             
+            # Import command tools for better user experience and command discovery
+            from ..tools.command_tools import CommandTools
+            command_tools = CommandTools(self.db_manager)
+            await self._register_tool_module(command_tools)
+            
         except ImportError as e:
             logger.error(f"Critical tool modules not available: {e}")
             # Log missing modules and attempt fallback registration
@@ -262,10 +268,11 @@ class MCPToolRegistry:
                     return git_dir
                 git_dir = git_dir.parent
             
-            # Strategy 3: Look for projectManagement directory
+            # Strategy 3: Look for project management directory
             project_mgmt_dir = current_dir
             while project_mgmt_dir != project_mgmt_dir.parent:
-                if (project_mgmt_dir / 'projectManagement').exists():
+                mgmt_path = get_project_management_path(project_mgmt_dir, self.config_manager)
+                if mgmt_path.exists():
                     return project_mgmt_dir
                 project_mgmt_dir = project_mgmt_dir.parent
             
@@ -405,7 +412,7 @@ class MCPToolRegistry:
             force = arguments.get("force", False)
             
             # Check if project structure already exists
-            project_mgmt_dir = project_path / "projectManagement"
+            project_mgmt_dir = get_project_management_path(project_path, self.config_manager)
             if project_mgmt_dir.exists() and not force:
                 return f"Project management structure already exists at {project_mgmt_dir}. Use force=true to override."
             
@@ -420,7 +427,7 @@ class MCPToolRegistry:
     
     async def _create_project_structure(self, project_path: Path):
         """Create the basic project management structure."""
-        project_mgmt_dir = project_path / "projectManagement"
+        project_mgmt_dir = get_project_management_path(project_path, self.config_manager)
         
         # Create directory structure
         directories = [
@@ -511,8 +518,9 @@ class MCPToolRegistry:
         """Initialize database components for the project."""
         try:
             project_path_obj = Path(project_path)
-            db_path = project_path_obj / "projectManagement" / "project.db"
-            schema_path = project_path_obj / "projectManagement" / "database" / "schema.sql"
+            db_path = get_database_path(project_path_obj, self.config_manager)
+            project_mgmt_dir = get_project_management_path(project_path_obj, self.config_manager)
+            schema_path = project_mgmt_dir / "database" / "schema.sql"
             
             # Copy schema from ai-pm-mcp if it doesn't exist
             if not schema_path.exists():

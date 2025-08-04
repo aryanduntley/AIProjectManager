@@ -65,13 +65,18 @@ class BranchTools:
             
             ToolDefinition(
                 name="merge_instance_branch",
-                description="Merge an AI instance branch into the main AI organizational state",
+                description="Merge an AI instance branch into the main AI organizational state using pull requests when possible",
                 input_schema={
                     "type": "object",
                     "properties": {
                         "branch_name": {
                             "type": "string",
                             "description": "Name of the branch to merge (e.g., 'ai-pm-org-branch-001')"
+                        },
+                        "force_direct_merge": {
+                            "type": "boolean",
+                            "description": "Force direct merge instead of creating pull request (default: false)",
+                            "default": False
                         },
                         "project_path": {
                             "type": "string",
@@ -219,34 +224,29 @@ class BranchTools:
             return f"❌ Error listing branches: {str(e)}"
     
     async def _merge_instance_branch(self, arguments: Dict[str, Any]) -> str:
-        """Merge an AI instance branch."""
+        """Merge an AI instance branch using pull requests when possible."""
         try:
             branch_name = arguments["branch_name"]
+            force_direct_merge = arguments.get("force_direct_merge", False)
             project_path = arguments.get("project_path")
             
             branch_manager = self._get_branch_manager(project_path)
             
-            result_message, success = branch_manager.merge_instance_branch(branch_name)
+            result_message, success = branch_manager.merge_instance_branch(branch_name, force_direct_merge)
             
             if success:
-                return f"✅ **Merge Successful!**\n" \
-                       f"   Merged: {branch_name}\n" \
-                       f"   {result_message}\n\n" \
-                       f"💡 Consider deleting the branch with 'delete_instance_branch' if work is complete."
+                # The result_message now contains formatted information about PR or direct merge
+                return result_message
             else:
                 if "conflict" in result_message.lower():
-                    return f"⚠️ **Merge Conflicts Detected**\n" \
-                           f"   Branch: {branch_name}\n" \
-                           f"   {result_message}\n\n" \
+                    return f"⚠️ **Merge Conflicts Detected**\n\n{result_message}\n\n" \
                            f"🔧 **Next Steps:**\n" \
                            f"   1. Resolve conflicts manually in your Git client\n" \
                            f"   2. Use 'git add' to stage resolved files\n" \
                            f"   3. Use 'git commit' to complete the merge\n" \
                            f"   4. Run this tool again to verify completion"
                 else:
-                    return f"❌ **Merge Failed**\n" \
-                           f"   Branch: {branch_name}\n" \
-                           f"   Error: {result_message}"
+                    return f"❌ **Merge Failed**\n\n{result_message}"
                 
         except Exception as e:
             logger.error(f"Error in merge_instance_branch: {e}")

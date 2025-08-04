@@ -13,6 +13,7 @@ from datetime import datetime
 from ..core.mcp_api import ToolDefinition
 from ..core.git_integration import GitIntegrationManager
 from ..database.session_queries import SessionQueries
+from ..utils.project_paths import get_project_management_path
 from ..database.file_metadata_queries import FileMetadataQueries
 from ..database.git_queries import GitQueries
 
@@ -675,8 +676,7 @@ This will:
         Identify if this is a main instance or branch instance based on marker files.
         Returns 'main', 'branch', or 'unknown'
         """
-        project_mgmt_dir = project_path / "projectManagement"
-        
+        project_mgmt_dir = get_project_management_path(project_path, None)         
         # Check for main instance marker
         if (project_mgmt_dir / ".mcp-instance-main").exists():
             return "main"

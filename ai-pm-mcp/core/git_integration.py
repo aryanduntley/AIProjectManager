@@ -12,6 +12,11 @@ from datetime import datetime
 import hashlib
 
 from ..database.db_manager import DatabaseManager
+from ..utils.paths import load_template
+from ..utils.project_paths import (
+    get_project_management_path, get_themes_path, get_flows_path, 
+    get_tasks_path, get_management_folder_name
+)
 
 
 class GitIntegrationManager:
@@ -23,11 +28,12 @@ class GitIntegrationManager:
     - Integration with MCP instance management
     """
     
-    def __init__(self, project_root: Path, db_manager: DatabaseManager):
+    def __init__(self, project_root: Path, db_manager: DatabaseManager, config_manager=None):
         self.project_root = Path(project_root)
         self.db_manager = db_manager
+        self.config_manager = config_manager
         self.git_dir = self.project_root / ".git"
-        self.project_management_dir = self.project_root / "projectManagement"
+        self.project_management_dir = get_project_management_path(self.project_root, config_manager)
         
     # ============================================================================
     # GIT REPOSITORY MANAGEMENT
@@ -110,8 +116,18 @@ class GitIntegrationManager:
         return result
     
     def _generate_mcp_gitignore(self) -> str:
-        """Generate .gitignore content for Git branch-based AI Project Manager"""
-        return """
+        """Generate .gitignore content for Git branch-based AI Project Manager from template"""
+        try:
+            # Load gitignore content from template using the path utility
+            template_content = load_template("project-gitignore-additions.txt")
+            # Replace projectManagement with configured folder name
+            management_folder = get_management_folder_name(self.config_manager)
+            return template_content.replace("projectManagement", management_folder)
+        except Exception as e:
+            # Fallback to minimal hardcoded content if template can't be read
+            # This ensures the system still works even if template is missing
+            management_folder = get_management_folder_name(self.config_manager)
+            return f"""
 # AI Project Manager - Git Branch Based Management
 # Track organizational state, not user-specific settings or temporary files
 
@@ -119,29 +135,13 @@ class GitIntegrationManager:
 ai-pm-mcp/
 
 # Project Management - Track Organizational State, Not User Data
-projectManagement/UserSettings/
-projectManagement/database/backups/
-projectManagement/.mcp-session-*
+{management_folder}/UserSettings/
+{management_folder}/database/backups/
+{management_folder}/.mcp-session-*
 
-# Temporary and cache files
-*.pyc
-__pycache__/
-.DS_Store
-.vscode/settings.json
-.idea/
-*.swp
-*.swo
-*~
-
-# Node modules and build artifacts
-node_modules/
-dist/
-build/
-*.log
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# AI Project Manager temporary files
+*.tmp
+.ai-pm-temp/
 """
     
     def get_current_git_hash(self) -> Optional[str]:
@@ -304,8 +304,9 @@ build/
                     status = parts[0]
                     file_path = parts[1]
                     
-                    # Skip projectManagement files (organizational state)
-                    if file_path.startswith('projectManagement/'):
+                    # Skip project management files (organizational state)
+                    management_folder = get_management_folder_name(self.config_manager)
+                    if file_path.startswith(f'{management_folder}/'):
                         continue
                     
                     change_type = self._get_change_type_from_status(status)
@@ -362,7 +363,7 @@ build/
             theme_files = {}
             
             # Load existing themes to analyze file relationships
-            themes_dir = self.project_root / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(self.project_root, self.config_manager)
             if themes_dir.exists():
                 themes_json_path = themes_dir / "themes.json"
                 if themes_json_path.exists():
@@ -666,7 +667,7 @@ build/
     def _update_themes_with_file_changes(self, affected_themes: List[str], changed_files: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Update theme files to reflect file changes"""
         theme_updates = []
-        themes_dir = self.project_root / "projectManagement" / "Themes"
+        themes_dir = get_themes_path(self.project_root, self.config_manager)
         
         if not themes_dir.exists():
             return theme_updates
@@ -735,7 +736,7 @@ build/
     def _update_flows_with_file_changes(self, affected_themes: List[str], changed_files: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Update flow references based on file changes"""
         flow_updates = []
-        flows_dir = self.project_root / "projectManagement" / "ProjectFlow"
+        flows_dir = get_flows_path(self.project_root, self.config_manager)
         
         if not flows_dir.exists():
             return flow_updates
@@ -778,7 +779,7 @@ build/
     def _update_tasks_with_file_changes(self, changed_files: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Update task status based on implementation file changes"""
         task_updates = []
-        tasks_dir = self.project_root / "projectManagement" / "Tasks"
+        tasks_dir = get_tasks_path(self.project_root, self.config_manager)
         
         if not tasks_dir.exists():
             return task_updates
@@ -836,7 +837,7 @@ build/
             
             # Load existing theme data
             theme_files = {}
-            themes_dir = self.project_root / "projectManagement" / "Themes"
+            themes_dir = get_themes_path(self.project_root, self.config_manager)
             if themes_dir.exists():
                 themes_json_path = themes_dir / "themes.json"
                 if themes_json_path.exists():
@@ -895,7 +896,8 @@ build/
             with open(gitignore_path, 'r') as f:
                 gitignore_content = f.read()
             
-            if "projectManagement/UserSettings/" not in gitignore_content:
+            management_folder = get_management_folder_name(self.config_manager)
+            if f"{management_folder}/UserSettings/" not in gitignore_content:
                 validation_result["recommendations"].append("Update .gitignore with AI Project Manager patterns")
         else:
             validation_result["recommendations"].append("Create .gitignore with AI Project Manager patterns")
@@ -1239,8 +1241,8 @@ build/
     def _has_previous_ai_state(self) -> bool:
         """Check if there's evidence of previous AI Project Manager state."""
         try:
-            # Check for projectManagement directory with content
-            proj_mgmt_dir = self.project_root / "projectManagement"
+            # Check for project management directory with content
+            proj_mgmt_dir = get_project_management_path(self.project_root, self.config_manager)
             if proj_mgmt_dir.exists():
                 # Check for key organizational files
                 key_files = [
@@ -1294,8 +1296,8 @@ build/
     def _initialize_ai_structure_on_branch(self) -> None:
         """Initialize the AI project management structure on current branch."""
         try:
-            # Create projectManagement directory structure if it doesn't exist
-            proj_mgmt_dir = self.project_root / "projectManagement"
+            # Create project management directory structure if it doesn't exist
+            proj_mgmt_dir = get_project_management_path(self.project_root, self.config_manager)
             proj_mgmt_dir.mkdir(exist_ok=True)
             
             # Basic AI metadata file
@@ -1314,7 +1316,8 @@ build/
             ], cwd=self.project_root, capture_output=True, text=True)
             
             if status_result.stdout.strip():
-                subprocess.run(['git', 'add', 'projectManagement/'], cwd=self.project_root)
+                management_folder = get_management_folder_name(self.config_manager)
+                subprocess.run(['git', 'add', f'{management_folder}/'], cwd=self.project_root)
                 subprocess.run([
                     'git', 'commit', '-m', 'Initialize AI Project Manager structure'
                 ], cwd=self.project_root, capture_output=True)
@@ -1373,7 +1376,7 @@ build/
         """Validate organizational file consistency after restoration."""
         try:
             # Basic validation that key organizational files exist
-            proj_mgmt_dir = self.project_root / "projectManagement"
+            proj_mgmt_dir = get_project_management_path(self.project_root, self.config_manager)
             if not proj_mgmt_dir.exists():
                 proj_mgmt_dir.mkdir(exist_ok=True)
             

@@ -83,7 +83,7 @@ class UserCommunicationService:
 {chr(10).join(branch_list)}
 
 📊 **Current Status:**
-• Working Directory: No projectManagement/ structure  
+• Working Directory: No project management/ structure  
 • Git Repository: ✅ Available
 • Current Branch: {current_branch} ({current_branch_type})
 • AI Project History: ✅ Found in Git branches

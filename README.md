@@ -36,6 +36,13 @@ AI Project Manager is a sophisticated Model Context Protocol (MCP) server that e
 - **Quality Assurance**: Built-in validation and cross-reference checking
 - **Git Integration**: Native Git merge capabilities for parallel development
 
+### 🔒 **Git Safety & Collaboration**
+- **Repository Type Detection**: Automatically detects fork/clone/original repositories
+- **Workflow Safety Validation**: Prevents working on main branch in cloned repositories
+- **Pull Request Automation**: Creates PRs using GitHub CLI when available instead of direct merges
+- **Branch Ancestry Validation**: Ensures proper branch creation from ai-pm-org-main
+- **Team Collaboration Support**: Safe multi-developer workflows with user attribution
+
 ## Architecture
 
 AI Project Manager uses a hybrid file-database architecture:
@@ -126,10 +133,22 @@ The server will:
    python3 -m ai-pm-mcp
    ```
 
-2. **Initialize a New Project** (via MCP tools):
-   - The server provides MCP tools for project initialization
-   - Connect with Claude or compatible AI client
-   - Use the project management tools to set up your project structure
+2. **Quick Start Commands**:
+   Once connected with Claude, use these commands to get started:
+   
+   ```
+   /status    - Get current project state and available options
+   /init      - Initialize AI project management  
+   /help      - Show all available commands
+   /resume    - Resume previous work
+   ```
+   
+   📋 **See [COMMANDS.md](COMMANDS.md) for complete command reference and troubleshooting**
+
+3. **Initialize a New Project**:
+   - Use `/status` to see current project state
+   - Use `/init` to set up AI project management
+   - Or use individual MCP tools for fine-grained control
 
 3. **Connect with Claude Code**:
 
@@ -164,9 +183,41 @@ The server will:
 
 5. **Start Managing Your Project**:
    ```
-   AI: "Continue development on this project"
-   #  AI automatically loads project context and resumes work
+   User: "/status"
+   AI: Shows project state and available options
+   
+   User: "/init" 
+   AI: Initializes project management and begins work
    ```
+
+## 🎯 AI Project Manager Commands
+
+### Getting Started
+- **`/status`** - See current project state and available options
+- **`/help`** - Show all available commands with descriptions  
+- **`/init`** - Initialize AI project management (intelligently detects existing setups and suggests `/resume` when appropriate)
+
+### Task Management  
+- **`/resume`** - Resume previous work and active tasks
+- **`/tasks`** - Show active tasks and progress
+- **`/newTask <description>`** - Create and start new task
+
+### Project Analysis
+- **`/analyze`** - Full project analysis and theme discovery
+- **`/themes`** - Show project themes and structure
+- **`/flows`** - Show user experience flows
+
+### Advanced Features
+- **`/branch`** - Create AI work branch for parallel development with comprehensive Git safety checks
+- **`/merge`** - Merge AI work using pull requests when possible, direct merge as fallback
+- **`/config`** - Show current configuration settings
+
+### How Commands Work
+Commands provide **workflow-level approval** - when you use a command like `/init`, you're approving the entire initialization workflow. The AI can then:
+- ✅ Chain multiple MCP tools automatically
+- ✅ Make decisions based on project data  
+- ✅ Execute complex multi-step processes
+- ✅ Operate autonomously within the approved workflow scope
 
 ### Testing the Installation
 
@@ -288,13 +339,13 @@ The AI Project Manager exposes these tools through the MCP protocol:
 - **`context_escalate`**: Escalate to broader context
 - **`context_get_flows`**: Get relevant user experience flows
 
-### Branch Management
-- **`create_instance_branch`**: Create parallel development branch for AI work
-- **`merge_instance_branch`**: Merge branch changes using native Git merge
+### Branch Management & Git Safety
+- **`create_instance_branch`**: Create parallel development branch with comprehensive safety validation
+- **`merge_instance_branch`**: Merge branch using pull requests when possible, direct merge as fallback
 - **`list_instance_branches`**: List active AI instance branches
 - **`delete_instance_branch`**: Delete completed AI instance branches
 - **`switch_to_branch`**: Switch to an AI instance branch
-- **`get_branch_status`**: Get detailed status of AI branches
+- **`get_branch_status`**: Get detailed status of AI branches with repository type detection
 - **`check_user_code_changes`**: Check for user code changes outside AI management
 
 ### Configuration Tools
@@ -446,15 +497,25 @@ AIProjectManager/
 - Theme management and auto-discovery
 - Task management with sidequest support
 - Session management and persistence with initialization progress tracking
-- Git integration with branch management
+- Git integration with comprehensive safety features
 - Multi-flow architecture
 - File metadata initialization system with resumable progress tracking
+- **Git Safety & Collaboration Features**:
+  - Repository type detection (fork/clone/original)
+  - Workflow safety validation with blocking for dangerous operations
+  - Pull request automation using GitHub CLI
+  - Branch ancestry validation and auto-switching
+  - Team collaboration support with user attribution
+- **Modular Architecture Improvements**:
+  - Extracted Git operations into specialized modules (71% code reduction)
+  - Repository detection and metadata management
+  - Merge operations with PR creation capabilities
+  - Team collaboration and initialization modules
 
 ### 🚧 In Progress
 - Advanced context loading optimization
 - Analytics dashboard
 - Performance optimization
-- Team collaboration features
 
 ### 📋 Planned
 - Web dashboard for project monitoring

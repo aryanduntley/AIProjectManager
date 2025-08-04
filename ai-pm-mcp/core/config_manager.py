@@ -29,6 +29,7 @@ class ProjectConfig(BaseModel):
     auto_modularize: bool = True
     theme_discovery: bool = True
     backup_enabled: bool = True
+    management_folder_name: str = "projectManagement"
 
 
 class ServerConfig(BaseModel):
@@ -93,7 +94,15 @@ class ConfigManager:
         """Load configuration from JSON file."""
         try:
             with open(config_path, 'r') as f:
-                return json.load(f)
+                data = json.load(f)
+            
+            # Handle template format where managementFolderName is under 'project'
+            if 'project' in data and 'managementFolderName' in data['project']:
+                # Convert template format to config format
+                if 'project' not in data or 'management_folder_name' not in data['project']:
+                    data.setdefault('project', {})['management_folder_name'] = data['project']['managementFolderName']
+            
+            return data
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in config file {config_path}: {e}")
             raise
@@ -108,6 +117,7 @@ class ConfigManager:
             "AI_PM_MAX_FILE_LINES": ("project.max_file_lines", int),
             "AI_PM_LOG_LEVEL": ("logging.level", str),
             "AI_PM_LOG_RETENTION": ("logging.retention_days", int),
+            "AI_PM_MANAGEMENT_FOLDER": ("project.management_folder_name", str),
         }
         
         for env_var, (config_path, value_type) in env_mappings.items():
@@ -154,6 +164,10 @@ class ConfigManager:
     def get_logging_config(self) -> LoggingConfig:
         """Get logging-specific configuration."""
         return self.get_config().logging
+    
+    def get_management_folder_name(self) -> str:
+        """Get the configured management folder name."""
+        return self.get_config().project.management_folder_name
     
     async def save_config(self, config_path: Optional[Path] = None):
         """Save current configuration to file."""

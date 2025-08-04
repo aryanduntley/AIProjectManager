@@ -14,6 +14,7 @@ from ..core.mcp_api import ToolDefinition
 from ..database.task_status_queries import TaskStatusQueries
 from ..database.session_queries import SessionQueries
 from ..database.file_metadata_queries import FileMetadataQueries
+from ..utils.project_paths import get_project_management_path, get_tasks_path
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +24,12 @@ class TaskTools:
     
     def __init__(self, task_queries: Optional[TaskStatusQueries] = None, 
                  session_queries: Optional[SessionQueries] = None,
-                 file_metadata_queries: Optional[FileMetadataQueries] = None):
+                 file_metadata_queries: Optional[FileMetadataQueries] = None,
+                 config_manager=None):
         self.task_queries = task_queries
         self.session_queries = session_queries
         self.file_metadata_queries = file_metadata_queries
+        self.config_manager = config_manager
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get all task management tools."""
@@ -318,7 +321,7 @@ class TaskTools:
             
             # Validate project structure exists
             project_path_obj = Path(project_path)
-            if not (project_path_obj / "projectManagement").exists():
+            if not get_project_management_path(project_path_obj, self.config_manager).exists():
                 return f"Project management structure not found. Initialize project first."
             
             # Generate task ID
@@ -669,7 +672,7 @@ class TaskTools:
     
     async def _create_task_file(self, project_path: Path, task_id: str, task_data: Dict[str, Any]):
         """Create task file for compatibility."""
-        tasks_dir = project_path / "projectManagement" / "Tasks" / "active"
+        tasks_dir = get_tasks_path(project_path, self.config_manager) / "active"
         tasks_dir.mkdir(parents=True, exist_ok=True)
         
         task_file = tasks_dir / f"{task_id}.json"
@@ -753,7 +756,7 @@ class TaskTools:
             from pathlib import Path
             
             project_root = Path(project_path)
-            tasks_dir = project_root / "projectManagement" / "Tasks"
+            tasks_dir = get_tasks_path(project_root, self.config_manager)
             
             if not tasks_dir.exists():
                 logger.debug(f"Tasks directory does not exist: {tasks_dir}")

@@ -17,6 +17,9 @@ from ..database.session_queries import SessionQueries
 from ..database.task_status_queries import TaskStatusQueries
 from ..database.theme_flow_queries import ThemeFlowQueries
 from ..database.file_metadata_queries import FileMetadataQueries
+from ..utils.project_paths import (
+    get_project_management_path, get_blueprint_path, get_database_path
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +27,10 @@ logger = logging.getLogger(__name__)
 class ProjectTools:
     """Tools for project management operations."""
     
-    def __init__(self, db_manager: Optional[DatabaseManager] = None):
+    def __init__(self, db_manager: Optional[DatabaseManager] = None, config_manager=None):
         self.tools = []
         self.db_manager = db_manager
+        self.config_manager = config_manager
         self.session_queries = SessionQueries(db_manager) if db_manager else None
         self.task_queries = TaskStatusQueries(db_manager) if db_manager else None
         self.theme_flow_queries = ThemeFlowQueries(db_manager) if db_manager else None
@@ -167,7 +171,7 @@ class ProjectTools:
                 return f"Project directory does not exist: {project_path}"
             
             # Check if project structure already exists
-            project_mgmt_dir = project_path / "projectManagement"
+            project_mgmt_dir = get_project_management_path(project_path, self.config_manager)
             if project_mgmt_dir.exists() and not force:
                 return f"Project management structure already exists at {project_mgmt_dir}. Use force=true to override."
             
@@ -182,7 +186,7 @@ class ProjectTools:
     
     async def _create_project_structure(self, project_path: Path, project_name: str):
         """Create the complete project management structure."""
-        project_mgmt_dir = project_path / "projectManagement"
+        project_mgmt_dir = get_project_management_path(project_path, self.config_manager)
         
         # Create directory structure
         directories = [
@@ -282,7 +286,7 @@ This is the high-level blueprint for the {project_name} project. This document s
 
 ---
 
-**Note**: This blueprint must be reviewed and approved by the user before development begins. See the scope files in `/projectManagement/Themes/` for more detailed information when needed.
+**Note**: This blueprint must be reviewed and approved by the user before development begins. See the scope files in the project management `Themes/` directory for more detailed information when needed.
 """
     
     def _create_initial_flow_index(self) -> str:
@@ -312,7 +316,7 @@ This is the high-level blueprint for the {project_name} project. This document s
         """Get the current project blueprint."""
         try:
             project_path = Path(arguments["project_path"])
-            blueprint_path = project_path / "projectManagement" / "ProjectBlueprint" / "blueprint.md"
+            blueprint_path = get_blueprint_path(project_path, self.config_manager) / "blueprint.md"
             
             if not blueprint_path.exists():
                 return f"No blueprint found at {blueprint_path}. Initialize project first."
@@ -330,8 +334,8 @@ This is the high-level blueprint for the {project_name} project. This document s
             project_path = Path(arguments["project_path"])
             content = arguments["content"]
             
-            blueprint_path = project_path / "projectManagement" / "ProjectBlueprint" / "blueprint.md"
-            metadata_path = project_path / "projectManagement" / "ProjectBlueprint" / "metadata.json"
+            blueprint_path = get_blueprint_path(project_path, self.config_manager) / "blueprint.md"
+            metadata_path = get_blueprint_path(project_path, self.config_manager) / "metadata.json"
             
             if not blueprint_path.parent.exists():
                 return f"Project management structure not found. Initialize project first."
@@ -355,7 +359,7 @@ This is the high-level blueprint for the {project_name} project. This document s
         """Get overall project status and structure information."""
         try:
             project_path = Path(arguments["project_path"])
-            project_mgmt_dir = project_path / "projectManagement"
+            project_mgmt_dir = get_project_management_path(project_path, self.config_manager)
             
             if not project_mgmt_dir.exists():
                 return f"No project management structure found at {project_path}. Initialize project first."
@@ -424,8 +428,9 @@ This is the high-level blueprint for the {project_name} project. This document s
     async def _initialize_database(self, project_path: Path):
         """Initialize database for the project with file metadata discovery."""
         try:
-            db_path = project_path / "projectManagement" / "project.db"
-            schema_path = project_path / "projectManagement" / "database" / "schema.sql"
+            db_path = get_database_path(project_path, self.config_manager)
+            project_mgmt_dir = get_project_management_path(project_path, self.config_manager)
+            schema_path = project_mgmt_dir / "database" / "schema.sql"
             
             # Copy foundational schema if it doesn't exist
             if not schema_path.exists():
@@ -459,7 +464,7 @@ This is the high-level blueprint for the {project_name} project. This document s
             
             # Log initial project creation
             file_metadata_queries.log_file_modification(
-                file_path="projectManagement/",
+                file_path="project-management/",
                 file_type="project",
                 operation="create",
                 session_id=session_id,
@@ -485,8 +490,8 @@ This is the high-level blueprint for the {project_name} project. This document s
             discovered_files = file_metadata_queries.discover_project_files(
                 str(project_path),
                 exclude_patterns=[
-                    'projectManagement/UserSettings/*',
-                    'projectManagement/database/backups/*',
+                    '*/UserSettings/*',
+                    '*/database/backups/*',
                     '__pycache__/*', '*.pyc', '.git/*', 'node_modules/*'
                 ]
             )
@@ -544,7 +549,7 @@ This is the high-level blueprint for the {project_name} project. This document s
             if not project_path.exists():
                 return f"Project directory does not exist: {project_path}"
             
-            project_mgmt_dir = project_path / "projectManagement"
+            project_mgmt_dir = get_project_management_path(project_path, self.config_manager)
             if not project_mgmt_dir.exists():
                 return f"Project management structure not found. Initialize project first."
             

@@ -31,7 +31,9 @@ docs/forRemoval/mcp-initialization-fix-implementation-plan.md
 docs/forRemoval/optimized-initialization-summary.md
 docs/forRemoval/communication-audit-resolution-status.md
 docs/forRemoval/testing-report.md
+docs/forRemoval/mcp-initialization-ux-problem.md
 
+should _pycache_ be saved to git?
 context vs context_mode
 database sessions. How are sessions being assessed in code? We cannot track an "end" session (when user ends a session, there is no processing after to ensure a session is ended). We can only assess a session start or new session. We must make sure we aren't relying on sessions as actual sessions where a start and stop would need to be known. discuss "session" use.
 
@@ -51,9 +53,21 @@ review directives escalation. How often should json be reviewed? How often shoul
 
 user main branch, not mcp main branch, should never be automatically pushed to. Must be explicit user request. Ensure no code or directives mention anything to do with pushing to or modifying user's main branch. 
 
-remove logger.error from mcp server files once working
+proper /help
 
+ai-pm-mcp/core/git_integration.py path globals relative/modular imports
 
+ai-pm-mcp/tools/project_tools.py
+  discovered_files = file_metadata_queries.discover_project_files(
+                str(project_path),
+                exclude_patterns=[
+                    '*/UserSettings/*',
+                    '*/database/backups/*',
+                    '__pycache__/*', '*.pyc', '.git/*', 'node_modules/*'
+                ]
+ensure the "*" won't cause issues
+
+projectManagement folder name in user setting, but need to ensure only ai-pm-mcp-main branch can configure. No sub-branches can change this. Matter of fact, user settings only applicable to ai-pm-mcp-main branch. 
 ======================
 
 our directives are 3 layered. More detailed, human readable md files in ai-pm-mcp/reference/directivesmd/?.md, more consolidated and more efficient for AI to read json files in mcp-s erver/reference/directives/?.json, and a compressed quick reference json ai-pm-mcp/core-context/directive-compressed.json. Further, the base index/reference for the various directives: ai-pm-mcp/reference/directivesmd/directives.json ai-pm-mcp/reference/index.json our directives structure allow for a hierarchy for AI to follow for context needed. compressed directives are not explicit enough but allow for mild and routine tasks. More context is provided in the json files for detailed step by step directives on how to handle the various scenarios of the project management steps. And the human readable (which should almost exactly match the json) for more explanatory context if AI decides something is unclear and might need more explanation.
