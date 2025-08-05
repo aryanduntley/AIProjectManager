@@ -1,13 +1,14 @@
 {
   "metadata": {
-    "version": "1.0.1",
+    "version": "1.1.0",
     "created": "2025-01-17T12:00:00Z",
-    "lastUpdated": "2025-01-20T12:00:00Z",
-    "description": "Flow-based index of AI Project Manager directives for MCP workflow navigation",
+    "lastUpdated": "2025-08-04T14:00:00Z",
+    "description": "Flow-based index of AI Project Manager directives for MCP workflow navigation with branch-aware configuration system",
     "totalDirectives": 17,
     "flowPhases": 6,
-    "humanReadableDocs": "../docs/directives/",
-    "organizationReference": "reference/organization.json"
+    "humanReadableDocs": "reference/directivesmd/",
+    "organizationReference": "reference/organization.json",
+    "configurationSystem": "branch-aware (.ai-pm-config.json - modifiable only on ai-pm-org-main branch)"
   },
   "projectLifecycleFlow": {
     "phase1": {
@@ -18,10 +19,15 @@
       "directives": {
         "01-system-initialization": {
           "file": "reference/directives/01-system-initialization.json",
-          "purpose": "MCP server connection and compatibility verification",
+          "purpose": "MCP server connection, optimized project state analysis, and branch-aware configuration loading",
           "triggers": ["MCP server startup", "First connection", "System boot"],
-          "keyWorkflows": ["mcpServerConnection", "projectDetection", "configurationLoading"],
-          "criticalSettings": ["max_file_lines", "auto_modularize", "theme_discovery"]
+          "keyWorkflows": ["mcpServerConnection", "optimizedTwoTierAnalysis", "branchAwareConfigurationLoading", "automaticStateNotification"],
+          "criticalSettings": ["max_file_lines", "auto_modularize", "theme_discovery", "management_folder_name"],
+          "optimizations": {
+            "fastPath": "~100ms for existing projects with valid cache",
+            "comprehensiveAnalysis": "~2-5s for new projects requiring full analysis",
+            "cacheValidation": "24-hour cache validity with git hash verification"
+          }
         },
         "02-project-initialization": {
           "file": "reference/directives/02-project-initialization.json",
@@ -32,23 +38,34 @@
         },
         "database-integration": {
           "file": "reference/directives/database-integration.json",
-          "purpose": "Database integration protocols for hybrid file-database architecture",
+          "purpose": "Optimized database integration with hybrid file-database architecture and schema validation",
           "triggers": ["Project initialization", "Database setup", "State synchronization"],
-          "keyWorkflows": ["hybridArchitecture", "realTimeStateSynchronization", "sessionPersistence"],
-          "criticalSettings": ["database.enabled", "synchronization.atomicOperations"]
+          "keyWorkflows": ["hybridArchitecture", "realTimeStateSynchronization", "sessionPersistence", "schemaValidation"],
+          "criticalSettings": ["database.enabled", "synchronization.atomicOperations"],
+          "improvements": {
+            "schemaAlignment": "Fixed API mismatches between code and database schema",
+            "asyncSupport": "Corrected async/sync interface consistency",  
+            "testCoverage": "9/9 database tests passing with comprehensive validation"
+          }
         },
         "15-git-integration": {
           "file": "reference/directives/15-git-integration.json",
-          "purpose": "Root-level Git tracking and code change detection with branch management",
+          "purpose": "Simplified branch-based Git architecture with native branch operations",
           "triggers": ["Session boot with project code changes", "Git repository state detection needed", "External code modifications detected"],
           "keyWorkflows": ["sessionBootGitDetection", "organizationalReconciliation", "gitStateTracking", "branchGitIntegration"],
-          "criticalSettings": ["git.enabled", "git.auto_init_repo", "git.code_change_detection", "branch_management.enabled"]
+          "criticalSettings": ["git.enabled", "git.auto_init_repo", "git.code_change_detection", "branch_management.enabled"],
+          "architecture": {
+            "approach": "Pure Git branch-based (eliminates complex instance management)",
+            "benefits": ["Native Git operations", "Simplified codebase", "Proven branching capabilities"],
+            "eliminated": "Complex directory-based instance system (.mcp-instances/)"
+          }
         }
       },
       "keyDecisionPoints": [
         "New project vs existing project",
-        "Project structure compatibility",
-        "User approval for project blueprint"
+        "Project structure compatibility", 
+        "User approval for project blueprint",
+        "Branch detection for configuration access control"
       ],
       "nextPhase": "Session start or project continuation",
       "errorHandling": "Fail gracefully with clear error messages, require user intervention for critical issues"
@@ -118,10 +135,20 @@
         },
         "directive-escalation-system": {
           "file": "reference/directives/directive-escalation-system.json",
-          "purpose": "Directive escalation system for accessing detailed implementation specifications",
+          "purpose": "Three-tier directive escalation system for progressive detail access",
           "triggers": ["Directive ambiguity", "User communication needed", "Complex workflow execution", "Edge case handling"],
-          "keyWorkflows": ["escalationChain", "userApprovalProcess", "contextPreservation"],
-          "criticalSettings": ["escalation.automaticJSON", "escalation.requireMDApproval"]
+          "keyWorkflows": ["escalationChain", "forcedEscalationOperations", "contextPreservation"],
+          "criticalSettings": ["escalation.automaticJSON", "escalation.requireMDApproval"],
+          "escalationTiers": {
+            "compressed": "directive-compressed.json - routine operations",
+            "json": "reference/directives/*.json - detailed implementation specs", 
+            "markdown": "reference/directivesmd/*.md - comprehensive context and examples"
+          },
+          "forcedEscalationOperations": [
+            "Git operations", "Session management", "Branch operations",
+            "Database operations", "Logging/Documentation", "Theme discovery", 
+            "Project structure changes"
+          ]
         }
       },
       "keyDecisionPoints": [
@@ -307,7 +334,7 @@
     "databaseIntegration": "phase1.database-integration + phase2.database-integration",
     "stateSynchronization": "phase1.database-integration + phase2.database-integration",
     "sessionPersistence": "phase2.database-integration",
-    "directiveEscalation": "phase3.context-escalation-system",
+    "directiveEscalation": "phase3.directive-escalation-system",
     "contextEscalation": "phase3.05-context-loading + phase3.context-escalation-system",
     "themeDiscovery": "phase3.04-theme-management",
     "contextLoading": "phase3.05-context-loading",
@@ -321,12 +348,44 @@
     "logging": "phase5.09-logging-documentation",
     "flowIndexManagement": "phase5.08-project-management",
     "gitIntegration": "phase1.15-git-integration",
-    "branchManagement": "phase4.14-branch-management"
+    "branchManagement": "phase4.14-branch-management",
+    "branchAwareConfiguration": "branchAwareConfigurationSystem",
+    "configurationAccess": "branchAwareConfigurationSystem.accessControl",
+    "optimizedInitialization": "phase1.01-system-initialization.optimizations"
+  },
+  "branchAwareConfigurationSystem": {
+    "configurationFile": ".ai-pm-config.json",
+    "location": "projectManagement/.ai-pm-config.json",
+    "accessControl": {
+      "ai-pm-org-main": {
+        "readAccess": true,
+        "writeAccess": true,
+        "description": "Full configuration control on main branch"
+      },
+      "workBranches": {
+        "readAccess": true,
+        "writeAccess": false,
+        "description": "Inherit configuration immutably from main branch",
+        "mechanism": "git show ai-pm-org-main:projectManagement/.ai-pm-config.json"
+      }
+    },
+    "benefits": [
+      "Prevents configuration conflicts during merges",
+      "Ensures consistent behavior across work branches", 
+      "Centralized management folder naming",
+      "Team collaboration with shared settings"
+    ],
+    "errorHandling": {
+      "configModificationAttempt": "RuntimeError on work branches with guidance to switch to ai-pm-org-main",
+      "configNotFound": "Fallback to system defaults with warning",
+      "gitAccessFailure": "Graceful degradation to local defaults"
+    }
   },
   "configurationHierarchy": {
     "critical": [
       "project.maxFileLineCount",
       "project.avoidPlaceholders",
+      "project.management_folder_name",
       "tasks.resumeTasksOnStart",
       "themes.autoDiscovery",
       "git.enabled",

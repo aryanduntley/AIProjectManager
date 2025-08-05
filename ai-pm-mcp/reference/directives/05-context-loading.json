@@ -197,7 +197,7 @@
     "ProjectFlow/flow-index.json",
     "README.md files",
     "Theme JSON files",
-    "UserSettings/config.json",
+    ".ai-pm-config.json",
     "project.db file_metadata table",
     "Database file intelligence queries"
   ],

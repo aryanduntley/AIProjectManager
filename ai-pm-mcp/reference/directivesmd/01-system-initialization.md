@@ -142,7 +142,7 @@ This directive ensures proper system initialization with Git integration, instan
 ## 1.3 Configuration Loading Protocol
 
 **Directive**: Load configuration in this priority order:
-1. Project-specific `$projectManagement/UserSettings/config.json`
+1. Project-specific `$projectManagement/.ai-pm-config.json`
 2. Current directory `config.json`
 3. User home `~/.ai-project-manager/config.json`
 4. System-wide `/etc/ai-project-manager/config.json`
@@ -200,7 +200,7 @@ This directive ensures proper system initialization with Git integration, instan
 Update .gitignore with MCP-specific rules:
 ```gitignore
 # Project Management - Track Organizational State, Not User Data
-$projectManagement/UserSettings/
+# $projectManagement/.ai-pm-config.json is tracked (branch-protected configuration)
 $projectManagement/database/backups/
 $projectManagement/.mcp-session-*
 

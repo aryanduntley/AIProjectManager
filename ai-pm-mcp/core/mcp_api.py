@@ -443,7 +443,7 @@ class MCPToolRegistry:
             "Implementations/completed",
             "Logs/archived",
             "Placeholders",
-            "UserSettings",
+            ".ai-pm-config.json",
             "database"
         ]
         
@@ -459,7 +459,7 @@ class MCPToolRegistry:
             "Tasks/completion-path.json": '{"completionObjective": "To be defined", "steps": []}',
             "Logs/noteworthy.json": "[]",
             "Placeholders/todos.jsonl": "",
-            "UserSettings/config.json": '{"project": {"max_file_lines": 900, "auto_modularize": true}}'
+            ".ai-pm-config.json": '{"project": {"max_file_lines": 900, "auto_modularize": true, "management_folder_name": "projectManagement"}}'
         }
         
         for file_path, content in files.items():

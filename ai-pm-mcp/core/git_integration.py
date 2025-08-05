@@ -135,9 +135,10 @@ class GitIntegrationManager:
 ai-pm-mcp/
 
 # Project Management - Track Organizational State, Not User Data
-{management_folder}/UserSettings/
+# Note: {management_folder}/.ai-pm-config.json is tracked (branch-protected configuration)
 {management_folder}/database/backups/
 {management_folder}/.mcp-session-*
+.tmp-ai-pm-config.json
 
 # AI Project Manager temporary files
 *.tmp
@@ -897,7 +898,7 @@ ai-pm-mcp/
                 gitignore_content = f.read()
             
             management_folder = get_management_folder_name(self.config_manager)
-            if f"{management_folder}/UserSettings/" not in gitignore_content:
+            if f"{management_folder}/database/backups/" not in gitignore_content:
                 validation_result["recommendations"].append("Update .gitignore with AI Project Manager patterns")
         else:
             validation_result["recommendations"].append("Create .gitignore with AI Project Manager patterns")

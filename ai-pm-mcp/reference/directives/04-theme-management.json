@@ -53,7 +53,7 @@
         },
         "userDrivenAdditions": {
           "domainSpecific": "transactionRequests, transactionMonitoring, transactionSigning",
-          "businessLogic": "coinSelection, userSettings, affiliateManagement",
+          "businessLogic": "coinSelection, configurationManagement, affiliateManagement",
           "workflowSpecific": "qrCodeProcessing, walletConnectFlow, recoveryProcess"
         },
         "validationRules": {

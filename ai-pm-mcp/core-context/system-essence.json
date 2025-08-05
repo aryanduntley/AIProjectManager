@@ -46,7 +46,7 @@
     "themeScopeSelection": "AI determines theme scope for task files at creation based on task requirements",
     "autoTaskCreation_true": "AI can create task files with determined theme scope without user approval",
     "autoTaskCreation_false": "User approval required for task file creation with AI-determined theme scope",
-    "configLocation": "tasks.autoTaskCreation in UserSettings/config.json",
+    "configLocation": "tasks.autoTaskCreation in .ai-pm-config.json",
     "scopeEscalation": "Context escalation during task execution always requires user approval regardless of autoTaskCreation setting"
   },
   "validationRequirements": {

@@ -1,5 +1,5 @@
 {
-  "_configuration_note": "Throughout this document, $projectManagement refers to the configurable project management folder name. This defaults to '$projectManagement' but can be customized via the 'managementFolderName' setting in your project configuration to avoid naming conflicts.", 
+  "_configuration_note": "Throughout this document, $projectManagement refers to the configurable project management folder name. This defaults to 'projectManagement' but can be customized via the 'managementFolderName' setting in your project configuration to avoid naming conflicts. IMPORTANT: Configuration (.ai-pm-config.json) can only be modified on the ai-pm-org-main branch. Work branches inherit configuration immutably from the main branch.", 
   "systemInitialization": {
     "triggers": ["MCP server startup", "First connection", "System boot"],
     "workflow": [
@@ -9,7 +9,7 @@
       "Provide clear next-step options based on state (initialize/review/continue)",
       "Wait for user choice before proceeding with any actions",
       "Validate MCP server connection and compatibility",
-      "Load configuration from UserSettings/config.json",
+      "Load branch-aware configuration from .ai-pm-config.json (only modifiable on ai-pm-org-main branch)",
       "Initialize Git repository if enabled and not present",
       "Initialize project detection and version checking"
     ],

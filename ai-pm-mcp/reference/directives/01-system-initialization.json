@@ -177,7 +177,7 @@
     "configurationLoading": {
       "directive": "Load configuration in priority order",
       "priority": [
-        "projectManagement/UserSettings/config.json",
+        "projectManagement/.ai-pm-config.json (branch-aware: main branch only for write access)",
         "config.json (current directory)",
         "~/.ai-project-manager/config.json",
         "/etc/ai-project-manager/config.json",
@@ -291,9 +291,10 @@
           "required": true,
           "gitignoreAdditions": [
             "# AI Branch Management - Track Organizational State Only",
-            "projectManagement/UserSettings/",
+            "# Note: .ai-pm-config.json is tracked (branch-protected configuration)",
             "projectManagement/database/backups/",
-            "projectManagement/.ai-pm-session-*"
+            "projectManagement/.ai-pm-session-*",
+            ".tmp-ai-pm-config.json"
           ]
         },
         {
@@ -504,7 +505,7 @@
     "database-integration"
   ],
   "dependencies": [
-    "UserSettings/config.json",
+    ".ai-pm-config.json (branch-protected configuration)",
     "MCP server connectivity",
     "ProjectBlueprint/metadata.json",
     "Git repository (optional, can be created)",

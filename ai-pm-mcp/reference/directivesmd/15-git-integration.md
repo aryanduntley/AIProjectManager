@@ -567,7 +567,7 @@ WHERE instance_id = ?
 - Git merge history (native Git log)
 
 **NOT Tracked**:
-- User-specific settings (`projectManagement/UserSettings/`)
+- User-specific settings (`# projectManagement/.ai-pm-config.json is tracked (branch-protected configuration)`)
 - Database backups (`projectManagement/database/backups/`)
 - Temporary session files
 - Active work logs during development
@@ -575,7 +575,7 @@ WHERE instance_id = ?
 **Updated .gitignore**:
 ```gitignore
 # Project Management - Track Organizational State, Not User Data
-projectManagement/UserSettings/
+# projectManagement/.ai-pm-config.json is tracked (branch-protected configuration)
 projectManagement/database/backups/
 projectManagement/.mcp-session-*
 

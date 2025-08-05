@@ -280,7 +280,7 @@
     "12-user-interaction"
   ],
   "dependencies": [
-    "UserSettings/config.json",
+    ".ai-pm-config.json",
     "ProjectBlueprint/metadata.json",
     "projectlogic.jsonl",
     "Project test framework",

@@ -119,7 +119,7 @@
         "Communication style preferences"
       ],
       "preferenceStorage": [
-        "Document preferences in UserSettings/config.json",
+        "Document preferences in .ai-pm-config.json",
         "Include preference reasoning in projectlogic.jsonl",
         "Respect established patterns unless user requests changes",
         "Ask for clarification when preferences conflict"
@@ -330,7 +330,7 @@
     "13-metadata-management"
   ],
   "dependencies": [
-    "UserSettings/config.json",
+    ".ai-pm-config.json",
     "projectlogic.jsonl",
     "Tasks/active/",
     "ProjectBlueprint/metadata.json"

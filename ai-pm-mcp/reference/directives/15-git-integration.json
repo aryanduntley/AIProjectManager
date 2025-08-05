@@ -490,7 +490,7 @@
         "AI branch management configuration"
       ],
       "notTracked": [
-        "User-specific settings (UserSettings/)",
+        "Temporary configuration files (.tmp-ai-pm-config.json)",
         "Database backups (database/backups/)",
         "Temporary session files",
         "Active work logs during development"

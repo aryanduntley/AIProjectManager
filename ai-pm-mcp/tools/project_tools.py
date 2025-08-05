@@ -18,7 +18,7 @@ from ..database.task_status_queries import TaskStatusQueries
 from ..database.theme_flow_queries import ThemeFlowQueries
 from ..database.file_metadata_queries import FileMetadataQueries
 from ..utils.project_paths import (
-    get_project_management_path, get_blueprint_path, get_database_path
+    get_project_management_path, get_blueprint_path, get_database_path, get_management_folder_name
 )
 
 logger = logging.getLogger(__name__)
@@ -200,7 +200,6 @@ class ProjectTools:
             "Tasks/archive/sidequests",
             "Logs/archived",
             "Placeholders",
-            "UserSettings",
             "database"
         ]
         
@@ -237,12 +236,13 @@ class ProjectTools:
             }, indent=2),
             "Logs/noteworthy.json": json.dumps([], indent=2),
             "Placeholders/todos.jsonl": "",
-            "UserSettings/config.json": json.dumps({
+            ".ai-pm-config.json": json.dumps({
                 "project": {
                     "max_file_lines": 900,
                     "auto_modularize": True,
                     "theme_discovery": True,
-                    "backup_enabled": True
+                    "backup_enabled": True,
+                    "management_folder_name": get_management_folder_name(self.config_manager)
                 },
                 "archiving": {
                     "projectlogicSizeLimit": "2MB",
@@ -379,7 +379,7 @@ This is the high-level blueprint for the {project_name} project. This document s
                 "logic": project_mgmt_dir / "ProjectLogic" / "projectlogic.jsonl",
                 "themes": project_mgmt_dir / "Themes" / "themes.json",
                 "completionPath": project_mgmt_dir / "Tasks" / "completion-path.json",
-                "config": project_mgmt_dir / "UserSettings" / "config.json",
+                "config": project_mgmt_dir / ".ai-pm-config.json",
                 "database": project_mgmt_dir / "project.db",
                 "schema": project_mgmt_dir / "database" / "schema.sql"
             }
@@ -490,8 +490,8 @@ This is the high-level blueprint for the {project_name} project. This document s
             discovered_files = file_metadata_queries.discover_project_files(
                 str(project_path),
                 exclude_patterns=[
-                    '*/UserSettings/*',
                     '*/database/backups/*',
+                    '*/.mcp-session-*',
                     '__pycache__/*', '*.pyc', '.git/*', 'node_modules/*'
                 ]
             )

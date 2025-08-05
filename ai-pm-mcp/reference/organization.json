@@ -150,13 +150,18 @@
         "approvalRequired": false,
         "format": "jsonl"
       },
-      "UserSettings": {
-        "files": ["config.json"],
+      "BranchAwareConfiguration": {
+        "files": [".ai-pm-config.json"],
         "purposes": {
-          "config.json": "User configuration and preferences"
+          ".ai-pm-config.json": "Branch-protected configuration (only modifiable on ai-pm-org-main branch)"
         },
         "approvalRequired": false,
-        "format": "json"
+        "format": "json",
+        "branchProtection": {
+          "writeAccess": "ai-pm-org-main only",
+          "readAccess": "all branches (inherited from main)",
+          "reason": "Prevents configuration conflicts and ensures consistent behavior across work branches"
+        }
       },
       "Database": {
         "files": ["project.db"],
@@ -293,11 +298,12 @@
       "description": "TODO and placeholder tracking",
       "schema": "reference/templates/todos.jsonl"
     },
-    "config.json": {
+    ".ai-pm-config.json": {
       "format": "json",
       "approvalRequired": false,
-      "description": "User settings and preferences",
-      "schema": "reference/templates/config.json"
+      "description": "Branch-protected configuration (only modifiable on ai-pm-org-main)",
+      "schema": "reference/templates/config.json",
+      "branchProtection": true
     },
     ".ai-pm-meta.json": {
       "format": "json",

@@ -111,7 +111,7 @@
 
 ### Multiple Sidequest Configuration
 
-**Configuration Settings** (`UserSettings/config.json`):
+**Configuration Settings** (`.ai-pm-config.json`):
 ```json
 {
   "tasks": {

@@ -51,7 +51,7 @@ class FileDiscovery:
             default_excludes = [
                 '__pycache__/*', '*.pyc', '*.pyo', '.git/*', '.idea/*', '.vscode/*',
                 'node_modules/*', '*.log', '.DS_Store', '*.swp', '*.swo',
-                f'{management_folder}/UserSettings/*', f'{management_folder}/database/backups/*'
+                f'{management_folder}/database/backups/*', f'{management_folder}/.mcp-session-*'
             ]
             
             if exclude_patterns is None:

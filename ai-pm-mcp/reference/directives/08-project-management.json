@@ -55,7 +55,7 @@
         "Implementations/{active,completed}",
         "Logs/{current,archived,compressed}",
         "Placeholders/",
-        "UserSettings/"
+        ".ai-pm-config.json (branch-protected configuration)"
       ]
     },
     "blueprintManagement": {
@@ -237,7 +237,7 @@
     "ProjectFlow/",
     "ProjectLogic/",
     "reference/templates/ directory",
-    "UserSettings/config.json"
+    ".ai-pm-config.json (branch-protected configuration)"
   ],
   "keyOperations": [
     "Project initialization",

@@ -91,7 +91,7 @@
 
 **Directive**: AI determines theme scope for task files at creation based on task requirements.
 
-**Configuration**: `tasks.autoTaskCreation` in `UserSettings/config.json`
+**Configuration**: `tasks.autoTaskCreation` in `.ai-pm-config.json`
 
 **Theme Scope Selection Protocol**:
 1. AI analyzes task requirements to determine appropriate theme scope

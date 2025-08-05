@@ -21,7 +21,7 @@
 - Update all references
 - Document modularization in README.md
 
-Use UserSettings/config.json to define the maximum number of lines allowed in a single code file.
+Use .ai-pm-config.json to define the maximum number of lines allowed in a single code file.
 
 The default is 900 lines.
 After any code edit, the AI must:
@@ -188,7 +188,7 @@ When modifying files marked as `shared: ["theme1", "theme2"]`:
 - All organizational JSON files in `projectManagement/` directory
 - Task files: `Tasks/active/*.json`, `Tasks/sidequests/*.json`
 - Theme files: `Themes/*.json`
-- Configuration files: `UserSettings/config.json`
+- Configuration files: `.ai-pm-config.json`
 - Template files: `reference/templates/*.json`
 - Directive files: `reference/directives/*.json`
 

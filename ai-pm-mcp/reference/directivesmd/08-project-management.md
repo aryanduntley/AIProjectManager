@@ -18,7 +18,7 @@
    - Implementations/{active,completed}
    - Logs/{archived} (noteworthy events in database)
    - Placeholders/
-   - UserSettings/
+   - .ai-pm-config.json (branch-protected configuration)
    - database/{backups}
 6. Initialize all required files with proper templates
 7. Initialize database with default session and project metadata

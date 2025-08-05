@@ -356,7 +356,7 @@ The AI Project Manager exposes these tools through the MCP protocol:
 
 ### User Settings
 
-Create a `projectManagement/UserSettings/config.json`:
+Configuration is managed via `.ai-pm-config.json` (auto-created by MCP in project management folder):
 
 ```json
 {

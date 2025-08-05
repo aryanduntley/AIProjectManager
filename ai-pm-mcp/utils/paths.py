@@ -3,6 +3,27 @@ Path resolution utilities for AI Project Manager MCP Server.
 
 This module provides reliable path resolution for templates, configuration files,
 and other resources by locating the MCP server root directory marker.
+
+## Mixed Import Architecture Strategy
+
+This module implements a **mixed approach** for import and path management:
+
+### 1. Relative Imports (Recommended for Code Modules)
+**Use for**: Regular module imports between core, tools, database, utils
+**Why**: Standard Python practice, good IDE support, clear dependency structure
+**Example**: `from ..database.db_manager import DatabaseManager`
+
+### 2. Global Reference System (For Dynamic Resources)
+**Use for**: Templates, configs, schemas, runtime path resolution
+**Why**: Robust marker-file based resolution, handles complex directory structures
+**Example**: `load_template("config.json")`, `get_schema_path("schema.sql")`
+
+### 3. Enhanced Global References (Future Use)
+**Use for**: Plugin systems, runtime module loading, dynamic imports
+**Available functions**: `get_module_path()`, `get_schema_path()`, etc.
+**When needed**: Module reorganization, plugin architecture, dynamic loading
+
+This approach provides the benefits of both systems while avoiding unnecessary complexity.
 """
 
 import os
@@ -139,6 +160,73 @@ def load_template(template_name: str) -> str:
             return f.read()
     except IOError as e:
         raise IOError(f"Failed to read template '{template_name}': {e}")
+
+# Enhanced utilities for dynamic module and resource resolution
+def get_module_path(*path_parts) -> Path:
+    """
+    Get absolute path to any module or resource within the MCP server.
+    
+    This function provides dynamic path resolution for cases where relative
+    imports are not suitable (e.g., runtime module loading, plugin systems).
+    
+    Args:
+        *path_parts: Path components relative to MCP server root
+        
+    Returns:
+        Path: Absolute path to the specified module/resource
+        
+    Examples:
+        get_module_path("database", "db_manager.py")
+        get_module_path("core", "config_manager.py") 
+        get_module_path("tools")
+    """
+    return get_mcp_server_root() / Path(*path_parts)
+
+def get_schema_path(schema_name: str) -> Path:
+    """
+    Get the full path to a database schema file.
+    
+    Args:
+        schema_name: Name of the schema file (e.g., 'schema.sql')
+        
+    Returns:
+        Path: Full path to the schema file
+    """
+    return get_mcp_server_root() / "database" / schema_name
+
+def get_config_template_path(config_name: str = "config.json") -> Path:
+    """
+    Get the full path to a configuration template.
+    
+    Args:
+        config_name: Name of the config template (default: 'config.json')
+        
+    Returns:
+        Path: Full path to the configuration template
+    """
+    return get_template_path(config_name)
+
+def add_mcp_server_to_path() -> str:
+    """
+    Add the MCP server root to Python path for dynamic imports.
+    
+    This function is available for future use if dynamic module loading
+    or plugin systems require adding the MCP server to sys.path.
+    
+    Returns:
+        str: The MCP server root path that was added
+        
+    Example:
+        # For future plugin system:
+        add_mcp_server_to_path()
+        import importlib
+        module = importlib.import_module("tools.custom_plugin")
+    """
+    import sys
+    mcp_root_str = str(get_mcp_server_root())
+    if mcp_root_str not in sys.path:
+        sys.path.insert(0, mcp_root_str)
+    return mcp_root_str
 
 # Convenience function for backward compatibility and common use case
 def get_project_root() -> Path:

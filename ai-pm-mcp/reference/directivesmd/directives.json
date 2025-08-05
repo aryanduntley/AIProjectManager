@@ -27,7 +27,7 @@
         "02-project-initialization",
         "13-metadata-management"
       ],
-      "dependencies": ["UserSettings/config.json", "MCP server connectivity"],
+      "dependencies": [".ai-pm-config.json", "MCP server connectivity"],
       "keyOperations": ["Server validation", "Compatibility checking", "Config loading"],
       "frequency": "session-start"
     },
@@ -312,7 +312,7 @@
         "08-project-management",
         "04-theme-management"
       ],
-      "dependencies": ["UserSettings/config.json", "User preferences", "Session state"],
+      "dependencies": [".ai-pm-config.json", "User preferences", "Session state"],
       "keyOperations": ["Approval management", "Communication", "Preference tracking", "Session behavior"],
       "frequency": "user-driven"
     },

@@ -5,9 +5,10 @@
 ai-pm-mcp/
 
 # Project Management - Track Organizational State, Not User Data
-projectManagement/UserSettings/
+# Note: .ai-pm-config.json is tracked (branch-protected configuration)
 projectManagement/database/backups/
 projectManagement/.mcp-session-*
+.tmp-ai-pm-config.json
 
 # Temporary and cache files
 *.pyc

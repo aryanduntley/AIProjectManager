@@ -445,7 +445,7 @@
   ],
   "dependencies": [
     "ProjectBlueprint/metadata.json",
-    "UserSettings/config.json",
+    ".ai-pm-config.json",
     "projectlogic.jsonl",
     "Theme discovery system",
     "MCP version compatibility"

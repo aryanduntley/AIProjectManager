@@ -6,11 +6,15 @@ Handles loading and validation of user settings and server configuration.
 
 import json
 import os
+import subprocess
 from pathlib import Path
 from typing import Dict, Any, Optional
 import logging
 
 from pydantic import BaseModel, ValidationError
+from ..utils.project_paths import (
+    get_config_path, get_current_git_branch, is_on_main_branch, can_modify_config
+)
 
 logger = logging.getLogger(__name__)
 
@@ -48,19 +52,28 @@ class ConfigManager:
         self.config: ServerConfig = ServerConfig()
         self._config_loaded = False
     
-    async def load_config(self, config_path: Optional[Path] = None) -> ServerConfig:
-        """Load configuration from file or environment variables."""
+    async def load_config(self, config_path: Optional[Path] = None, project_root: Optional[Path] = None) -> ServerConfig:
+        """Load configuration from file or environment variables with branch awareness."""
         try:
             # Try to load from file first
             if config_path:
                 config_file = config_path
             else:
-                # Look for config in various locations
-                possible_paths = [
+                # Look for config in various locations with branch awareness
+                possible_paths = []
+                
+                # Add branch-aware project config if project_root is provided
+                if project_root:
+                    branch_config_path = await self._get_branch_aware_config_path(project_root)
+                    if branch_config_path:
+                        possible_paths.append(branch_config_path)
+                
+                # Add system-wide configs
+                possible_paths.extend([
                     self.config_dir / "config.json",
                     Path.home() / ".ai-project-manager" / "config.json",
                     Path("/etc/ai-project-manager/config.json")
-                ]
+                ])
                 
                 config_file = None
                 for path in possible_paths:
@@ -208,3 +221,67 @@ class ConfigManager:
         except Exception as e:
             logger.error(f"Configuration validation failed: {e}")
             return False
+    
+    async def _get_branch_aware_config_path(self, project_root: Path) -> Optional[Path]:
+        """Get configuration path based on current branch."""
+        try:
+            current_branch = get_current_git_branch(project_root)
+            
+            if current_branch == "ai-pm-org-main":
+                # Main branch: use local config file
+                config_path = get_config_path(project_root, self)
+                return config_path if config_path.exists() else None
+            else:
+                # Work branch: read config from main branch
+                return await self._get_config_from_main_branch(project_root)
+                
+        except Exception as e:
+            logger.warning(f"Error determining branch-aware config path: {e}")
+            return None
+    
+    async def _get_config_from_main_branch(self, project_root: Path) -> Optional[Path]:
+        """Get configuration from ai-pm-org-main branch for work branches."""
+        try:
+            # Get the management folder name and construct the relative path
+            management_folder = self.get_management_folder_name()
+            config_relative_path = f"{management_folder}/.ai-pm-config.json"
+            
+            result = subprocess.run([
+                "git", "show", f"ai-pm-org-main:{config_relative_path}"
+            ], cwd=str(project_root), capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                # Create temporary config file with content from main branch
+                temp_config_path = project_root / ".tmp-ai-pm-config.json"
+                temp_config_path.write_text(result.stdout)
+                return temp_config_path
+            else:
+                logger.info("No configuration found on ai-pm-org-main branch")
+                return None
+                
+        except Exception as e:
+            logger.warning(f"Error reading config from main branch: {e}")
+            return None
+    
+    def can_modify_configuration(self, project_root: Optional[Path] = None) -> bool:
+        """Check if configuration can be modified (only on ai-pm-org-main branch)."""
+        return can_modify_config(project_root)
+    
+    def get_current_branch(self, project_root: Optional[Path] = None) -> Optional[str]:
+        """Get current Git branch."""
+        return get_current_git_branch(project_root)
+    
+    async def save_branch_aware_config(self, project_root: Path, config_path: Optional[Path] = None):
+        """Save configuration with branch awareness (only allowed on ai-pm-org-main)."""
+        if not self.can_modify_configuration(project_root):
+            current_branch = self.get_current_branch(project_root)
+            raise RuntimeError(
+                f"Configuration can only be modified on ai-pm-org-main branch. "
+                f"Current branch: {current_branch}. "
+                f"Switch to ai-pm-org-main to modify configuration."
+            )
+        
+        if not config_path:
+            config_path = get_config_path(project_root, self)
+        
+        await self.save_config(config_path)

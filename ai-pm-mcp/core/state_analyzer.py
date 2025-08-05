@@ -343,7 +343,7 @@ class ProjectStateAnalyzer:
     async def _check_auto_task_setting(self, project_mgmt_dir: Path) -> bool:
         """Check if auto task creation is enabled in user settings."""
         try:
-            config_file = project_mgmt_dir / "UserSettings" / "config.json"
+            config_file = project_mgmt_dir / ".ai-pm-config.json"
             if config_file.exists():
                 import json
                 with open(config_file, 'r') as f:

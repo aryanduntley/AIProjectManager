@@ -112,7 +112,7 @@
         "All organizational JSON files in projectManagement/ directory",
         "Task files: Tasks/active/*.json, Tasks/sidequests/*.json",
         "Theme files: Themes/*.json",
-        "Configuration files: UserSettings/config.json",
+        "Configuration files: .ai-pm-config.json",
         "Template files: reference/templates/*.json",
         "Directive files: reference/directives/*.json"
       ],

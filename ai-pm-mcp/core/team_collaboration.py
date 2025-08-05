@@ -149,7 +149,7 @@ class TeamCollaboration:
                 "Implementations/completed",
                 "Logs/archived",
                 "Placeholders",
-                "UserSettings",
+                ".ai-pm-config.json",
                 "database"
             ]
             

@@ -121,7 +121,7 @@
 - **Compliance**: What regulations APPLY
 - **Timeline**: When things HAPPEN
 
-**Configuration (UserSettings/config.json)**:
+**Configuration (.ai-pm-config.json)**:
 - **User Preferences**: How AI should BEHAVE
 - **Workflow Settings**: How tasks should be MANAGED
 - **Validation Rules**: What validation should be ENFORCED

@@ -5,6 +5,7 @@ This module provides utilities for getting project management paths with
 configurable folder names, ensuring all modules use the same configuration.
 """
 
+import subprocess
 from pathlib import Path
 from typing import Optional, Union
 
@@ -92,3 +93,66 @@ def get_blueprint_path(project_root: Union[str, Path], config_manager=None) -> P
 def get_database_path(project_root: Union[str, Path], config_manager=None) -> Path:
     """Get path to project database file."""
     return get_project_management_path(project_root, config_manager) / "project.db"
+
+def get_config_path(project_root: Union[str, Path], config_manager=None) -> Path:
+    """Get path to branch-aware configuration file."""
+    return get_project_management_path(project_root, config_manager) / ".ai-pm-config.json"
+
+def get_current_git_branch(project_root: Union[str, Path] = None) -> Optional[str]:
+    """
+    Get the current Git branch name.
+    
+    Args:
+        project_root: Optional project root path for context
+        
+    Returns:
+        Current branch name or None if not in a Git repository
+    """
+    try:
+        if project_root:
+            result = subprocess.run(
+                ["git", "branch", "--show-current"],
+                cwd=str(project_root),
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+        else:
+            result = subprocess.run(
+                ["git", "branch", "--show-current"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+        
+        if result.returncode == 0:
+            branch_name = result.stdout.strip()
+            return branch_name if branch_name else None
+        return None
+    except (subprocess.TimeoutExpired, subprocess.SubprocessError, FileNotFoundError):
+        return None
+
+def is_on_main_branch(project_root: Union[str, Path] = None) -> bool:
+    """
+    Check if currently on the ai-pm-org-main branch.
+    
+    Args:
+        project_root: Optional project root path for context
+        
+    Returns:
+        True if on ai-pm-org-main branch, False otherwise
+    """
+    current_branch = get_current_git_branch(project_root)
+    return current_branch == "ai-pm-org-main"
+
+def can_modify_config(project_root: Union[str, Path] = None) -> bool:
+    """
+    Check if configuration can be modified (only on ai-pm-org-main branch).
+    
+    Args:
+        project_root: Optional project root path for context
+        
+    Returns:
+        True if configuration can be modified, False otherwise
+    """
+    return is_on_main_branch(project_root)

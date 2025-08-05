@@ -48,7 +48,7 @@ Do you approve this change? (yes/no)
 - Communication style preferences
 
 **Preference Storage**:
-- Document preferences in UserSettings/config.json
+- Document preferences in .ai-pm-config.json
 - Include preference reasoning in projectlogic.jsonl
 - Respect established patterns unless user requests changes
 - Ask for clarification when preferences conflict

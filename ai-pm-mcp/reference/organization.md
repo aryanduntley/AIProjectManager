@@ -70,8 +70,7 @@ The structure is designed to:
 │   │       └── noteworthy-archived-2025-07-13.json  # Auto-archived when size limit reached
 │   ├── Placeholders/
 │   │   └── todos.jsonl                # Captures all deferred implementation notes and scaffolding TODOs
-│   ├── UserSettings/                  # NOT tracked (user-specific)
-│   │   └── config.json                # User-specific configuration (not tracked in Git)
+│   ├── .ai-pm-config.json             # Branch-protected configuration (only modifiable on ai-pm-org-main)
 │   ├── project.db                     # Main database (tracked)
 │   └── database/
 │       └── backups/                   # NOT tracked (database backups for recovery)
@@ -749,7 +748,7 @@ See complete entry format examples in `reference/templates/noteworthy.json` and 
 
 ### Configuration Options
 
-Logging configuration in `UserSettings/config.json`:
+Branch-aware configuration in `.ai-pm-config.json` (only modifiable on ai-pm-org-main):
 ```json
 {
   "archiving": {
@@ -778,7 +777,7 @@ The AI Project Manager uses a **root-level Git repository** to track both projec
 **Updated `.gitignore` for MCP Branch Management**:
 ```gitignore
 # Project Management - Track Organizational State, Not User Data
-$projectManagement/UserSettings/
+# $projectManagement/.ai-pm-config.json is tracked (branch-protected configuration)
 $projectManagement/database/backups/
 $projectManagement/.mcp-session-*
 
@@ -794,7 +793,7 @@ $projectManagement/.mcp-session-*
 - Git merge history (native Git log)
 
 **NOT Tracked**:
-- User-specific settings (`UserSettings/`)
+- Temporary configuration files (`.tmp-ai-pm-config.json`)
 - Database backups (`database/backups/`)
 - Temporary session files
 - Active work logs during development

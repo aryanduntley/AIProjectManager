@@ -179,7 +179,7 @@ The AI should identify themes in these categories:
 #### 4. User-Driven Theme Additions
 Users may identify domain-specific themes that automated discovery missed. Common examples:
 - **Domain-Specific**: `transactionRequests`, `transactionMonitoring`, `transactionSigning`
-- **Business Logic**: `coinSelection`, `userSettings`, `affiliateManagement`
+- **Business Logic**: `coinSelection`, `configurationManagement`, `affiliateManagement`
 - **Workflow-Specific**: `qrCodeProcessing`, `walletConnectFlow`, `recoveryProcess`
 
 #### 5. Theme Validation Rules
