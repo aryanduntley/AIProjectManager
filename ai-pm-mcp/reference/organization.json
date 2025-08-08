@@ -167,7 +167,7 @@
         "files": ["project.db"],
         "directories": ["database/"],
         "purposes": {
-          "project.db": "SQLite database for persistent theme-flow relationships, session tracking, project analytics, and Git branch management",
+          "project.db": "SQLite database for persistent theme-flow relationships, activity-based work tracking, project analytics, and Git branch management",
           "database/": "Database management files for backup storage"
         },
         "databaseDirectory": {
@@ -179,7 +179,7 @@
         "approvalRequired": false,
         "format": "sqlite",
         "features": {
-          "sessionPersistence": "Complete session state preservation across disconnections with context snapshots",
+          "workActivityTracking": "Activity-based work period tracking with automatic timeout and context snapshots",
           "taskLifecycleManagement": "Real-time task/subtask/sidequest status tracking with multiple sidequest support",
           "themeFlowIntelligence": "Many-to-many theme-flow relationships with relevance ordering and fast lookups",
           "fileOperations": "Intelligent file discovery and impact analysis replacing README.json approach",
@@ -503,16 +503,16 @@
       "completionCriteria": "All completion criteria must be clear"
     }
   },
-  "sessionManagement": {
+  "workPeriodManagement": {
     "bootSequence": [
       "Identify current branch (ai-pm-org-main or work branch)",
-      "Detect project code changes since last session (ai-pm-org-main only)",
+      "Detect project code changes since last work period (ai-pm-org-main only)",
       "Read ProjectBlueprint for project understanding",
       "Read ProjectFlow for user experience context",
       "Read projectlogic.jsonl for decision history",
       "Read completion-path.json for milestone status",
       "Check for active implementation plan",
-      "Review active tasks in context",
+      "Restore work context from recent activities",
       "Generate tasks for current phase",
       "Load theme context for selected tasks",
       "Begin task execution"
@@ -535,7 +535,9 @@
       "projectlogic.jsonl": "Decision history and reasoning",
       "noteworthy.json": "Recent noteworthy events",
       "branch metadata": "Branch identification and purpose (.ai-pm-meta.json)",
-      "merge history": "Git merge operations and decisions"
+      "merge history": "Git merge operations and decisions",
+      "work activities": "Activity-based work tracking in database",
+      "context snapshots": "Work context preservation for restoration"
     }
   },
   "gitInstanceConfiguration": {

@@ -3,7 +3,7 @@
     "purpose": "Database integration protocols for AI Project Manager hybrid architecture",
     "version": "1.0.0",
     "created": "2025-01-20",
-    "criticalFor": "Session continuity, state preservation, performance optimization"
+    "criticalFor": "Work continuity, state preservation, performance optimization"
   },
   "hybridArchitecture": {
     "philosophy": "Files remain human-readable source of truth, database provides operational intelligence and performance optimization",
@@ -21,7 +21,7 @@
     "databaseEnhanced": {
       "operationalData": [
         "Real-time status tracking (tasks, subtasks, sidequests, flows)",
-        "Session persistence and context snapshots",
+        "Work activity tracking and context snapshots",
         "Theme-flow relationship optimization",
         "Event analytics and decision tracking",
         "Performance metrics and user learning",
@@ -29,11 +29,11 @@
         "File metadata and initialization tracking",
         "Progress monitoring and resumption capabilities"
       ],
-      "purpose": "Enable fast queries, session restoration, intelligent recommendations, and seamless initialization resumption"
+      "purpose": "Enable fast queries, work restoration, intelligent recommendations, and seamless initialization resumption"
     }
   },
   "realTimeStateSynchronization": {
-    "mandatoryRequirement": "ALL organizational files MUST be synchronized with database records in real-time for seamless session restoration",
+    "mandatoryRequirement": "ALL organizational files MUST be synchronized with database records in real-time for seamless work restoration",
     "atomicOperations": {
       "principle": "File updates and database updates must succeed together or fail together",
       "implementation": [
@@ -51,11 +51,11 @@
         "Sidequest creation, activation, and completion",
         "Task queue modifications and prioritization"
       ],
-      "sessionManagement": [
-        "Session start and context loading",
-        "Context mode escalation",
+      "workPeriodManagement": [
+        "Work period start and context loading",
+        "Context mode escalation", 
         "Theme switching and context updates",
-        "Session pause and termination"
+        "Work activity recording and archival"
       ],
       "projectManagement": [
         "Theme modifications and file associations",
@@ -67,17 +67,22 @@
       ]
     }
   },
-  "sessionPersistence": {
+  "workActivityTracking": {
     "databaseTables": {
       "sessions": {
-        "purpose": "Track session lifecycle and high-level context with initialization tracking",
-        "keyFields": ["session_id", "start_time", "context_mode", "active_themes", "active_tasks", "active_sidequests", "project_path", "initialization_phase", "files_processed", "total_files_discovered"],
-        "usage": "Session identification, basic context restoration, and initialization progress tracking"
+        "purpose": "Track work periods and high-level context with initialization tracking",
+        "keyFields": ["session_id", "work_period_started", "last_activity", "context_mode", "active_themes", "active_tasks", "active_sidequests", "project_path", "initialization_phase", "files_processed", "total_files_discovered"],
+        "usage": "Work period identification, basic context restoration, and initialization progress tracking"
       },
       "session_context": {
-        "purpose": "Detailed session context for complete restoration",
+        "purpose": "Context snapshots for theme/flow/file state preservation",
         "keyFields": ["session_id", "loaded_themes", "loaded_flows", "context_escalations", "files_accessed"],
-        "usage": "Detailed context snapshots for exact session restoration"
+        "usage": "Context restoration and state preservation"
+      },
+      "work_activities": {
+        "purpose": "Detailed work activity tracking for complete restoration", 
+        "keyFields": ["session_id", "activity_type", "tool_name", "activity_data", "timestamp", "duration_ms"],
+        "usage": "Granular activity tracking for exact work restoration"
       }
     },
     "contextSnapshots": {
@@ -85,7 +90,7 @@
         "Before creating sidequests (preserve parent task context)",
         "During context escalation (preserve previous context)",
         "At regular intervals during long tasks",
-        "Before session termination",
+        "During work period archival",
         "After significant work completion"
       ],
       "whatToCapture": [
@@ -96,17 +101,17 @@
         "AI reasoning state and decision context"
       ],
       "restorationProcess": [
-        "Query database for latest session context",
+        "Query database for latest work context",
         "Restore theme and flow context from snapshots",
         "Load active tasks and subtasks with exact progress state",
         "Resume from exact interruption point with full context"
       ]
     },
-    "sessionBootOptimization": {
+    "workPeriodBootOptimization": {
       "fastBootSequence": [
         "Initialize database connection",
         "Check initialization_phase and offer resumption if incomplete",
-        "Query latest session context from database",
+        "Query latest work context from database",
         "Load active tasks and implementation plans from database status",
         "Restore theme-flow relationships from database cache",
         "Load file metadata context for intelligent context decisions",
@@ -114,7 +119,7 @@
         "Resume exact work state with minimal user review"
       ],
       "performanceTargets": [
-        "Session restoration < 2 seconds",
+        "Work restoration < 2 seconds",
         "Context loading < 5 seconds for large projects",
         "Database queries optimized with indexes and views"
       ]
@@ -265,7 +270,7 @@
         "get_initialization_progress - Current progress status with analytics",
         "resume_initialization - Continue incomplete initialization from any point"
       ],
-      "sessionTools": [
+      "workPeriodTools": [
         "session_get_initialization_summary - Comprehensive progress reporting",
         "session_reset_initialization - Safe reset with confirmation"
       ]
@@ -275,7 +280,7 @@
     "databaseTables": {
       "noteworthy_events": {
         "purpose": "Real-time event logging for fast queries and pattern analysis",
-        "criticalFields": ["event_id", "event_type", "primary_theme", "task_id", "session_id", "impact_level", "decision_data"],
+        "criticalFields": ["event_id", "event_type", "primary_theme", "task_id", "work_period_id", "impact_level", "decision_data"],
         "realTimeLogging": "Current events stored in database for immediate querying"
       },
       "event_relationships": {
@@ -287,7 +292,7 @@
     "hybridLogging": {
       "currentEvents": {
         "storage": "Database noteworthy_events table",
-        "benefits": ["Fast queries by theme, task, session", "Real-time pattern analysis", "Immediate event correlation"],
+        "benefits": ["Fast queries by theme, task, work period", "Real-time pattern analysis", "Immediate event correlation"],
         "archivalTrigger": "When database events exceed noteworthySizeLimit (default: 1MB)"
       },
       "archivedEvents": {
@@ -301,12 +306,12 @@
         "Context escalation patterns by theme and task type",
         "User correction and feedback patterns",
         "Decision outcome tracking and success rates",
-        "Session productivity and workflow efficiency"
+        "Work period productivity and workflow efficiency"
       ],
       "realTimeInsights": [
         "Active event impact assessment",
         "Theme-based decision clustering",
-        "Session activity correlation",
+        "Work activity correlation",
         "Performance bottleneck identification"
       ]
     }
@@ -316,13 +321,13 @@
       "indexes": [
         "theme_flows by theme_name and flow_id for fast lookups",
         "task_status by status and milestone_id for progress queries",
-        "session_context by session_id for context restoration",
+        "work_activities by session_id for context restoration",
         "noteworthy_events by theme, task, and timestamp for analytics"
       ],
       "views": [
         "active_sidequests_by_task for sidequest limit management",
         "theme_flow_summary for theme-flow relationship overview",
-        "session_activity_summary for productivity analytics"
+        "work_period_summary for productivity analytics"
       ],
       "triggers": [
         "Automatic timestamp updates on record modifications",
@@ -331,14 +336,14 @@
       ]
     },
     "queryOptimization": {
-      "sessionBoot": "Single query to restore complete session context",
+      "workPeriodBoot": "Single query to restore complete work context",
       "themeLoading": "Optimized joins for theme-flow-task relationships",
       "progressTracking": "Efficient aggregation queries for milestone progress",
       "analytics": "Pre-computed views for common analytics patterns"
     },
     "scalability": {
       "largeProjects": "Handles 20+ themes, 50+ flows, 100+ tasks efficiently",
-      "concurrentSessions": "Multiple AI sessions with isolated context management",
+      "concurrentWorkPeriods": "Multiple AI work periods with isolated context management",
       "historicalData": "Automatic archiving prevents database bloat",
       "crossPlatform": "SQLite compatibility across Windows, Mac, Linux"
     }
@@ -354,12 +359,12 @@
       "Cross-reference validation before task execution",
       "File-database synchronization validation",
       "Theme-flow relationship consistency checks",
-      "Session context integrity validation"
+      "Work context integrity validation"
     ],
     "recoveryProcedures": [
       "Database corruption recovery from file definitions",
       "File corruption recovery from database records",
-      "Session context recovery from multiple snapshot sources",
+      "Work context recovery from multiple snapshot sources",
       "Consistency repair utilities for data mismatches"
     ]
   },
@@ -372,7 +377,7 @@
     ],
     "toolIntegration": [
       "All MCP tools must use database for status tracking",
-      "Session management tools must update database context",
+      "Work period management tools must update database context",
       "File operations must trigger database synchronization",
       "Analytics tools must query database for insights"
     ],

@@ -1,7 +1,8 @@
 """
-Session management tools for the AI Project Manager MCP Server.
+Work period management tools for the AI Project Manager MCP Server.
 
-Handles session persistence, context snapshots, and session analytics.
+Handles activity-based work tracking, context snapshots, and work analytics.
+Replaces traditional session lifecycle with activity-based work periods.
 """
 
 import json
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class SessionManager:
-    """Tools for session management and persistence."""
+    """Tools for activity-based work period management and context tracking."""
     
     def __init__(self, session_queries: Optional[SessionQueries] = None, 
                  file_metadata_queries: Optional[FileMetadataQueries] = None,
@@ -33,11 +34,11 @@ class SessionManager:
         self.db_manager = db_manager
     
     async def get_tools(self) -> List[ToolDefinition]:
-        """Get all session management tools."""
+        """Get all work period management tools."""
         return [
             ToolDefinition(
                 name="session_start",
-                description="Start a new session or resume an existing session",
+                description="Start a new work period with activity tracking",
                 input_schema={
                     "type": "object",
                     "properties": {
@@ -48,17 +49,18 @@ class SessionManager:
                         "context_mode": {
                             "type": "string",
                             "enum": ["theme-focused", "theme-expanded", "project-wide"],
-                            "description": "Context loading mode for the session",
+                            "description": "Context loading mode for the work period",
                             "default": "theme-focused"
                         },
-                        "session_id": {
-                            "type": "string",
-                            "description": "Existing session ID to resume (optional)"
+                        "resume_from_recent": {
+                            "type": "boolean",
+                            "description": "Resume from recent work context if available",
+                            "default": True
                         }
                     },
                     "required": ["project_path"]
                 },
-                handler=self.start_session
+                handler=self.start_work_period
             ),
             ToolDefinition(
                 name="session_save_context",
@@ -180,29 +182,19 @@ class SessionManager:
                 handler=self.get_session_analytics
             ),
             ToolDefinition(
-                name="session_end",
-                description="End a session and update final status",
+                name="session_archive_stale",
+                description="Archive stale work periods with no recent activity",
                 input_schema={
                     "type": "object",
                     "properties": {
-                        "session_id": {
-                            "type": "string",
-                            "description": "Session ID to end"
-                        },
-                        "status": {
-                            "type": "string",
-                            "enum": ["completed", "paused", "terminated"],
-                            "description": "Final session status",
-                            "default": "completed"
-                        },
-                        "summary": {
-                            "type": "string",
-                            "description": "Session completion summary"
+                        "hours_threshold": {
+                            "type": "integer",
+                            "description": "Hours since last activity to consider stale",
+                            "default": 24
                         }
-                    },
-                    "required": ["session_id"]
+                    }
                 },
-                handler=self.end_session
+                handler=self.archive_stale_periods
             ),
             ToolDefinition(
                 name="session_boot_with_git_detection",
@@ -267,8 +259,8 @@ class SessionManager:
             )
         ]
     
-    async def start_session(self, arguments: Dict[str, Any]) -> str:
-        """Start a new session or resume an existing session."""
+    async def start_work_period(self, arguments: Dict[str, Any]) -> str:
+        """Start a new work period with activity tracking."""
         try:
             project_path = arguments["project_path"]
             context_mode = arguments.get("context_mode", "theme-focused")
@@ -439,7 +431,6 @@ class SessionManager:
                     "session_id": session["session_id"],
                     "start_time": session["start_time"],
                     "last_activity": session["last_activity"],
-                    "status": session["status"],
                     "context_mode": session["context_mode"],
                     "active_themes": json.loads(session.get("active_themes", "[]")),
                     "active_tasks": json.loads(session.get("active_tasks", "[]"))
@@ -470,34 +461,22 @@ class SessionManager:
             logger.error(f"Error getting session analytics: {e}")
             return f"Error getting session analytics: {str(e)}"
     
-    async def end_session(self, arguments: Dict[str, Any]) -> str:
-        """End a session and update final status."""
+    async def archive_stale_periods(self, arguments: Dict[str, Any]) -> str:
+        """Archive stale work periods with no recent activity."""
         try:
-            session_id = arguments["session_id"]
-            status = arguments.get("status", "completed")
-            summary = arguments.get("summary")
+            hours_threshold = arguments.get("hours_threshold", 24)
             
             if not self.session_queries:
-                return "Database not available. Session management requires database connection."
+                return "Database not available. Work period management requires database connection."
             
-            # End session
-            await self.session_queries.end_session(session_id, status)
+            # Archive stale periods using the new method
+            archived_count = self.session_queries.archive_stale_work_periods(hours_threshold)
             
-            # Log session ending
-            if self.file_metadata_queries and summary:
-                self.file_metadata_queries.log_file_modification(
-                    file_path=f"session:{session_id}",
-                    file_type="session",
-                    operation="update",
-                    session_id=session_id,
-                    details={"status": status, "summary": summary}
-                )
-            
-            return f"Session {session_id} ended with status: {status}"
+            return f"Archived {archived_count} stale work periods (inactive for {hours_threshold}+ hours)"
             
         except Exception as e:
-            logger.error(f"Error ending session: {e}")
-            return f"Error ending session: {str(e)}"
+            logger.error(f"Error archiving stale periods: {e}")
+            return f"Error archiving stale periods: {str(e)}"
     
     async def boot_session_with_git_detection(self, arguments: Dict[str, Any]) -> str:
         """

@@ -1,0 +1,1290 @@
+reference/organization.md:- **Plan Supersession**: When a new version of the implementation plan is created
+reference/organization.md:### 6.4 Integration with Session Boot Directive
+reference/organization.md:The implementation plans system transforms the session boot process:
+reference/organization.md:**Enhanced Session Boot Sequence**:
+reference/organization.md:- **Strategic Continuity**: AI maintains implementation strategy across sessions
+reference/organization.md:**Purpose**: Maintain persistent theme-flow relationships, session tracking, and project analytics using a cross-platform SQLite database.
+reference/organization.md:- **Session Tracking**: Session start times, duration, context, and activity
+reference/organization.md:- `sessions` + `session_context` - Session persistence and context snapshots  
+reference/organization.md:- `session_queries.py` (490 lines) - Session persistence, context snapshots, boot optimization
+reference/organization.md:- `SessionQueries` - Complete session lifecycle with context preservation
+reference/organization.md:- **Session Management**: `start_session()`, `get_session_context()`, `save_context_snapshot()`
+reference/organization.md:### 7.6 Session Tracking
+reference/organization.md:**Enhanced Session Management**:
+reference/organization.md:- Complete session state preserved across disconnections
+reference/organization.md:- Multi-session support handles multiple concurrent AI sessions
+reference/organization.md:- Activity tracking monitors session duration, themes accessed, tasks worked on
+reference/organization.md:- Boot optimization enables quick session restoration from database context
+reference/organization.md:- Session analytics provide productivity patterns and performance insights
+reference/organization.md:- Performance analytics deliver session productivity metrics and optimization recommendations
+reference/organization.md:- User adaptation learns optimal session patterns for improved efficiency
+reference/organization.md:- **Project Code Change Detection**: Automatic detection when users modify code outside MCP sessions
+reference/organization.md:- **Git Branch-Based Management**: Multiple AI work sessions operate as Git branches with native Git merge capabilities
+reference/organization.md:$projectManagement/.mcp-session-*
+reference/organization.md:- Temporary session files
+reference/organization.md:### 11.4 Session Boot with Branch Awareness
+reference/templates/project-gitignore-additions.txt:projectManagement/.mcp-session-*
+reference/templates/projectlogic.jsonl:{"timestamp": "2025-07-11T15:30:00Z", "type": "integration-decision", "summary": "Added Redis for session management", "reason": "Application needs to scale horizontally with session persistence", "impact": ["session storage", "scalability", "deployment"], "files": ["src/services/session/", "docker-compose.yml"], "decision": "Redis provides fast, persistent session storage for multi-instance deployments"}
+reference/templates/flow-examples/authentication-flow.json:  "description": "Complete user authentication flow including login, registration, password reset, and session management",
+reference/templates/flow-examples/authentication-flow.json:  "relatedThemes": ["security", "user-management", "session-handling"],
+reference/templates/flow-examples/authentication-flow.json:    "database-flow": ["user-schema", "session-storage"],
+reference/templates/flow-examples/authentication-flow.json:      "description": "Implement secure login with session management",
+reference/templates/flow-examples/authentication-flow.json:        {"id": "auth-002-02", "title": "Session token generation", "status": "in-progress"},
+reference/templates/flow-examples/authentication-flow.json:      "title": "Session Management",
+reference/templates/flow-examples/authentication-flow.json:      "description": "Handle session lifecycle and security",
+reference/templates/flow-examples/authentication-flow.json:        {"id": "auth-004-01", "title": "Session timeout handling", "status": "pending"},
+reference/templates/flow-examples/authentication-flow.json:        {"id": "auth-004-02", "title": "Multi-device session support", "status": "pending"},
+reference/templates/flow-examples/authentication-flow.json:        {"id": "auth-004-03", "title": "Session security headers", "status": "pending"}
+reference/templates/flow-examples/payment-flow.json:    "authentication-flow": ["user-sessions", "user-verification"],
+reference/templates/authentication-flow.json:      "description": "User authentication and session establishment",
+reference/templates/themes.json:      "description": "User authentication, login, registration, and session management",
+reference/templates/themes.json:      "keywords": ["auth", "login", "register", "jwt", "session", "token"],
+reference/directives/15-git-integration.json:    "frequency": "session-boot",
+reference/directives/15-git-integration.json:    "Session boot with project code changes",
+reference/directives/15-git-integration.json:    "sessionBootGitDetection": {
+reference/directives/15-git-integration.json:      "directive": "Detect project code changes during session boot and reconcile organizational state",
+reference/directives/15-git-integration.json:            "Identify if project code has changed since last session",
+reference/directives/15-git-integration.json:      "directive": "Track Git state in database for session continuity",
+reference/directives/15-git-integration.json:        "Temporary session files",
+reference/directives/06-task-management.json:      "purpose": "Ensure seamless session restoration and prevent loss of work in case of premature session termination",
+reference/directives/06-task-management.json:        "Session Database: Save current context snapshot",
+reference/directives/06-task-management.json:      "sessionRestorationGoal": "Upon any restart, MCP/AI must be able to resume exactly where work left off with minimal review and zero lost progress",
+reference/directives/06-task-management.json:            "Increase Limit: Temporarily increase sidequest limit for session"
+reference/directives/06-task-management.json:        "Only one task can be in-progress per session",
+reference/directives/08-project-management.json:        "Before session termination (automatic)",
+reference/directives/08-project-management.json:      "sessionRestorationGuarantee": "Upon restart, AI must be able to continue exactly where previous session ended, with complete understanding of project state, current work context, and next steps"
+reference/directives/08-project-management.json:        "Initialize database with default session and project metadata",
+reference/directives/08-project-management.json:        "Timestamp and session ID",
+reference/directives/02-project-initialization.json:            "Start initialization phase in sessions table with initialization_phase='discovering_files'",
+reference/directives/02-project-initialization.json:            "Track total_files_discovered count in sessions table for progress monitoring",
+reference/directives/02-project-initialization.json:            "Set initialization_phase='building_flows' in sessions table",
+reference/directives/02-project-initialization.json:            "Set initialization_phase='complete' and initialization_completed_at timestamp in sessions table",
+reference/directives/02-project-initialization.json:    "sessionTermination": "Use database file_metadata table and initialization_phase tracking for seamless resumption"
+reference/directives/02-project-initialization.json:    "method": "Database file_metadata table with sessions table integration",
+reference/directives/02-project-initialization.json:      "initialization_phase in sessions table tracks current stage",
+reference/directives/02-project-initialization.json:      "files_processed and total_files_discovered in sessions table track progress",
+reference/directives/02-project-initialization.json:      "session_get_initialization_summary - Comprehensive progress reporting",
+reference/directives/02-project-initialization.json:      "session_reset_initialization - Safe reset with confirmation"
+reference/directives/05-context-loading.json:        "Session context restoration includes branch workspace paths"
+reference/directives/10-file-operations.json:        "Logs/noteworthy.json (session-specific items)",
+reference/directives/04-theme-management.json:      "directive": "Reconcile themes with Git changes detected during session boot",
+reference/directives/04-theme-management.json:      "triggers": ["ai-pm-org-main session boot", "Git changes detected affecting project structure"],
+reference/directives/04-theme-management.json:      "relationshipDiscovery": "Relationships discovered by evaluating theme files during session boot"
+reference/directives/04-theme-management.json:    "purpose": "Maintain persistent theme-flow relationships and session tracking via SQLite database",
+reference/directives/04-theme-management.json:    "sessionTracking": {
+reference/directives/04-theme-management.json:      "trackSessionStarts": "Track session start times and context",
+reference/directives/04-theme-management.json:      "maintainHistory": "Maintain session history for debugging and analysis",
+reference/directives/04-theme-management.json:      "noSessionEnd": "No session end detection required"
+reference/directives/04-theme-management.json:      "During session boot to ensure data consistency",
+reference/directives/07-implementation-plans.json:        "Session Boot: AI loads active implementation plan context"
+reference/directives/07-implementation-plans.json:        "Plan supersession",
+reference/directives/07-implementation-plans.json:    "sessionBootIntegration": {
+reference/directives/07-implementation-plans.json:      "directive": "Transform session boot process with strategic continuity",
+reference/directives/07-implementation-plans.json:        "Strategic continuity across sessions",
+reference/directives/07-implementation-plans.json:    "03-session-management",
+reference/directives/database-integration.json:    "criticalFor": "Session continuity, state preservation, performance optimization"
+reference/directives/database-integration.json:        "Session persistence and context snapshots",
+reference/directives/database-integration.json:      "purpose": "Enable fast queries, session restoration, intelligent recommendations, and seamless initialization resumption"
+reference/directives/database-integration.json:    "mandatoryRequirement": "ALL organizational files MUST be synchronized with database records in real-time for seamless session restoration",
+reference/directives/database-integration.json:      "sessionManagement": [
+reference/directives/database-integration.json:        "Session start and context loading",
+reference/directives/database-integration.json:        "Session pause and termination"
+reference/directives/database-integration.json:  "sessionPersistence": {
+reference/directives/database-integration.json:      "sessions": {
+reference/directives/database-integration.json:        "purpose": "Track session lifecycle and high-level context with initialization tracking",
+reference/directives/database-integration.json:        "keyFields": ["session_id", "start_time", "context_mode", "active_themes", "active_tasks", "active_sidequests", "project_path", "initialization_phase", "files_processed", "total_files_discovered"],
+reference/directives/database-integration.json:        "usage": "Session identification, basic context restoration, and initialization progress tracking"
+reference/directives/database-integration.json:      "session_context": {
+reference/directives/database-integration.json:        "purpose": "Detailed session context for complete restoration",
+reference/directives/database-integration.json:        "keyFields": ["session_id", "loaded_themes", "loaded_flows", "context_escalations", "files_accessed"],
+reference/directives/database-integration.json:        "usage": "Detailed context snapshots for exact session restoration"
+reference/directives/database-integration.json:        "Before session termination",
+reference/directives/database-integration.json:        "Query database for latest session context",
+reference/directives/database-integration.json:    "sessionBootOptimization": {
+reference/directives/database-integration.json:        "Query latest session context from database",
+reference/directives/database-integration.json:        "Session restoration < 2 seconds",
+reference/directives/database-integration.json:      "sessionTools": [
+reference/directives/database-integration.json:        "session_get_initialization_summary - Comprehensive progress reporting",
+reference/directives/database-integration.json:        "session_reset_initialization - Safe reset with confirmation"
+reference/directives/database-integration.json:        "criticalFields": ["event_id", "event_type", "primary_theme", "task_id", "session_id", "impact_level", "decision_data"],
+reference/directives/database-integration.json:        "benefits": ["Fast queries by theme, task, session", "Real-time pattern analysis", "Immediate event correlation"],
+reference/directives/database-integration.json:        "Session productivity and workflow efficiency"
+reference/directives/database-integration.json:        "Session activity correlation",
+reference/directives/database-integration.json:        "session_context by session_id for context restoration",
+reference/directives/database-integration.json:        "session_activity_summary for productivity analytics"
+reference/directives/database-integration.json:      "sessionBoot": "Single query to restore complete session context",
+reference/directives/database-integration.json:      "concurrentSessions": "Multiple AI sessions with isolated context management",
+reference/directives/database-integration.json:      "Session context integrity validation"
+reference/directives/database-integration.json:      "Session context recovery from multiple snapshot sources",
+reference/directives/database-integration.json:      "Session management tools must update database context",
+reference/directives/09-logging-documentation.json:        "Session events, task status changes, and decision patterns",
+reference/directives/12-user-interaction.json:    "Session initialization",
+reference/directives/12-user-interaction.json:      "sessionBootConfiguration": {
+reference/directives/12-user-interaction.json:      "description": "Controls AI behavior when active/incomplete tasks are found during session boot"
+reference/directives/12-user-interaction.json:    "03-session-management",
+reference/directives/directive-escalation-system.json:      "03-session-management": {"compressed": true, "json": true, "md": true},
+reference/directives/directive-escalation-system.json:      "03-session-management", 
+reference/directives/directive-escalation-system.json:      "requirement": "Cache accessed directive content within session",
+reference/directives/directive-escalation-system.json:      "clearancePolicy": "Clear cache on session end or context mode change"
+reference/directives/01-system-initialization.json:    "frequency": "session-start",
+reference/directives/01-system-initialization.json:    "Session start",
+reference/directives/01-system-initialization.json:          "process": ["Full Git repository analysis", "Complete component structure analysis", "Software project detection", "Cache results for future sessions"]
+reference/directives/01-system-initialization.json:          "options": ["Get detailed status", "Start/resume session", "View active tasks"]
+reference/directives/01-system-initialization.json:            "projectManagement/.ai-pm-session-*",
+reference/directives/01-system-initialization.json:            "Initialize session persistence system",
+reference/directives/01-system-initialization.json:          "description": "Enable automatic code change detection during session boot"
+reference/directives/01-system-initialization.json:        "session_persistence": {
+reference/directives/01-system-initialization.json:          "description": "Enable session context persistence and restoration"
+reference/directives/01-system-initialization.json:    "03-session-management",
+reference/directives/03-session-management.json:    "id": "03-session-management",
+reference/directives/03-session-management.json:    "title": "Session Management Directives",
+reference/directives/03-session-management.json:    "frequency": "session-start",
+reference/directives/03-session-management.json:    "humanReadable": "reference/directivesmd/03-session-management.md"
+reference/directives/03-session-management.json:    "Session start",
+reference/directives/03-session-management.json:    "New session initialization",
+reference/directives/03-session-management.json:    "Instance session boot",
+reference/directives/03-session-management.json:    "sessionBootProtocol": {
+reference/directives/03-session-management.json:      "directive": "Follow exact sequence when starting new sessions or 'continue development'",
+reference/directives/03-session-management.json:      "prerequisites": "This assumes automatic state detection (from 01-system-initialization) has already notified the user and they have chosen to proceed with session boot",
+reference/directives/03-session-management.json:        "Initialize database connection and restore session context from project.db",
+reference/directives/03-session-management.json:        "Restore active themes, tasks, sidequests from session database context",
+reference/directives/03-session-management.json:        "2. Initialize database connection and restore session context from project.db",
+reference/directives/03-session-management.json:        "2a. Check initialization_phase in sessions table - if incomplete, offer to resume initialization",
+reference/directives/03-session-management.json:        "8. Restore active themes, tasks, sidequests from session database context",
+reference/directives/03-session-management.json:        "14. Determine/restore context mode from session database",
+reference/directives/03-session-management.json:        "16. Begin task execution with preserved session state"
+reference/directives/03-session-management.json:        "directive": "MANDATORY FOR SESSION CONTINUITY: Database-enhanced boot sequence requires STRICT adherence to real-time state updates",
+reference/directives/03-session-management.json:          "3. Context Snapshot: Save current AI context to session database",
+reference/directives/03-session-management.json:          "4. Event Logging: Record completion for analytics and session restoration",
+reference/directives/03-session-management.json:        "sessionBootRestorationGuarantee": "AI must be able to resume from ANY point where work was interrupted, with complete context restoration and zero work loss",
+reference/directives/03-session-management.json:      "directive": "Integrate implementation plans into session management",
+reference/directives/03-session-management.json:        "strategicContinuity": "Maintain implementation strategy across sessions",
+reference/directives/03-session-management.json:      "description": "Automatically resume active tasks on session start"
+reference/directives/03-session-management.json:    "Database session restoration",
+reference/directives/03-session-management.json:  "sessionStateManagement": {
+reference/directives/03-session-management.json:    "directive": "Maintain session state through persistent project files and database",
+reference/directives/03-session-management.json:      "sessionContext": "sessions table in project.db",
+reference/directives/03-session-management.json:      "initializationProgress": "initialization_phase and progress tracking in sessions table",
+reference/directives/03-session-management.json:    "sessionContextRecovery": {
+reference/directives/03-session-management.json:      "databaseContext": "restores complete session state including initialization progress",
+reference/directives/03-session-management.json:  "sessionContinuityRequirements": {
+reference/directives/03-session-management.json:    "directive": "Ensure seamless transitions between sessions",
+reference/directives/03-session-management.json:      "Previous session state fully recoverable from database",
+reference/directives/03-session-management.json:      "Task progress maintained across sessions",
+reference/directives/03-session-management.json:    "directive": "Handle common session management edge cases with basic recovery procedures",
+reference/directives/03-session-management.json:        "escalationTrigger": "IF corruption complex or affects multiple files → ESCALATE to reference/directivesmd/03-session-management.md for comprehensive recovery procedures"
+reference/directives/03-session-management.json:        "basicResponse": "Inform user: 'Database unavailable. Running in file-only mode with limited session persistence.'",
+reference/directives/03-session-management.json:      "sessionRestorationFailed": {
+reference/directives/03-session-management.json:        "basicResponse": "Alert user: 'Unable to restore previous session fully. Options: [1] Start fresh [2] Partial recovery [3] Manual context reconstruction'",
+reference/directives/03-session-management.json:        "escalationTrigger": "IF restoration failure affects active work → ESCALATE for comprehensive session recovery protocols"
+reference/directives/03-session-management.json:    "generalEscalationTrigger": "WHEN edge case handling unclear or insufficient → ESCALATE to reference/directivesmd/03-session-management.md for comprehensive edge case protocols"
+reference/index.json:          "keyWorkflows": ["hybridArchitecture", "realTimeStateSynchronization", "sessionPersistence", "schemaValidation"],
+reference/index.json:          "triggers": ["Session boot with project code changes", "Git repository state detection needed", "External code modifications detected"],
+reference/index.json:          "keyWorkflows": ["sessionBootGitDetection", "organizationalReconciliation", "gitStateTracking", "branchGitIntegration"],
+reference/index.json:      "nextPhase": "Session start or project continuation",
+reference/index.json:      "name": "Session Management",
+reference/index.json:      "description": "Session boot, context restoration, and task resumption logic",
+reference/index.json:        "03-session-management": {
+reference/index.json:          "file": "reference/directives/03-session-management.json",
+reference/index.json:          "purpose": "Handle database-enhanced session continuity and boot sequences",
+reference/index.json:          "triggers": ["Session start", "Continue development", "Task resumption"],
+reference/index.json:          "keyWorkflows": ["databaseSessionBootProtocol", "sessionContextRestoration", "implementationPlanIntegration"],
+reference/index.json:          "purpose": "Database-enhanced session continuity and state preservation",
+reference/index.json:          "triggers": ["Session boot", "Context restoration", "State synchronization"],
+reference/index.json:          "keyWorkflows": ["sessionPersistence", "contextSnapshots", "taskStatusTracking"],
+reference/index.json:          "criticalSettings": ["sessions.contextSnapshots", "synchronization.realTimeUpdates"]
+reference/index.json:      "errorHandling": "Graceful degradation with user guidance, preserve session state"
+reference/index.json:      "prerequisites": ["Project blueprint available", "Session context established"],
+reference/index.json:            "Git operations", "Session management", "Branch operations",
+reference/index.json:      "trigger": "Session context established",
+reference/index.json:      "failureAction": "Restart session boot sequence"
+reference/index.json:      "Session summary maintenance",
+reference/index.json:    "sessionBoot": "phase2.03-session-management",
+reference/index.json:    "sessionPersistence": "phase2.database-integration",
+reference/directivesmd/07-implementation-plans.md:- **Session Boot**: AI loads active implementation plan context
+reference/directivesmd/07-implementation-plans.md:- **Strategic Continuity**: Implementation strategy maintained across sessions
+reference/directivesmd/07-implementation-plans.md:- **Plan Supersession**: When a new version of the implementation plan is created
+reference/directivesmd/07-implementation-plans.md:## 7.5 Integration with Session Boot Directive
+reference/directivesmd/07-implementation-plans.md:The implementation plans system transforms the session boot process:
+reference/directivesmd/07-implementation-plans.md:**Enhanced Session Boot Sequence**:
+reference/directivesmd/07-implementation-plans.md:- **Strategic Continuity**: AI maintains implementation strategy across sessions
+reference/directivesmd/database-integration.md:The database integration system implements a hybrid architecture that preserves human-readable organizational files while providing database-powered operational intelligence and performance optimization. This approach ensures seamless session restoration, real-time state synchronization, and intelligent project insights while maintaining version control compatibility.
+reference/directivesmd/database-integration.md:- **Session management** - Context preservation and restoration
+reference/directivesmd/database-integration.md:- **Session continuity** - Complete session restoration across interruptions
+reference/directivesmd/database-integration.md:- **State preservation** - Zero work loss from premature session termination
+reference/directivesmd/database-integration.md:- **Multi-session coordination** - Instance management and conflict resolution
+reference/directivesmd/database-integration.md:**Purpose**: Enable fast queries, session restoration, and intelligent recommendations
+reference/directivesmd/database-integration.md:- **Session persistence** - Complete context snapshots for restoration
+reference/directivesmd/database-integration.md:- Sub-second session restoration
+reference/directivesmd/database-integration.md:**Critical Rule**: ALL organizational files MUST be synchronized with database records in real-time for seamless session restoration.
+reference/directivesmd/database-integration.md:#### Session Management Triggers  
+reference/directivesmd/database-integration.md:- **Session start** - Context loading and theme initialization
+reference/directivesmd/database-integration.md:- **Session pause** - Context snapshot preservation
+reference/directivesmd/database-integration.md:- **Session termination** - Final state preservation
+reference/directivesmd/database-integration.md:## Session Persistence System
+reference/directivesmd/database-integration.md:### Database Tables for Session Management
+reference/directivesmd/database-integration.md:#### `sessions` Table
+reference/directivesmd/database-integration.md:**Purpose**: Track session lifecycle and high-level context
+reference/directivesmd/database-integration.md:- `session_id` - Unique session identifier  
+reference/directivesmd/database-integration.md:- `start_time` - Session initiation timestamp
+reference/directivesmd/database-integration.md:**Usage**: Session identification and basic context restoration
+reference/directivesmd/database-integration.md:#### `session_context` Table  
+reference/directivesmd/database-integration.md:**Purpose**: Detailed session context for complete restoration
+reference/directivesmd/database-integration.md:- `session_id` - Reference to sessions table
+reference/directivesmd/database-integration.md:**Usage**: Detailed context snapshots for exact session restoration
+reference/directivesmd/database-integration.md:- **Before session termination** - Final state preservation
+reference/directivesmd/database-integration.md:Session Restoration Sequence:
+reference/directivesmd/database-integration.md:1. Query database for latest session context
+reference/directivesmd/database-integration.md:### Session Boot Optimization
+reference/directivesmd/database-integration.md:**Performance Target**: Session restoration < 2 seconds
+reference/directivesmd/database-integration.md:2. Query latest session context from database (< 200ms)  
+reference/directivesmd/database-integration.md:Total: < 2 seconds for complete session restoration
+reference/directivesmd/database-integration.md:- **Indexed queries** - All session restoration queries use optimized indexes
+reference/directivesmd/database-integration.md:- **Pre-computed views** - Common session data pre-aggregated for speed
+reference/directivesmd/database-integration.md:- **`session_activity_summary`** - Session productivity analytics
+reference/directivesmd/database-integration.md:- `session_id` - Session when event occurred
+reference/directivesmd/database-integration.md:- Fast queries by theme, task, session
+reference/directivesmd/database-integration.md:- Session activity correlation
+reference/directivesmd/database-integration.md:- **Session productivity analysis** - Workflow efficiency metrics
+reference/directivesmd/database-integration.md:- **Session activity correlation** - Productivity pattern analysis
+reference/directivesmd/database-integration.md:CREATE INDEX idx_session_context_session ON session_context(session_id);
+reference/directivesmd/database-integration.md:- **Session restoration views** - Pre-aggregated session context data
+reference/directivesmd/database-integration.md:#### Session Boot Optimization
+reference/directivesmd/database-integration.md:- **Single complex query** - Retrieve complete session context in one operation
+reference/directivesmd/database-integration.md:- **Indexed lookups** - All session queries use optimized indexes
+reference/directivesmd/database-integration.md:- **Multiple concurrent sessions** - Isolated context management
+reference/directivesmd/database-integration.md:- **Session context recovery** - Multiple snapshot sources for resilience
+reference/directivesmd/database-integration.md:This database integration system ensures optimal performance while preserving the human-readable nature of the AI Project Manager's organizational approach, enabling seamless session continuity and intelligent project insights.
+reference/directivesmd/12-user-interaction.md:### Session Boot Configuration: resumeTasksOnStart
+reference/directivesmd/12-user-interaction.md:**Purpose**: Controls AI behavior when active/incomplete tasks are found during session boot.
+reference/directivesmd/12-user-interaction.md:**Session Boot Task Logic**:
+reference/directivesmd/09-logging-documentation.md:- Session events, task status changes, and decision patterns
+reference/directivesmd/09-logging-documentation.md:   - E.g., "Split auth-handler.js into auth-request.js and auth-session.js for testability and separation of concerns."
+reference/directivesmd/09-logging-documentation.md:    - "Decided to include userAgent in telemetry logs for session tracing."
+reference/directivesmd/10-file-operations.md:- `Logs/noteworthy.json` (session-specific items)
+reference/directivesmd/15-git-integration.md:- **Session boot with project code changes** - Code modified outside AI sessions
+reference/directivesmd/15-git-integration.md:## Session Boot Git Detection
+reference/directivesmd/15-git-integration.md:   Found existing themes and tasks from previous sessions
+reference/directivesmd/15-git-integration.md:**Purpose**: Identify if project code changed since last AI session
+reference/directivesmd/15-git-integration.md:**Purpose**: Record current Git state in database for next session
+reference/directivesmd/15-git-integration.md:- Temporary session files
+reference/directivesmd/15-git-integration.md:projectManagement/.mcp-session-*
+reference/directivesmd/directives.json:      "frequency": "session-start"
+reference/directivesmd/directives.json:    "03-session-management": {
+reference/directivesmd/directives.json:      "filename": "03-session-management.md",
+reference/directivesmd/directives.json:      "title": "Session Management Directives",
+reference/directivesmd/directives.json:      "purpose": "Handle database-enhanced session boot, state management, and continuity",
+reference/directivesmd/directives.json:      "triggers": ["Session start", "Continue development", "Task resumption"],
+reference/directivesmd/directives.json:        "Database-Enhanced Session Boot Protocol",
+reference/directivesmd/directives.json:        "Session Context Snapshots and Restoration",
+reference/directivesmd/directives.json:        "Database Session Persistence Requirements"
+reference/directivesmd/directives.json:      "frequency": "session-start"
+reference/directivesmd/directives.json:        "Integration with Session Boot",
+reference/directivesmd/directives.json:        "03-session-management"
+reference/directivesmd/directives.json:        "Session Boot Configuration"
+reference/directivesmd/directives.json:        "03-session-management",
+reference/directivesmd/directives.json:      "dependencies": [".ai-pm-config.json", "User preferences", "Session state"],
+reference/directivesmd/directives.json:      "keyOperations": ["Approval management", "Communication", "Preference tracking", "Session behavior"],
+reference/directivesmd/directives.json:        "03-session-management",
+reference/directivesmd/directives.json:      "triggers": ["Session boot with project code changes", "Git repository state detection needed", "External code modifications detected"],
+reference/directivesmd/directives.json:        "03-session-management",
+reference/directivesmd/directives.json:      "frequency": "session-boot"
+reference/directivesmd/directives.json:        "Session Persistence",
+reference/directivesmd/directives.json:        "sessions.contextSnapshots",
+reference/directivesmd/directives.json:        "03-session-management",
+reference/directivesmd/directives.json:      "keyOperations": ["State synchronization", "Session snapshots", "Database queries", "Context preservation"],
+reference/directivesmd/directives.json:      "03-session-management",
+reference/directivesmd/directives.json:    "tasks.resumeTasksOnStart": ["03-session-management", "12-user-interaction"],
+reference/directivesmd/directives.json:    "tasks.autoTaskCreation": ["02-project-initialization", "03-session-management"],
+reference/directivesmd/directives.json:    "sessions.contextSnapshots": ["database-integration"],
+reference/directivesmd/directives.json:    "session_start": [
+reference/directivesmd/directives.json:      "03-session-management",
+reference/directivesmd/directives.json:      "03-session-management"
+reference/directivesmd/directives.json:    "session_boot": "03-session-management",
+reference/directivesmd/02-project-initialization.md:   - Using this method, if premature termination of session occurs, tracking progress can be achieved by way of the database file_metadata table. If file does not have initialization_analyzed=TRUE or last_analyzed is not up to date, you know the file has not been assessed and/or the data relative to the file has not been incorporated fully into the organizational files
+reference/directivesmd/14-branch-management.md:- Code refactoring that might take several sessions to complete
+reference/directivesmd/14-branch-management.md:- Long-running tasks that span multiple sessions
+reference/directivesmd/13-metadata-management.md:    "authentication": "jwt|oauth|session|none|other",
+reference/directivesmd/13-metadata-management.md:- **Session Boot**: Load metadata for project context
+reference/directivesmd/08-project-management.md:7. Initialize database with default session and project metadata
+reference/directivesmd/08-project-management.md:- Before session termination (automatic)
+reference/directivesmd/08-project-management.md:**Session Restoration Guarantee**: Upon restart, AI must be able to continue exactly where previous session ended, with complete understanding of project state, current work context, and next steps.
+reference/directivesmd/08-project-management.md:- **Session Continuity**: AI can quickly identify next pending flow steps
+reference/directivesmd/08-project-management.md:- Timestamp and session ID
+reference/directivesmd/03-session-management.md:# Session Management Directives
+reference/directivesmd/03-session-management.md:## 3.1 Session Boot Protocol
+reference/directivesmd/03-session-management.md:**Directive**: Follow exact sequence when starting new sessions or "continue development".
+reference/directivesmd/03-session-management.md:**Prerequisites**: This assumes automatic state detection (from 01-system-initialization) has already notified the user and they have chosen to proceed with session boot.
+reference/directivesmd/03-session-management.md:### Enhanced Session Boot Sequence with Implementation Plan Integration
+reference/directivesmd/03-session-management.md:- Defines the steps AI must follow at the beginning of each session with database-enhanced boot sequence
+reference/directivesmd/03-session-management.md:- **Database Integration**: Session context preserved in `project.db` for instant restoration
+reference/directivesmd/03-session-management.md:- **Context Snapshots**: Previous session state automatically restored from database
+reference/directivesmd/03-session-management.md:- **Session Persistence**: Active themes, tasks, sidequests, and context mode restored from database
+reference/directivesmd/03-session-management.md:**MANDATORY FOR SESSION CONTINUITY**: The database-enhanced boot sequence is designed to restore AI to the exact state where previous work ended. This requires STRICT adherence to real-time state updates:
+reference/directivesmd/03-session-management.md:3. **Context Snapshot**: Save current AI context to session database
+reference/directivesmd/03-session-management.md:4. **Event Logging**: Record completion for analytics and session restoration
+reference/directivesmd/03-session-management.md:**Session Boot Restoration Guarantee**: AI must be able to resume from ANY point where work was interrupted, with complete context restoration and zero work loss.
+reference/directivesmd/03-session-management.md:1. Initialize database connection and restore session context from project.db
+reference/directivesmd/03-session-management.md:6. Restore active themes, tasks, sidequests from session database context
+reference/directivesmd/03-session-management.md:11. Determine/restore context mode from session database
+reference/directivesmd/03-session-management.md:13. Begin task execution with preserved session state
+reference/directivesmd/03-session-management.md:**Session Boot Sequence:**
+reference/directivesmd/03-session-management.md:- **Strategic Continuity**: Maintain implementation strategy across sessions
+reference/directivesmd/03-session-management.md:## 3.2 Session State Management
+reference/directivesmd/03-session-management.md:**Directive**: Maintain session state through persistent project files.
+reference/directivesmd/03-session-management.md:**Session Context Recovery**:
+reference/directivesmd/03-session-management.md:## 3.3 Session Continuity Requirements
+reference/directivesmd/03-session-management.md:**Directive**: Ensure seamless transitions between sessions.
+reference/directivesmd/03-session-management.md:- Previous session state fully recoverable
+reference/directivesmd/03-session-management.md:- Task progress maintained across sessions
+reference/directivesmd/06-task-management.md:**Purpose**: Ensure seamless session restoration and prevent loss of work in case of premature session termination.
+reference/directivesmd/06-task-management.md:- **Session Database**: Save current context snapshot
+reference/directivesmd/06-task-management.md:**Session Restoration Goal**: Upon any restart, MCP/AI must be able to resume exactly where work left off with minimal review and zero lost progress.
+reference/directivesmd/06-task-management.md:  4. **Increase Limit**: "Would you like to temporarily increase the sidequest limit for this session?"
+reference/directivesmd/06-task-management.md:- Only one task can be `in-progress` per session
+reference/directivesmd/06-task-management.md:- AI will maintain and update this list between sessions, but all changes require user approval
+reference/directivesmd/06-task-management.md:- **Session Continuity**: AI can resume work with full strategic and tactical context
+reference/directivesmd/01-system-initialization.md:**Key Triggers**: MCP server startup, first connection, system boot, session start, instance initialization, Git repository setup needed
+reference/directivesmd/01-system-initialization.md:- Options: Get detailed status, Start/resume session, View active tasks
+reference/directivesmd/01-system-initialization.md:$projectManagement/.mcp-session-*
+reference/directivesmd/01-system-initialization.md:- **Session persistence**: Complete session context preservation and restoration
+reference/directivesmd/01-system-initialization.md:    "session_persistence": true
+reference/directivesmd/01-system-initialization.md:- **03-session-management**: Git-aware session boot
+reference/directivesmd/01-system-initialization.md:    "ready_for_session": true
+reference/directivesmd/04-theme-management.md:1. **Authentication** - User login, registration, session management
+reference/directivesmd/04-theme-management.md:- Relationships discovered by evaluating theme files during session boot
+reference/directivesmd/directive-escalation-system.md:- **Session management**: 03-session-management (session start/end)
+reference/directivesmd/directive-escalation-system.md:- Session context memory limits
+reference/directivesmd/directive-escalation-system.md:- Session restoration failures with partial context
+reference/directivesmd/directive-escalation-system.md:Escalation Session:
+reference/directivesmd/directive-escalation-system.md:- Avoid redundant file access within same workflow session
+reference/directivesmd/directive-escalation-system.md:- Clear cache on session end or major context mode change
+reference/directivesmd/directive-escalation-system.md:- **03-session-management** - Session boot, context restoration, database integration
+reference/directivesmd/directive-escalation-system.md:| 03-session-management | ✅ | ✅ | ✅ |
+reference/directivesmd/directive-escalation-system.md:**Requirement**: Cache accessed directive content within session to avoid re-reading
+reference/directivesmd/directive-escalation-system.md:- Clear cache on session end or major context mode change
+reference/organization.json:            "notTracked": ["user settings", "database backups", "session files"]
+reference/organization.json:          "project.db": "SQLite database for persistent theme-flow relationships, session tracking, project analytics, and Git branch management",
+reference/organization.json:          "sessionPersistence": "Complete session state preservation across disconnections with context snapshots",
+reference/organization.json:  "sessionManagement": {
+reference/organization.json:      "Detect project code changes since last session (ai-pm-org-main only)",
+utils/theme_discovery.py:                    'keywords': ['auth', 'login', 'register', 'user', 'session', 'token', 'jwt', 'oauth', 'password', 'signin', 'signup'],
+utils/theme_discovery.py:                    'files': ['auth', 'login', 'user', 'session', 'token'],
+utils/theme_discovery.py:                    'keywords': ['cache', 'redis', 'memcached', 'session', 'store'],
+grep: :memory:/projectManagement/project.db: binary file matches
+server.py:and seamless session continuity.
+grep: test.db/projectManagement/project.db: binary file matches
+grep: test_themes.db/projectManagement/project.db: binary file matches
+database/schema.sql:-- SESSION MANAGEMENT & PERSISTENCE
+database/schema.sql:-- Enhanced Session Management (Activity-Based Work Periods)
+database/schema.sql:CREATE TABLE IF NOT EXISTS sessions (
+database/schema.sql:    session_id TEXT PRIMARY KEY,
+database/schema.sql:    context TEXT DEFAULT '{}', -- JSON: session context data/content
+database/schema.sql:    metadata TEXT DEFAULT '{}', -- JSON: user preferences, session config
+database/schema.sql:CREATE TABLE IF NOT EXISTS session_context (
+database/schema.sql:    session_id TEXT,
+database/schema.sql:    FOREIGN KEY (session_id) REFERENCES sessions(session_id)
+database/schema.sql:-- Work Activity Tracking (Activity-Based Session Management)
+database/schema.sql:    session_context_id TEXT     -- Link to session for context restoration
+database/schema.sql:    session_id TEXT,
+database/schema.sql:    FOREIGN KEY (session_id) REFERENCES sessions(session_id)
+database/schema.sql:-- Note: sessions table defined above in SESSION MANAGEMENT section
+database/schema.sql:    session_id TEXT,
+database/schema.sql:    FOREIGN KEY (session_id) REFERENCES sessions(session_id)
+database/schema.sql:    session_id TEXT,
+database/schema.sql:    FOREIGN KEY (session_id) REFERENCES sessions(session_id)
+database/schema.sql:    session_id TEXT, -- Session when event occurred
+database/schema.sql:    context_data TEXT DEFAULT '{}', -- JSON: session context, active themes
+database/schema.sql:    FOREIGN KEY (session_id) REFERENCES sessions(session_id)
+database/schema.sql:    session_id TEXT,
+database/schema.sql:    FOREIGN KEY (session_id) REFERENCES sessions(session_id)
+database/schema.sql:CREATE INDEX IF NOT EXISTS idx_sessions_start_time ON sessions(start_time);
+database/schema.sql:CREATE INDEX IF NOT EXISTS idx_sessions_last_activity ON sessions(last_activity);
+database/schema.sql:CREATE INDEX IF NOT EXISTS idx_task_queue_session ON task_queue(session_id);
+database/schema.sql:CREATE INDEX IF NOT EXISTS idx_noteworthy_events_session ON noteworthy_events(session_id);
+database/schema.sql:-- Enhanced session indexes for initialization tracking
+database/schema.sql:CREATE INDEX IF NOT EXISTS idx_sessions_init_phase ON sessions(initialization_phase);
+database/schema.sql:CREATE INDEX IF NOT EXISTS idx_sessions_files_processed ON sessions(files_processed);
+database/schema.sql:CREATE INDEX IF NOT EXISTS idx_work_activities_session ON work_activities(session_context_id);
+database/schema.sql:    s.session_id,
+database/schema.sql:FROM sessions s
+database/schema.sql:LEFT JOIN work_activities wa ON wa.session_context_id = s.session_id
+database/schema.sql:GROUP BY s.session_id
+database/schema.sql:CREATE TRIGGER IF NOT EXISTS update_sessions_activity
+database/schema.sql:    AFTER UPDATE ON sessions
+database/schema.sql:    UPDATE sessions SET last_activity = CURRENT_TIMESTAMP WHERE id = NEW.id;
+database/schema.sql:-- Update session files_processed count when file analyzed
+database/schema.sql:    UPDATE sessions 
+database/db_manager.py:Supports session persistence, theme-flow relationships, task tracking, and analytics.
+database/db_manager.py:        This provides explicit initialization for AI sessions, tests, and tools that need
+database/event_queries.py:            session_id = event_data.get('session_id')
+database/event_queries.py:                 task_id, session_id, impact_level, decision_data, context_data,
+database/event_queries.py:                task_id, session_id, impact_level, decision_data, context_data,
+database/user_preference_queries.py:                "session_id": context_data.get('session_id'),
+database/user_preference_queries.py:                "session_id": theme_data.get('session_id'),
+database/user_preference_queries.py:                "session_duration": workflow_data.get('session_duration_minutes'),
+database/user_preference_queries.py:                "session_id": workflow_data.get('session_id'),
+database/user_preference_queries.py:    def get_workflow_recommendations(self, session_context: Dict[str, Any]) -> Dict[str, Any]:
+database/user_preference_queries.py:            workflow_type = session_context.get('workflow_type', 'general')
+database/user_preference_queries.py:                    'session_id': feedback_data.get('session_id')
+database/user_preference_queries.py:                    'session_id': feedback_data.get('session_id')
+database/session_queries.py:Enhanced Session Management Database Queries
+database/session_queries.py:Handles session persistence, context snapshots, and boot sequence optimization for AI Project Manager.
+database/session_queries.py:class SessionQueries:
+database/session_queries.py:    Enhanced session management with comprehensive database operations.
+database/session_queries.py:    - Session persistence across disconnections
+database/session_queries.py:    - Session analytics and performance tracking
+database/session_queries.py:    def start_session(self, project_path: str, context_mode: str = "theme-focused", 
+database/session_queries.py:        Start a new AI session with context preservation.
+database/session_queries.py:            metadata: Additional session metadata
+database/session_queries.py:            Generated session ID
+database/session_queries.py:        # Generate unique session ID with microseconds and UUID to prevent collisions
+database/session_queries.py:        session_id = f"session_{timestamp}_{uuid.uuid4().hex[:8]}"
+database/session_queries.py:                INSERT INTO sessions (
+database/session_queries.py:                    session_id, project_path, context_mode, active_themes, 
+database/session_queries.py:                    session_id,
+database/session_queries.py:            self.db.logger.info(f"Started session: {session_id}")
+database/session_queries.py:            return session_id
+database/session_queries.py:            self.db.logger.error(f"Error starting session: {e}")
+database/session_queries.py:    def update_session_activity(self, session_id: str, context: str = None, 
+database/session_queries.py:        Update session activity and context.
+database/session_queries.py:            session_id: The session identifier
+database/session_queries.py:                params.append(session_id)
+database/session_queries.py:                query = f"UPDATE sessions SET {', '.join(update_fields)} WHERE session_id = ?"
+database/session_queries.py:            self.db.logger.error(f"Error updating session {session_id}: {e}")
+database/session_queries.py:    def get_session(self, session_id: str) -> Optional[Dict[str, Any]]:
+database/session_queries.py:        Get session information by ID.
+database/session_queries.py:            session_id: The session identifier
+database/session_queries.py:            Session information dictionary or None
+database/session_queries.py:        SELECT session_id, start_time, last_activity, context, 
+database/session_queries.py:        FROM sessions
+database/session_queries.py:        WHERE session_id = ?
+database/session_queries.py:        results = self.db.execute_query(query, (session_id,))
+database/session_queries.py:                'session_id': row['session_id'],
+database/session_queries.py:    def get_session_data(self, session_id: str) -> Optional[Dict[str, Any]]:
+database/session_queries.py:        Alias for get_session for test compatibility.
+database/session_queries.py:            session_id: The session identifier
+database/session_queries.py:            Session information dictionary or None
+database/session_queries.py:        return self.get_session(session_id)
+database/session_queries.py:    def get_recent_sessions(self, limit: int = 10) -> List[Dict[str, Any]]:
+database/session_queries.py:        Get recent sessions.
+database/session_queries.py:            limit: Maximum number of sessions to return
+database/session_queries.py:            List of session information dictionaries
+database/session_queries.py:        SELECT session_id, start_time, last_activity, context, 
+database/session_queries.py:        FROM sessions
+database/session_queries.py:                'session_id': row['session_id'],
+database/session_queries.py:    def log_file_modification(self, session_id: str, file_path: str, file_type: str, 
+database/session_queries.py:            session_id: The session identifier
+database/session_queries.py:                (session_id, file_path, file_type, operation, details)
+database/session_queries.py:                    session_id,
+database/session_queries.py:    def get_file_modifications(self, session_id: str = None, file_type: str = None, 
+database/session_queries.py:            session_id: Optional session ID to filter by
+database/session_queries.py:        SELECT session_id, file_path, file_type, operation, details, timestamp
+database/session_queries.py:        if session_id:
+database/session_queries.py:            query += " AND session_id = ?"
+database/session_queries.py:            params.append(session_id)
+database/session_queries.py:                'session_id': row['session_id'],
+database/session_queries.py:    def record_task_completion(self, session_id: str, task_id: str, milestone_id: str = None,
+database/session_queries.py:            session_id: The session identifier
+database/session_queries.py:                (session_id, task_id, milestone_id, theme_name, estimated_effort_hours,
+database/session_queries.py:                    session_id,
+database/session_queries.py:               actual_effort_hours, complexity_score, notes, completed_at, session_id
+database/session_queries.py:                'session_id': row['session_id']
+database/session_queries.py:    def get_session_statistics(self) -> Dict[str, Any]:
+database/session_queries.py:        Get session statistics and analytics.
+database/session_queries.py:            Dictionary with session statistics
+database/session_queries.py:        # Total sessions
+database/session_queries.py:        total_sessions = self.db.execute_query("SELECT COUNT(*) as count FROM sessions")[0]['count']
+database/session_queries.py:        stats['total_sessions'] = total_sessions
+database/session_queries.py:        # Average session duration
+database/session_queries.py:            FROM session_activity_summary
+database/session_queries.py:        stats['average_session_duration_hours'] = round(avg_duration or 0, 2)
+database/session_queries.py:            FROM sessions
+database/session_queries.py:        stats['sessions_last_7_days'] = recent_activity
+database/session_queries.py:    # Enhanced Session Management Methods (following database implementation plan)
+database/session_queries.py:    def get_latest_session(self, project_path: str) -> Optional[Dict[str, Any]]:
+database/session_queries.py:        Get the most recent session for a project.
+database/session_queries.py:            Session data dictionary or None
+database/session_queries.py:            SELECT * FROM sessions 
+database/session_queries.py:            return self._session_row_to_dict(row)
+database/session_queries.py:    def _session_row_to_dict(self, row) -> Dict[str, Any]:
+database/session_queries.py:        """Convert session database row to dictionary."""
+database/session_queries.py:            "session_id": row["session_id"],
+database/session_queries.py:    # Session Context Management
+database/session_queries.py:    def save_session_context(
+database/session_queries.py:        session_id: str,
+database/session_queries.py:        Save session context for quick restoration.
+database/session_queries.py:            session_id: Session ID
+database/session_queries.py:            INSERT OR REPLACE INTO session_context (
+database/session_queries.py:                session_id, loaded_themes, loaded_flows, 
+database/session_queries.py:            session_id,
+database/session_queries.py:    def get_session_context(self, session_id: str) -> Optional[Dict[str, Any]]:
+database/session_queries.py:        Get session context for restoration.
+database/session_queries.py:            session_id: Session ID
+database/session_queries.py:            Session context dictionary or None
+database/session_queries.py:            SELECT * FROM session_context 
+database/session_queries.py:            WHERE session_id = ? 
+database/session_queries.py:        result = self.db.execute_query(query, (session_id,))
+database/session_queries.py:                "session_id": row["session_id"],
+database/session_queries.py:        session_id: str,
+database/session_queries.py:            session_id: Current session ID
+database/session_queries.py:                context_snapshot, session_id, paused_at
+database/session_queries.py:            json.dumps(context_data or {}), session_id
+database/session_queries.py:        Get optimized context for session boot sequence.
+database/session_queries.py:            Boot context with session restoration data
+database/session_queries.py:        latest_session = self.get_latest_session(project_path)
+database/session_queries.py:            "has_previous_session": latest_session is not None,
+database/session_queries.py:            "session_continuity": False
+database/session_queries.py:        if latest_session:
+database/session_queries.py:            # Check if session was recently active (within last 24 hours)
+database/session_queries.py:            last_activity = datetime.fromisoformat(latest_session["last_activity"])
+database/session_queries.py:                    "session_continuity": True,
+database/session_queries.py:                    "previous_session_id": latest_session["session_id"],
+database/session_queries.py:                    "recommended_context_mode": latest_session["context_mode"],
+database/session_queries.py:                    "suggested_themes": latest_session["active_themes"],
+database/session_queries.py:                    "active_tasks": latest_session["active_tasks"],
+database/session_queries.py:                    "active_sidequests": latest_session["active_sidequests"],
+database/session_queries.py:                # Analyze recent sessions for patterns
+database/session_queries.py:                analytics = self.get_session_analytics_enhanced(project_path, days=7)
+database/session_queries.py:    def get_session_analytics_enhanced(self, project_path: str, days: int = 30) -> Dict[str, Any]:
+database/session_queries.py:        Get enhanced session analytics for a project.
+database/session_queries.py:            FROM sessions 
+database/session_queries.py:        # Total sessions
+database/session_queries.py:        total_sessions = self.db.execute_query(total_query, (project_path,))[0]["count"]
+database/session_queries.py:        # Average session duration using the view
+database/session_queries.py:            FROM session_activity_summary 
+database/session_queries.py:            "total_sessions": total_sessions,
+database/session_queries.py:    def update_active_themes(self, session_id: str, active_themes: List[str]):
+database/session_queries.py:        """Update active themes for a session."""
+database/session_queries.py:        query = "UPDATE sessions SET active_themes = ? WHERE session_id = ?"
+database/session_queries.py:        self.db.execute_update(query, (json.dumps(active_themes), session_id))
+database/session_queries.py:    def update_active_tasks(self, session_id: str, active_tasks: List[str]):
+database/session_queries.py:        """Update active tasks for a session."""
+database/session_queries.py:        query = "UPDATE sessions SET active_tasks = ? WHERE session_id = ?"
+database/session_queries.py:        self.db.execute_update(query, (json.dumps(active_tasks), session_id))
+database/session_queries.py:    def update_active_sidequests(self, session_id: str, active_sidequests: List[str]):
+database/session_queries.py:        """Update active sidequests for a session."""
+database/session_queries.py:        query = "UPDATE sessions SET active_sidequests = ? WHERE session_id = ?"
+database/session_queries.py:        self.db.execute_update(query, (json.dumps(active_sidequests), session_id))
+database/session_queries.py:    def log_context_escalation(self, session_id: str, from_mode: str, to_mode: str, 
+database/session_queries.py:            session_id: Session ID
+database/session_queries.py:            # Update session context mode
+database/session_queries.py:                "UPDATE sessions SET context_mode = ? WHERE session_id = ?",
+database/session_queries.py:                (to_mode, session_id)
+database/session_queries.py:                'session_id': session_id,
+database/session_queries.py:    def get_session_analytics(self, days: int = 30) -> Dict[str, Any]:
+database/session_queries.py:        Get session analytics for the specified number of days.
+database/session_queries.py:            # Total sessions in period
+database/session_queries.py:                SELECT COUNT(*) as count FROM sessions 
+database/session_queries.py:            total_sessions = self.db.execute_query(total_query)[0]['count']
+database/session_queries.py:            # Average session duration
+database/session_queries.py:                FROM sessions 
+database/session_queries.py:                SELECT context_mode, COUNT(*) as count FROM sessions 
+database/session_queries.py:                'total_sessions': total_sessions,
+database/session_queries.py:            self.db.logger.error(f"Error getting session analytics: {e}")
+database/session_queries.py:                'total_sessions': 0,
+database/session_queries.py:    def start_initialization(self, session_id: str, total_files_discovered: int) -> bool:
+database/session_queries.py:        Start initialization phase for a session.
+database/session_queries.py:            session_id: Session ID to update
+database/session_queries.py:                UPDATE sessions 
+database/session_queries.py:                WHERE session_id = ?
+database/session_queries.py:            self.db.execute_update(query, (total_files_discovered, datetime.now().isoformat(), session_id))
+database/session_queries.py:            self.db.logger.error(f"Error starting initialization for session {session_id}: {e}")
+database/session_queries.py:    def update_initialization_phase(self, session_id: str, phase: str) -> bool:
+database/session_queries.py:        Update the initialization phase for a session.
+database/session_queries.py:            session_id: Session ID to update
+database/session_queries.py:                UPDATE sessions 
+database/session_queries.py:                WHERE session_id = ?
+database/session_queries.py:            self.db.execute_update(query, (phase, session_id))
+database/session_queries.py:            self.db.logger.error(f"Error updating initialization phase for session {session_id}: {e}")
+database/session_queries.py:    def complete_initialization(self, session_id: str) -> bool:
+database/session_queries.py:        Mark initialization as complete for a session.
+database/session_queries.py:            session_id: Session ID to update
+database/session_queries.py:                UPDATE sessions 
+database/session_queries.py:                WHERE session_id = ?
+database/session_queries.py:            self.db.execute_update(query, (datetime.now().isoformat(), session_id))
+database/session_queries.py:            self.db.logger.error(f"Error completing initialization for session {session_id}: {e}")
+database/session_queries.py:    def get_initialization_status(self, session_id: str) -> Optional[Dict[str, Any]]:
+database/session_queries.py:        Get initialization status for a session.
+database/session_queries.py:            session_id: Session ID to check
+database/session_queries.py:            Dictionary with initialization status or None if session not found
+database/session_queries.py:                FROM sessions
+database/session_queries.py:                WHERE session_id = ?
+database/session_queries.py:            results = self.db.execute_query(query, (session_id,))
+database/session_queries.py:                    'session_id': session_id,
+database/session_queries.py:            self.db.logger.error(f"Error getting initialization status for session {session_id}: {e}")
+database/session_queries.py:    def get_sessions_needing_initialization(self) -> List[Dict[str, Any]]:
+database/session_queries.py:        Get sessions that need initialization or have incomplete initialization.
+database/session_queries.py:            List of sessions that need initialization work
+database/session_queries.py:                SELECT session_id, project_path, initialization_phase, 
+database/session_queries.py:                FROM sessions
+database/session_queries.py:            sessions = []
+database/session_queries.py:                sessions.append({
+database/session_queries.py:                    'session_id': row['session_id'],
+database/session_queries.py:            return sessions
+database/session_queries.py:            self.db.logger.error(f"Error getting sessions needing initialization: {e}")
+database/session_queries.py:    def increment_files_processed(self, session_id: str) -> bool:
+database/session_queries.py:        Increment the files_processed counter for a session.
+database/session_queries.py:            session_id: Session ID to update
+database/session_queries.py:                UPDATE sessions 
+database/session_queries.py:                WHERE session_id = ?
+database/session_queries.py:            self.db.execute_update(query, (datetime.now().isoformat(), session_id))
+database/session_queries.py:            self.db.logger.error(f"Error incrementing files processed for session {session_id}: {e}")
+database/session_queries.py:    def reset_initialization(self, session_id: str) -> bool:
+database/session_queries.py:        Reset initialization status for a session to start over.
+database/session_queries.py:            session_id: Session ID to reset
+database/session_queries.py:                UPDATE sessions 
+database/session_queries.py:                WHERE session_id = ?
+database/session_queries.py:            self.db.execute_update(query, (session_id,))
+database/session_queries.py:            self.db.logger.error(f"Error resetting initialization for session {session_id}: {e}")
+database/session_queries.py:        Get analytics about initialization performance across sessions.
+database/session_queries.py:            # Sessions by initialization phase
+database/session_queries.py:                FROM sessions
+database/session_queries.py:            # Average initialization time for completed sessions
+database/session_queries.py:                FROM sessions
+database/session_queries.py:                FROM sessions
+database/session_queries.py:                SELECT COUNT(*) as count FROM sessions
+database/session_queries.py:    # ACTIVITY-BASED WORK TRACKING METHODS (Replacement for Session Lifecycle)
+database/session_queries.py:        session_context_id: str = None
+database/session_queries.py:        Record a work activity (replaces session lifecycle tracking).
+database/session_queries.py:            session_context_id: Link to session for context restoration
+database/session_queries.py:                (project_path, activity_type, tool_name, activity_data, duration_ms, session_context_id)
+database/session_queries.py:                    session_context_id
+database/session_queries.py:            # Update last_tool_activity in sessions table if session_context_id provided
+database/session_queries.py:            if session_context_id:
+database/session_queries.py:                    "UPDATE sessions SET last_tool_activity = CURRENT_TIMESTAMP WHERE session_id = ?",
+database/session_queries.py:                    (session_context_id,)
+database/session_queries.py:            # Get most recent session context
+database/session_queries.py:            session_query = """
+database/session_queries.py:                SELECT session_id, context_mode, active_themes, active_tasks, 
+database/session_queries.py:                FROM sessions
+database/session_queries.py:            session_result = self.db.execute_query(session_query, (project_path,))
+database/session_queries.py:                "session_context": None
+database/session_queries.py:            if session_result:
+database/session_queries.py:                session = session_result[0]
+database/session_queries.py:                context["session_context"] = {
+database/session_queries.py:                    "session_id": session["session_id"],
+database/session_queries.py:                    "context_mode": session["context_mode"],
+database/session_queries.py:                    "active_themes": json.loads(session["active_themes"] or "[]"),
+database/session_queries.py:                    "active_tasks": json.loads(session["active_tasks"] or "[]"),
+database/session_queries.py:                    "active_sidequests": json.loads(session["active_sidequests"] or "[]"),
+database/session_queries.py:                    "context_snapshot": json.loads(session["context_snapshot"] or "{}")
+database/session_queries.py:                "session_context": None
+database/session_queries.py:                UPDATE sessions 
+database/session_queries.py:        Get work activity analytics (replaces session analytics).
+database/session_queries.py:                FROM sessions
+database/theme_flow_queries.py:        session_id: str = None
+database/theme_flow_queries.py:            session_id: Optional session ID
+database/theme_flow_queries.py:                    theme_name, change_type, change_details, session_id
+database/theme_flow_queries.py:                theme_name, change_type, json.dumps(change_details), session_id
+database/theme_flow_queries.py:            SELECT change_type, change_details, session_id, timestamp
+database/theme_flow_queries.py:                "session_id": row["session_id"],
+database/task_status_queries.py:            # Insert into task_metrics (session_id will be added by integration layer)
+database/__init__.py:from .session_queries import SessionQueries
+database/__init__.py:    'SessionQueries',
+database/file_metadata_queries.py:        session_id: str = None,
+database/file_metadata_queries.py:            file_path, file_type, operation, session_id, details
+database/file_metadata_queries.py:        session_id: str = None,
+database/file_metadata_queries.py:            file_path, file_type, operation, session_id, days, limit
+database/file_metadata_queries.py:    def get_initialization_progress(self, session_id: str = None) -> Dict[str, Any]:
+database/file_metadata_queries.py:        return self.initialization_tracking.get_initialization_progress(session_id)
+database/file_metadata/modification_logging.py:        session_id: str = None,
+database/file_metadata/modification_logging.py:            session_id: Session ID for context
+database/file_metadata/modification_logging.py:                (file_path, file_type, operation, session_id, details)
+database/file_metadata/modification_logging.py:                file_path, file_type, operation, session_id,
+database/file_metadata/modification_logging.py:        session_id: str = None,
+database/file_metadata/modification_logging.py:            session_id: Optional session ID filter
+database/file_metadata/modification_logging.py:            SELECT file_path, file_type, operation, session_id, details, timestamp
+database/file_metadata/modification_logging.py:        if session_id:
+database/file_metadata/modification_logging.py:            conditions.append("session_id = ?")
+database/file_metadata/modification_logging.py:            params.append(session_id)
+database/file_metadata/modification_logging.py:                "session_id": row["session_id"],
+database/file_metadata/modification_logging.py:                COUNT(DISTINCT session_id) as session_count,
+database/file_metadata/modification_logging.py:            ORDER BY modification_count DESC, session_count DESC
+database/file_metadata/modification_logging.py:                "session_count": row["session_count"],
+database/file_metadata/modification_logging.py:                "activity_score": row["modification_count"] * row["session_count"]
+database/file_metadata/file_discovery.py:                f'{management_folder}/database/backups/*', f'{management_folder}/.mcp-session-*'
+database/file_metadata/initialization_tracking.py:    def get_initialization_progress(self, session_id: str = None) -> Dict[str, Any]:
+database/file_metadata/initialization_tracking.py:            session_id: Optional session ID to filter by
+database/file_metadata/initialization_tracking.py:            # Get session information if session_id provided
+database/file_metadata/initialization_tracking.py:            session_info = {}
+database/file_metadata/initialization_tracking.py:            if session_id:
+database/file_metadata/initialization_tracking.py:                session_query = """
+database/file_metadata/initialization_tracking.py:                    FROM sessions
+database/file_metadata/initialization_tracking.py:                    WHERE session_id = ?
+database/file_metadata/initialization_tracking.py:                session_results = self.db.execute_query(session_query, (session_id,))
+database/file_metadata/initialization_tracking.py:                if session_results:
+database/file_metadata/initialization_tracking.py:                    session_row = session_results[0]
+database/file_metadata/initialization_tracking.py:                    session_info = {
+database/file_metadata/initialization_tracking.py:                        'initialization_phase': session_row['initialization_phase'],
+database/file_metadata/initialization_tracking.py:                        'files_processed': session_row['files_processed'],
+database/file_metadata/initialization_tracking.py:                        'total_files_discovered': session_row['total_files_discovered'],
+database/file_metadata/initialization_tracking.py:                        'initialization_started_at': session_row['initialization_started_at'],
+database/file_metadata/initialization_tracking.py:                        'initialization_completed_at': session_row['initialization_completed_at']
+database/file_metadata/initialization_tracking.py:                'session_info': session_info,
+core/processor.py:from ..database.session_queries import SessionQueries
+core/processor.py:    session_id: str
+core/processor.py:    session_id: str
+core/processor.py:                 session_queries: Optional[SessionQueries] = None,
+core/processor.py:        self.session_queries = session_queries
+core/processor.py:                          session_id: str) -> ProcessingOutput:
+core/processor.py:            exec_context = await self._create_execution_context(task_data, session_id)
+core/processor.py:                session_id=session_id,
+core/processor.py:                session_id=session_id,
+core/processor.py:                                      session_id: str) -> TaskExecutionContext:
+core/processor.py:            session_id=session_id,
+core/processor.py:                    session_id=exec_context.session_id
+core/processor.py:                    session_id=exec_context.session_id
+core/processor.py:                session_id=exec_context.session_id
+core/processor.py:            if self.session_queries:
+core/processor.py:                await self.session_queries.log_context_escalation(
+core/processor.py:                    session_id=exec_context.session_id,
+core/processor.py:                                             session_id: str) -> Dict[str, Any]:
+core/processor.py:                session_id=session_id
+core/processor.py:    async def get_processing_analytics(self, session_id: str, 
+core/processor.py:            "session_summary": {},
+core/processor.py:            if self.session_queries:
+core/processor.py:                # Get session analytics
+core/processor.py:                session_data = await self.session_queries.get_session_analytics(
+core/processor.py:                    session_id=session_id,
+core/processor.py:                analytics["session_summary"] = session_data
+core/processor.py:                context_patterns = await self.session_queries.get_context_usage_patterns(
+core/processor.py:                    session_id=session_id,
+core/processor.py:                    session_id=session_id,
+core/processor.py:                    session_id=session_id,
+core/git_integration.py:{management_folder}/.mcp-session-*
+core/git_integration.py:            "message": "No changes detected since last session"
+core/git_integration.py:            "session": ["authentication", "session-management"],
+core/git_integration.py:        This is called when project code changes are detected during session boot
+core/git_integration.py:            # Check database for previous sessions or branches
+core/git_integration.py:                cursor.execute("SELECT COUNT(*) FROM sessions WHERE project_root_path = ?", 
+core/git_integration.py:                session_count = cursor.fetchone()[0]
+core/git_integration.py:                if session_count > 0:
+core/user_communication.py:        message = f"""=== AI Project Manager - Session Boot ===
+core/user_communication.py:        message = f"""=== AI Project Manager - Session Boot ===
+core/user_communication.py:            action_message = "\n🚀 **Auto-task enabled**: Use 'session_boot_with_git_detection' to automatically continue work."
+core/user_communication.py:            action_message = "\n🚀 **Auto-task enabled**: Use 'session_boot_with_git_detection' to resume existing tasks."
+core/user_communication.py:        message = f"""=== AI Project Manager - Session Boot ===
+core/user_communication.py:• 'session_boot_with_git_detection' - Enhanced session boot with Git integration
+core/user_communication.py:• 'session_start' - Begin/resume work session
+core/user_communication.py:            "recommendations": ["session_boot_with_git_detection", "project_get_status", "session_start", "task_list_active"],
+core/user_communication.py:        message = f"""=== AI Project Manager - Session Boot ===
+core/user_communication.py:4. **Continue with existing**: Use 'session_start' tool
+core/user_communication.py:5. **Git integration**: Use 'session_boot_with_git_detection' for enhanced boot
+core/user_communication.py:        message = f"""=== AI Project Manager - Session Boot ===
+core/user_communication.py:4. **Git Integration**: Use 'session_boot_with_git_detection' if you have Git history
+core/user_communication.py:        message = f"""=== AI Project Manager - Session Boot ===
+core/user_communication.py:                "**Continue Work**: Use 'session_boot_with_git_detection' to resume AI management",
+core/user_communication.py:                "**Continue Instance Work**: Use 'session_boot_with_git_detection' to resume work",
+core/analytics_dashboard.py:Provides unified analytics across sessions, tasks, themes, user preferences,
+core/analytics_dashboard.py:from ..database.session_queries import SessionQueries
+core/analytics_dashboard.py:    session_productivity_score: float
+core/analytics_dashboard.py:                 session_queries: SessionQueries,
+core/analytics_dashboard.py:        self.session_queries = session_queries
+core/analytics_dashboard.py:                "session_analytics": {},
+core/analytics_dashboard.py:            dashboard["session_analytics"] = await self._get_session_analytics_comprehensive(time_range_days)
+core/analytics_dashboard.py:            # Session productivity health
+core/analytics_dashboard.py:            session_metrics = self.session_queries.get_session_analytics_enhanced("", days=days)
+core/analytics_dashboard.py:            avg_productivity = session_metrics.get("productivity_score", 0.5)
+core/analytics_dashboard.py:            health_metrics["component_scores"]["session_productivity"] = avg_productivity
+core/analytics_dashboard.py:                "session_productivity": 0.25,
+core/analytics_dashboard.py:                health_metrics["critical_issues"].append("Low session productivity")
+core/analytics_dashboard.py:            if health_metrics["component_scores"]["session_productivity"] < 0.7:
+core/analytics_dashboard.py:                health_metrics["improvement_areas"].append("Session workflow optimization")
+core/analytics_dashboard.py:    async def _get_session_analytics_comprehensive(self, days: int) -> Dict[str, Any]:
+core/analytics_dashboard.py:        """Get comprehensive session analytics."""
+core/analytics_dashboard.py:            session_analytics = self.session_queries.get_session_analytics_enhanced("", days=days)
+core/analytics_dashboard.py:                "escalation_frequency": session_analytics.get("avg_escalations_per_session", 0),
+core/analytics_dashboard.py:                "escalation_success_rate": session_analytics.get("successful_escalations", 0) / max(session_analytics.get("total_escalations", 1), 1),
+core/analytics_dashboard.py:                "most_common_escalation": session_analytics.get("most_common_escalation_reason", "Unknown"),
+core/analytics_dashboard.py:            session_analytics["context_patterns"] = context_patterns
+core/analytics_dashboard.py:            # Add session efficiency metrics
+core/analytics_dashboard.py:                "avg_session_duration": session_analytics.get("average_session_duration", 0),
+core/analytics_dashboard.py:                "productive_sessions_ratio": session_analytics.get("productive_sessions", 0) / max(session_analytics.get("total_sessions", 1), 1),
+core/analytics_dashboard.py:                "context_switching_frequency": session_analytics.get("context_switches_per_session", 0),
+core/analytics_dashboard.py:                "boot_time_optimization": session_analytics.get("average_boot_time", 0)
+core/analytics_dashboard.py:            session_analytics["efficiency_metrics"] = efficiency_metrics
+core/analytics_dashboard.py:            return session_analytics
+core/analytics_dashboard.py:            logger.error(f"Error getting session analytics: {e}")
+core/analytics_dashboard.py:            session_data = self.session_queries.get_session_analytics_enhanced("", days=days)
+core/analytics_dashboard.py:            escalation_rate = session_data.get("avg_escalations_per_session", 0)
+core/analytics_dashboard.py:                "next_session_escalation_probability": min(escalation_rate / 2, 1.0),
+core/analytics_dashboard.py:            session_productivity = session_data.get("productivity_score", 0.5)
+core/analytics_dashboard.py:                "current_task_estimated_minutes": int(avg_task_time * 60 / max(session_productivity, 0.1)),
+core/analytics_dashboard.py:                "session_productivity_forecast": session_productivity,
+core/analytics_dashboard.py:                "optimal_work_periods": ["morning", "afternoon"] if session_productivity > 0.6 else ["afternoon"]
+core/analytics_dashboard.py:            if session_productivity < 0.4:
+core/analytics_dashboard.py:            # Session efficiency recommendations
+core/analytics_dashboard.py:            session_data = dashboard_data.get("session_analytics", {})
+core/analytics_dashboard.py:            efficiency = session_data.get("efficiency_metrics", {})
+core/analytics_dashboard.py:            escalation_prob = predictions.get("context_escalation_predictions", {}).get("next_session_escalation_probability", 0)
+core/analytics_dashboard.py:        """Get a quick status summary for session boot or quick checks."""
+core/analytics_dashboard.py:                "session_status": "unknown",
+core/analytics_dashboard.py:            # Recent session status
+core/analytics_dashboard.py:            session_data = self.session_queries.get_session_analytics_enhanced("", days=1)
+core/analytics_dashboard.py:            summary["session_status"] = "productive" if session_data.get("productivity_score", 0) > 0.6 else "needs_optimization"
+core/analytics_dashboard.py:                "avg_session_duration": session_data.get("average_session_duration", 0),
+core/scope_engine.py:compressed context management, and database-driven optimization for optimal AI session continuity.
+core/scope_engine.py:from ..database.session_queries import SessionQueries
+core/scope_engine.py:    """Manages compressed context files for optimal AI session continuity."""
+core/scope_engine.py:    def get_session_boot_sequence(self) -> List[str]:
+core/scope_engine.py:        """Get the session boot sequence steps."""
+core/scope_engine.py:        return system_essence.get('sessionBootSequence', [])
+core/scope_engine.py:                 session_queries: Optional[SessionQueries] = None,
+core/scope_engine.py:        self.session_queries = session_queries
+core/scope_engine.py:    async def get_session_boot_context(self, project_path: Path) -> Dict[str, Any]:
+core/scope_engine.py:        """Get context specifically for session boot sequence."""
+core/scope_engine.py:        boot_sequence = self.context_manager.get_session_boot_sequence()
+core/scope_engine.py:            "contextMode": "session-boot"
+core/scope_engine.py:                                                    session_id: Optional[str] = None) -> ContextResult:
+core/scope_engine.py:        """Load context with database optimization for theme-flow relationships and session tracking."""
+core/scope_engine.py:            if self.session_queries and session_id:
+core/scope_engine.py:                await self._track_context_usage(session_id, context, task_id)
+core/scope_engine.py:    async def _track_context_usage(self, session_id: str, context: ContextResult, task_id: Optional[str]):
+core/scope_engine.py:            # Update session context tracking
+core/scope_engine.py:            await self.session_queries.update_session_context(session_id, context_data)
+core/scope_engine.py:                await self.session_queries.log_context_escalation(
+core/scope_engine.py:                    session_id=session_id,
+core/scope_engine.py:            # Never downgrade mode during a session (sticky escalation)
+core/scope_engine.py:                                       session_id: Optional[str] = None) -> Dict[str, Any]:
+core/scope_engine.py:            # Track usage if session provided
+core/scope_engine.py:            if session_id and self.session_queries:
+core/scope_engine.py:                await self.session_queries.log_flow_context_usage(
+core/scope_engine.py:                    session_id=session_id,
+core/scope_engine.py:                                                    session_id: Optional[str] = None) -> Dict[str, Any]:
+core/scope_engine.py:            if self.session_queries and session_id:
+core/scope_engine.py:                similar_patterns = await self.session_queries.get_successful_context_patterns(
+core/scope_engine.py:                                             session_id: Optional[str] = None) -> Dict[str, Any]:
+core/scope_engine.py:                task_themes, task_description, max_flows, session_id
+core/scope_engine.py:            # Track usage if session provided
+core/scope_engine.py:            if session_id and self.session_queries:
+core/scope_engine.py:                await self.session_queries.log_selective_flow_loading(
+core/scope_engine.py:                    session_id=session_id,
+core/scope_engine.py:                                             session_id: Optional[str] = None) -> ContextResult:
+core/scope_engine.py:                session_id=session_id
+core/scope_engine.py:                session_id=session_id
+core/scope_engine.py:                session_id=session_id
+core/scope_engine.py:                                                     session_id: Optional[str] = None) -> List[Dict[str, Any]]:
+core/scope_engine.py:            # Historical success pattern scoring if session available
+core/scope_engine.py:            if session_id and self.session_queries:
+core/scope_engine.py:                    success_patterns = await self.session_queries.get_flow_success_patterns(
+core/scope_engine.py:                        session_id=session_id,
+core/scope_engine.py:                                                session_id: Optional[str] = None) -> Dict[str, Any]:
+core/scope_engine.py:                list(all_themes), task_description, max_flows, session_id
+core/scope_engine.py:            if session_id and self.session_queries:
+core/scope_engine.py:                    similar_optimizations = await self.session_queries.get_similar_optimization_patterns(
+core/scope_engine.py:                        session_id=session_id,
+core/mcp_api.py:from ..database.session_queries import SessionQueries
+core/mcp_api.py:        self.session_queries: Optional[SessionQueries] = None
+core/mcp_api.py:            task_tools = TaskTools(self.task_queries, self.session_queries, self.file_metadata_queries)
+core/mcp_api.py:            # Import session manager with database integration
+core/mcp_api.py:            from ..tools.session_manager import SessionManager
+core/mcp_api.py:            session_manager = SessionManager(self.session_queries, self.file_metadata_queries)
+core/mcp_api.py:            await self._register_tool_module(session_manager)
+core/mcp_api.py:            flow_tools = FlowTools(self.theme_flow_queries, self.session_queries, self.file_metadata_queries)
+core/mcp_api.py:                    elif param == 'session_queries' and hasattr(self, 'session_queries'):
+core/mcp_api.py:                        kwargs[param] = self.session_queries
+core/mcp_api.py:            self.session_queries = SessionQueries(self.db_manager)
+core/mcp_api.py:                session_queries=self.session_queries,
+core/mcp_api.py:                session_queries=self.session_queries,
+core/mcp_api.py:                session_queries=self.session_queries,
+core/mcp_api.py:                        "session_id": {
+core/mcp_api.py:                            "description": "Session ID for analytics tracking"
+core/mcp_api.py:                        "session_id": {
+core/mcp_api.py:                            "description": "Session ID for processing"
+core/mcp_api.py:                    "required": ["project_path", "task_data", "session_id"]
+core/mcp_api.py:                        "session_id": {
+core/mcp_api.py:                            "description": "Optional session ID for tracking"
+core/mcp_api.py:                        "session_id": {
+core/mcp_api.py:                            "description": "Session ID for historical analysis"
+core/mcp_api.py:                        "session_id": {
+core/mcp_api.py:                            "description": "Session ID for analytics"
+core/mcp_api.py:                    "required": ["session_id"]
+core/mcp_api.py:                    description="Get quick project status summary for session boot or health checks",
+core/mcp_api.py:            session_id = arguments.get("session_id")
+core/mcp_api.py:                session_id=session_id
+core/mcp_api.py:            session_id = arguments["session_id"]
+core/mcp_api.py:                session_id=session_id
+core/mcp_api.py:            session_id = arguments.get("session_id")
+core/mcp_api.py:                session_id=session_id
+core/mcp_api.py:            session_id = arguments.get("session_id")
+core/mcp_api.py:                session_id=session_id
+core/mcp_api.py:                session_id=session_id
+core/mcp_api.py:            session_id = arguments["session_id"]
+core/mcp_api.py:                session_id=session_id,
+core/mcp_api.py:            # Session summary
+core/mcp_api.py:            session_summary = analytics.get("session_summary", {})
+core/mcp_api.py:            if session_summary:
+core/mcp_api.py:                summary += "Session Summary:\n"
+core/mcp_api.py:                summary += f"- Total sessions: {session_summary.get('total_sessions', 0)}\n"
+core/mcp_api.py:                summary += f"- Active time: {session_summary.get('total_active_time_hours', 0):.1f}h\n"
+core/mcp_api.py:                summary += f"- Average session: {session_summary.get('average_session_duration_minutes', 0):.1f}min\n\n"
+core/mcp_api.py:            session_data = dashboard_data.get("session_analytics", {})
+core/mcp_api.py:            summary += f"**Session Productivity**: {session_data.get('productivity_score', 0.0):.1%}\n"
+core/mcp_api.py:                escalation_prob = predictions.get("context_escalation_predictions", {}).get("next_session_escalation_probability", 0)
+core/mcp_api.py:            summary += f"**Session Status**: {status_data.get('session_status', 'unknown')}\n"
+core/mcp_api.py:            summary += f"**Avg Session Duration**: {quick_stats.get('avg_session_duration', 0):.1f}h\n\n"
+core/state_analyzer.py:                return ["session_boot_with_git_detection"]  # Auto-continue
+core/state_analyzer.py:                return ["session_boot_with_git_detection", "project_get_status", "session_start", "task_list_active"]
+core/state_analyzer.py:            return ["session_boot_with_git_detection", "task_list_active", "project_get_status"]
+test_mcp_integration.py:from .tools.session_manager import SessionManager
+test_mcp_integration.py:                "ai_reasoning": "Database provides better analytics and session persistence"
+test_mcp_integration.py:    async def test_session_manager_integration(self):
+test_mcp_integration.py:        """Test SessionManager with database persistence."""
+test_mcp_integration.py:        print("\n--- Testing SessionManager Integration ---")
+test_mcp_integration.py:            session_manager = SessionManager()
+test_mcp_integration.py:            # Test session start with database persistence
+test_mcp_integration.py:            start_result = await session_manager.start_session({
+test_mcp_integration.py:            assert "session started" in start_result.lower(), "Should start session with database"
+test_mcp_integration.py:            print("✓ Session start with database persistence")
+test_mcp_integration.py:            # Extract session ID
+test_mcp_integration.py:            session_id = None
+test_mcp_integration.py:            if "session-" in start_result:
+test_mcp_integration.py:                match = re.search(r'session-[\w-]+', start_result)
+test_mcp_integration.py:                    session_id = match.group()
+test_mcp_integration.py:            if session_id:
+test_mcp_integration.py:                snapshot_result = await session_manager.save_context_snapshot({
+test_mcp_integration.py:                    "session_id": session_id,
+test_mcp_integration.py:                # Test session analytics
+test_mcp_integration.py:                analytics_result = await session_manager.get_session_analytics({
+test_mcp_integration.py:                assert "analytics" in analytics_result.lower(), "Should provide session analytics"
+test_mcp_integration.py:                print("✓ Session analytics from database")
+test_mcp_integration.py:            print(f"✗ SessionManager integration test failed: {e}")
+test_mcp_integration.py:            ("SessionManager Integration", self.test_session_manager_integration),
+schemas/config.json:          "description": "Resume tasks when starting new session"
+schemas/task.json:        "sessionId": {
+schemas/task.json:          "description": "Session ID when task was created"
+core-context/system-essence.json:  "purpose": "Autonomous AI project management with persistent session continuity",
+core-context/system-essence.json:    "sessionContinuity": "Never start from zero context - always read project state first",
+core-context/system-essence.json:    "Always read ProjectBlueprint → ProjectFlow → projectlogic.jsonl at session start",
+core-context/system-essence.json:  "sessionBootSequence": [
+core-context/system-essence.json:    "Initialize database connection and restore session context from project.db",
+core-context/system-essence.json:    "Session continuity and context preservation",
+core-context/validation-core.json:      "If tasks.resumeTasksOnStart=true, session boot must check active tasks",
+core-context/workflow-triggers.json:      "workflow": "sessionBootProtocol",
+core-context/workflow-triggers.json:      "databaseOperations": ["restore_session_context", "load_task_status", "get_theme_flows"],
+core-context/workflow-triggers.json:        "Initialize database connection and restore session context",
+core-context/workflow-triggers.json:      "directiveRef": "03-session-management.md#session-boot-protocol + database-integration.json#sessionPersistence"
+core-context/workflow-triggers.json:    "session_boot": "sessionBootProtocol",
+core-context/directive-compressed.json:      "complete": "Options: Get detailed status, Start/resume session, View active tasks",
+core-context/directive-compressed.json:        "Initialize database with default session and project metadata",
+core-context/directive-compressed.json:  "sessionManagement": {
+core-context/directive-compressed.json:      "Initialize database connection and check initialization_phase in sessions table",
+core-context/directive-compressed.json:      "Restore session context from project.db with file metadata intelligence", 
+core-context/directive-compressed.json:      "Restore active themes, tasks, sidequests from session database context",
+core-context/directive-compressed.json:    "contextRestoration": "Database session snapshots + projectlogic.jsonl for complete context restoration",
+core-context/directive-compressed.json:    "taskResumption": "Database-driven task resumption with preserved session state",
+core-context/directive-compressed.json:    "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/03-session-management.json for session continuity protocols, boot sequence details, and user communication templates"
+core-context/directive-compressed.json:      "purpose": "Ensure seamless session restoration and prevent work loss from premature session termination",
+core-context/directive-compressed.json:      "updateRequirements": ["Database status/progress/timestamps", "Task files synchronization", "Session context snapshots", "Event logging", "Theme relationship updates", "Branch state tracking"],
+core-context/directive-compressed.json:      "sessionRestorationGoal": "AI must resume exactly where work left off with minimal review and zero lost progress",
+core-context/directive-compressed.json:    "integration": "Active implementation plans loaded during session boot for strategic continuity"
+core-context/directive-compressed.json:      "syncTriggers": ["Task status changes", "Subtask completion", "Sidequest creation/completion", "Session updates", "Theme modifications"],
+core-context/directive-compressed.json:      "sessionRestoration": "Database context snapshots enable complete session restoration from any interruption point"
+core-context/directive-compressed.json:      "sessionPersistence": {
+core-context/directive-compressed.json:        "tables": ["sessions", "session_context"],
+core-context/directive-compressed.json:        "operations": ["start_session()", "save_context_snapshot()", "restore_session_context()", "track_session_activity()"],
+core-context/directive-compressed.json:      "databaseEnhanced": ["Status tracking", "Session persistence", "Relationship management", "Analytics", "Performance optimization", "File metadata and initialization tracking"],
+core-context/directive-compressed.json:    "triggers": ["significant decisions", "user feedback", "context escalations", "shared file modifications", "session events", "decision patterns"],
+core-context/directive-compressed.json:        "01-system-initialization", "15-git-integration", "03-session-management", 
+core-context/directive-compressed.json:    "triggers": ["Session boot with project code changes", "Git repository state detection needed", "External code modifications detected"],
+core-context/directive-compressed.json:      "triggers": ["Session startup", "New user joining project", "Clone detected"],
+grep: grep_results.txt: input file is also the output
+test_database_infrastructure.py:event system, session persistence, and user analytics.
+test_database_infrastructure.py:from .database.session_queries import SessionQueries
+test_database_infrastructure.py:                'sessions', 'session_context', 'task_status', 'subtask_status',
+test_database_infrastructure.py:            result = self.db_manager.execute("SELECT COUNT(*) as count FROM sessions")
+test_database_infrastructure.py:            assert result == [{'count': 0}], "Initial sessions count should be 0"
+test_database_infrastructure.py:                    "INSERT INTO sessions (session_id, project_path, start_time) VALUES (?, ?, ?)",
+test_database_infrastructure.py:                    ("test-session", "/test/path", datetime.now(timezone.utc).isoformat())
+test_database_infrastructure.py:            result = self.db_manager.execute("SELECT COUNT(*) as count FROM sessions")
+test_database_infrastructure.py:    async def test_session_queries(self):
+test_database_infrastructure.py:        """Test SessionQueries functionality."""
+test_database_infrastructure.py:        print("\n--- Testing SessionQueries ---")
+test_database_infrastructure.py:            session_queries = SessionQueries(self.db_manager)
+test_database_infrastructure.py:            # Test session creation
+test_database_infrastructure.py:            session_id = session_queries.start_session(
+test_database_infrastructure.py:            assert session_id, "Session ID should be returned"
+test_database_infrastructure.py:            print(f"✓ Session created: {session_id}")
+test_database_infrastructure.py:            session_queries.save_context_snapshot(
+test_database_infrastructure.py:                session_id=session_id,
+test_database_infrastructure.py:            # Test session retrieval
+test_database_infrastructure.py:            session_data = session_queries.get_session_data(session_id)
+test_database_infrastructure.py:            assert session_data is not None, "Session data should be retrievable"
+test_database_infrastructure.py:            assert session_data['project_path'] == "/test/project", "Project path should match"
+test_database_infrastructure.py:            print("✓ Session data retrieved successfully")
+test_database_infrastructure.py:            session_queries.log_context_escalation(
+test_database_infrastructure.py:                session_id=session_id,
+test_database_infrastructure.py:            # Test session activity summary
+test_database_infrastructure.py:            activity = session_queries.get_session_activity_summary(days=7)
+test_database_infrastructure.py:            print("✓ Session activity summary retrieved")
+test_database_infrastructure.py:            # Test session data retrieval
+test_database_infrastructure.py:            sessions = session_queries.get_recent_sessions(limit=5)
+test_database_infrastructure.py:            assert isinstance(sessions, list), "Should return list of sessions"
+test_database_infrastructure.py:            print(f"✓ Retrieved {len(sessions)} recent sessions")
+test_database_infrastructure.py:            # Test session analytics
+test_database_infrastructure.py:            analytics = session_queries.get_session_analytics(days=30)
+test_database_infrastructure.py:            print("✓ Session analytics retrieved")
+test_database_infrastructure.py:            print(f"✗ SessionQueries test failed: {e}")
+test_database_infrastructure.py:                'session_duration': 3600
+test_database_infrastructure.py:                session_id='test-session',
+test_database_infrastructure.py:            # Test bulk session creation
+test_database_infrastructure.py:            session_queries = SessionQueries(self.db_manager)
+test_database_infrastructure.py:            session_ids = []
+test_database_infrastructure.py:                session_id = session_queries.start_session(
+test_database_infrastructure.py:                session_ids.append(session_id)
+test_database_infrastructure.py:            print(f"✓ Created 100 sessions in {bulk_create_time:.3f}s ({bulk_create_time*10:.1f}ms avg)")
+test_database_infrastructure.py:            for session_id in session_ids[:50]:  # Test first 50
+test_database_infrastructure.py:                session_queries.get_session_data(session_id)
+test_database_infrastructure.py:            print(f"✓ Queried 50 sessions in {bulk_query_time:.3f}s ({bulk_query_time*20:.1f}ms avg)")
+test_database_infrastructure.py:            analytics = session_queries.get_session_analytics(days=30)
+test_database_infrastructure.py:            session_queries = SessionQueries(self.db_manager)
+test_database_infrastructure.py:            # Test handling invalid session ID
+test_database_infrastructure.py:            invalid_session = session_queries.get_session_data("nonexistent-session")
+test_database_infrastructure.py:            assert invalid_session is None, "Should return None for invalid session"
+test_database_infrastructure.py:            print("✓ Invalid session ID handled gracefully")
+test_database_infrastructure.py:            ("Session Queries", self.test_session_queries),
+tools/initialization_tools.py:                                "session_boot_with_git_detection", 
+tools/initialization_tools.py:            elif choice == "session_boot_with_git_detection":
+tools/initialization_tools.py:                result = await self._execute_session_boot(project_path, context)
+tools/initialization_tools.py:    async def _execute_session_boot(self, project_path: Path, context: Dict[str, Any]) -> Dict[str, Any]:
+tools/initialization_tools.py:        """Execute session boot with Git detection."""
+tools/initialization_tools.py:            from .session_manager import SessionManager
+tools/initialization_tools.py:            session_manager = SessionManager(self.db_manager)
+tools/initialization_tools.py:            result = await session_manager.boot_session_with_git_detection(arguments)
+tools/initialization_tools.py:                "action": "session_boot",
+tools/initialization_tools.py:                "message": "Session boot completed successfully.",
+tools/initialization_tools.py:            logger.error(f"Error executing session boot: {e}")
+tools/initialization_tools.py:                "action": "session_boot",
+tools/initialization_tools.py:                "message": f"Failed to boot session: {str(e)}"
+tools/initialization_tools.py:        return await self._execute_session_boot(project_path, context)
+tools/project_tools.py:from ..database.session_queries import SessionQueries
+tools/project_tools.py:        self.session_queries = SessionQueries(db_manager) if db_manager else None
+tools/project_tools.py:            session_queries = SessionQueries(db_manager)
+tools/project_tools.py:            # Create initial session for project setup
+tools/project_tools.py:            session_id = session_queries.start_session(str(project_path))
+tools/project_tools.py:            logger.info(f"Database initialized at {db_path} with session {session_id}")
+tools/project_tools.py:                project_path, session_id, session_queries, file_metadata_queries
+tools/project_tools.py:                session_id=session_id,
+tools/project_tools.py:        session_id: str, 
+tools/project_tools.py:        session_queries, 
+tools/project_tools.py:                    '*/.mcp-session-*',
+tools/project_tools.py:            # Step 2: Start initialization tracking in session
+tools/project_tools.py:            success = session_queries.start_initialization(session_id, len(all_files))
+tools/project_tools.py:                # Update session progress
+tools/project_tools.py:                session_queries.increment_files_processed(session_id, len(batch))
+tools/project_tools.py:            session_queries.complete_initialization(session_id)
+tools/project_tools.py:            session_queries.update_initialization_phase(session_id, 'failed')
+tools/project_tools.py:            session_queries = SessionQueries(db_manager)
+tools/project_tools.py:            # Check for sessions needing initialization
+tools/project_tools.py:            incomplete_sessions = session_queries.get_sessions_needing_initialization()
+tools/project_tools.py:            if not incomplete_sessions:
+tools/project_tools.py:                return "No incomplete initialization sessions found."
+tools/project_tools.py:            # Get the most recent incomplete session
+tools/project_tools.py:            session_data = incomplete_sessions[0]
+tools/project_tools.py:            session_id = session_data['session_id']
+tools/project_tools.py:            logger.info(f"Resuming initialization for session {session_id}")
+tools/project_tools.py:                session_queries.complete_initialization(session_id)
+tools/project_tools.py:                return f"File metadata initialization was already complete for session {session_id}"
+tools/project_tools.py:                # Update session progress
+tools/project_tools.py:                session_queries.increment_files_processed(session_id, len(batch))
+tools/project_tools.py:            session_queries.complete_initialization(session_id)
+tools/project_tools.py:            session_queries = SessionQueries(db_manager)
+tools/project_tools.py:            status = session_queries.get_initialization_status()
+tools/project_tools.py:                return "No initialization sessions found."
+tools/project_tools.py:Session ID: {status['session_id']}
+tools/log_tools.py:                        "session_id": {
+tools/log_tools.py:                            "description": "Current session ID"
+tools/log_tools.py:                'session_id': arguments.get('session_id'),
+tools/task_tools.py:from ..database.session_queries import SessionQueries
+tools/task_tools.py:                 session_queries: Optional[SessionQueries] = None,
+tools/task_tools.py:        self.session_queries = session_queries
+tools/task_tools.py:            # Update session context if available
+tools/task_tools.py:            if self.session_queries:
+tools/task_tools.py:                session_id = self.session_queries.get_current_session_id()
+tools/task_tools.py:                if session_id:
+tools/task_tools.py:                    # Log task status change in session
+tools/task_tools.py:                    self.session_queries.log_session_event(
+tools/task_tools.py:                        session_id=session_id,
+tools/session_manager.py:Replaces traditional session lifecycle with activity-based work periods.
+tools/session_manager.py:from ..database.session_queries import SessionQueries
+tools/session_manager.py:class SessionManager:
+tools/session_manager.py:    def __init__(self, session_queries: Optional[SessionQueries] = None, 
+tools/session_manager.py:        self.session_queries = session_queries
+tools/session_manager.py:                name="session_start",
+tools/session_manager.py:                name="session_save_context",
+tools/session_manager.py:                description="Save current session context snapshot",
+tools/session_manager.py:                        "session_id": {
+tools/session_manager.py:                            "description": "Session ID to save context for"
+tools/session_manager.py:                            "description": "Files accessed in this session"
+tools/session_manager.py:                    "required": ["session_id", "loaded_themes"]
+tools/session_manager.py:                name="session_get_context",
+tools/session_manager.py:                description="Get current session context and history",
+tools/session_manager.py:                        "session_id": {
+tools/session_manager.py:                            "description": "Session ID to get context for"
+tools/session_manager.py:                    "required": ["session_id"]
+tools/session_manager.py:                handler=self.get_session_context
+tools/session_manager.py:                name="session_update_activity",
+tools/session_manager.py:                description="Update session activity and active tasks/themes",
+tools/session_manager.py:                        "session_id": {
+tools/session_manager.py:                            "description": "Session ID to update"
+tools/session_manager.py:                            "description": "Session notes or updates"
+tools/session_manager.py:                    "required": ["session_id"]
+tools/session_manager.py:                handler=self.update_session_activity
+tools/session_manager.py:                name="session_list_recent",
+tools/session_manager.py:                description="List recent sessions for a project",
+tools/session_manager.py:                            "description": "Maximum number of sessions to return",
+tools/session_manager.py:                handler=self.list_recent_sessions
+tools/session_manager.py:                name="session_get_analytics",
+tools/session_manager.py:                description="Get session analytics and metrics",
+tools/session_manager.py:                handler=self.get_session_analytics
+tools/session_manager.py:                name="session_archive_stale",
+tools/session_manager.py:                name="session_boot_with_git_detection",
+tools/session_manager.py:                description="Enhanced session boot with Git change detection and organizational reconciliation",
+tools/session_manager.py:                            "description": "Context loading mode for the session",
+tools/session_manager.py:                            "description": "Force Git change detection even if session exists",
+tools/session_manager.py:                handler=self.boot_session_with_git_detection
+tools/session_manager.py:                name="session_get_initialization_summary",
+tools/session_manager.py:                name="session_reset_initialization",
+tools/session_manager.py:            existing_session_id = arguments.get("session_id")
+tools/session_manager.py:            if not self.session_queries:
+tools/session_manager.py:                return "Database not available. Session management requires database connection."
+tools/session_manager.py:            # Check if resuming existing session
+tools/session_manager.py:            if existing_session_id:
+tools/session_manager.py:                session = await self.session_queries.get_session(existing_session_id)
+tools/session_manager.py:                if not session:
+tools/session_manager.py:                    return f"Session {existing_session_id} not found."
+tools/session_manager.py:                # Update session activity
+tools/session_manager.py:                await self.session_queries.update_last_activity(existing_session_id)
+tools/session_manager.py:                return f"Resumed session {existing_session_id}. Context mode: {session['context_mode']}, Active themes: {session['active_themes']}"
+tools/session_manager.py:            # Create new session
+tools/session_manager.py:            session_id = self.session_queries.start_session(
+tools/session_manager.py:            initialization_status = await self._check_initialization_status(session_id)
+tools/session_manager.py:            # Log session creation
+tools/session_manager.py:                    file_path=f"session:{session_id}",
+tools/session_manager.py:                    file_type="session",
+tools/session_manager.py:                    session_id=session_id,
+tools/session_manager.py:            return f"Started new session {session_id} for project {project_path}. Context mode: {context_mode}{branch_info}{initialization_status}"
+tools/session_manager.py:            logger.error(f"Error starting session: {e}")
+tools/session_manager.py:            return f"Error starting session: {str(e)}"
+tools/session_manager.py:        """Save current session context snapshot."""
+tools/session_manager.py:            session_id = arguments["session_id"]
+tools/session_manager.py:            if not self.session_queries:
+tools/session_manager.py:                return "Database not available. Session management requires database connection."
+tools/session_manager.py:            await self.session_queries.save_context_snapshot(
+tools/session_manager.py:                session_id=session_id,
+tools/session_manager.py:            return f"Context snapshot saved for session {session_id}. Themes: {len(loaded_themes)}, Flows: {len(loaded_flows)}, Files: {len(files_accessed)}"
+tools/session_manager.py:    async def get_session_context(self, arguments: Dict[str, Any]) -> str:
+tools/session_manager.py:        """Get current session context and history."""
+tools/session_manager.py:            session_id = arguments["session_id"]
+tools/session_manager.py:            if not self.session_queries:
+tools/session_manager.py:                return "Database not available. Session management requires database connection."
+tools/session_manager.py:            # Get session details
+tools/session_manager.py:            session = await self.session_queries.get_session(session_id)
+tools/session_manager.py:            if not session:
+tools/session_manager.py:                return f"Session {session_id} not found."
+tools/session_manager.py:            context_snapshots = await self.session_queries.get_context_snapshots(session_id)
+tools/session_manager.py:            # Get session summary
+tools/session_manager.py:            session_summary = await self.session_queries.get_session_summary(session_id)
+tools/session_manager.py:                "session": session,
+tools/session_manager.py:                "session_summary": session_summary
+tools/session_manager.py:            return f"Session context for {session_id}:\n\n{json.dumps(context_info, indent=2, default=str)}"
+tools/session_manager.py:            logger.error(f"Error getting session context: {e}")
+tools/session_manager.py:            return f"Error getting session context: {str(e)}"
+tools/session_manager.py:    async def update_session_activity(self, arguments: Dict[str, Any]) -> str:
+tools/session_manager.py:        """Update session activity and active tasks/themes."""
+tools/session_manager.py:            session_id = arguments["session_id"]
+tools/session_manager.py:            if not self.session_queries:
+tools/session_manager.py:                return "Database not available. Session management requires database connection."
+tools/session_manager.py:            # Update session
+tools/session_manager.py:            await self.session_queries.update_session_activity(
+tools/session_manager.py:                session_id=session_id,
+tools/session_manager.py:            return f"Session {session_id} updated. Active themes: {len(active_themes)}, Tasks: {len(active_tasks)}, Sidequests: {len(active_sidequests)}"
+tools/session_manager.py:            logger.error(f"Error updating session activity: {e}")
+tools/session_manager.py:            return f"Error updating session activity: {str(e)}"
+tools/session_manager.py:    async def list_recent_sessions(self, arguments: Dict[str, Any]) -> str:
+tools/session_manager.py:        """List recent sessions for a project."""
+tools/session_manager.py:            if not self.session_queries:
+tools/session_manager.py:                return "Database not available. Session management requires database connection."
+tools/session_manager.py:            # Get recent sessions
+tools/session_manager.py:            sessions = await self.session_queries.get_recent_sessions(project_path, limit)
+tools/session_manager.py:            if not sessions:
+tools/session_manager.py:                return f"No sessions found for project {project_path}"
+tools/session_manager.py:            session_list = []
+tools/session_manager.py:            for session in sessions:
+tools/session_manager.py:                session_info = {
+tools/session_manager.py:                    "session_id": session["session_id"],
+tools/session_manager.py:                    "start_time": session["start_time"],
+tools/session_manager.py:                    "last_activity": session["last_activity"],
+tools/session_manager.py:                    "context_mode": session["context_mode"],
+tools/session_manager.py:                    "active_themes": json.loads(session.get("active_themes", "[]")),
+tools/session_manager.py:                    "active_tasks": json.loads(session.get("active_tasks", "[]"))
+tools/session_manager.py:                session_list.append(session_info)
+tools/session_manager.py:            return f"Recent sessions for {project_path}:\n\n{json.dumps(session_list, indent=2, default=str)}"
+tools/session_manager.py:            logger.error(f"Error listing recent sessions: {e}")
+tools/session_manager.py:            return f"Error listing recent sessions: {str(e)}"
+tools/session_manager.py:    async def get_session_analytics(self, arguments: Dict[str, Any]) -> str:
+tools/session_manager.py:        """Get session analytics and metrics."""
+tools/session_manager.py:            if not self.session_queries:
+tools/session_manager.py:                return "Database not available. Session management requires database connection."
+tools/session_manager.py:            analytics = await self.session_queries.get_session_analytics(project_path, days)
+tools/session_manager.py:            return f"Session analytics for {project_path} (last {days} days):\n\n{json.dumps(analytics, indent=2, default=str)}"
+tools/session_manager.py:            logger.error(f"Error getting session analytics: {e}")
+tools/session_manager.py:            return f"Error getting session analytics: {str(e)}"
+tools/session_manager.py:            if not self.session_queries:
+tools/session_manager.py:            archived_count = self.session_queries.archive_stale_work_periods(hours_threshold)
+tools/session_manager.py:    async def boot_session_with_git_detection(self, arguments: Dict[str, Any]) -> str:
+tools/session_manager.py:        Enhanced session boot with Git change detection and organizational reconciliation.
+tools/session_manager.py:                    logger.info("No Git changes detected since last session")
+tools/session_manager.py:            # Phase 4: Standard Session Boot
+tools/session_manager.py:            session_result = await self.start_session({
+tools/session_manager.py:                instance_type, git_changes, reconciliation_result, session_result
+tools/session_manager.py:            logger.error(f"Error in Git-aware session boot: {e}")
+tools/session_manager.py:            return f"Error in Git-aware session boot: {str(e)}"
+tools/session_manager.py:    async def _check_initialization_status(self, session_id: str) -> str:
+tools/session_manager.py:            if not self.session_queries or not self.file_metadata_queries:
+tools/session_manager.py:            status = self.session_queries.get_initialization_status()
+tools/session_manager.py:            if not self.session_queries or not self.file_metadata_queries:
+tools/session_manager.py:            status = self.session_queries.get_initialization_status()
+tools/session_manager.py:                return "No initialization sessions found. Run project initialization first."
+tools/session_manager.py:**Session Information:**
+tools/session_manager.py:- Session ID: {status['session_id']}
+tools/session_manager.py:            if not self.session_queries or not self.file_metadata_queries:
+tools/session_manager.py:            success = self.session_queries.reset_initialization()
+tools/session_manager.py:                return "Failed to reset initialization in session tracking."
+tools/session_manager.py:                             reconciliation_result: Optional[Dict], session_result: str) -> str:
+tools/session_manager.py:            "=== AI Project Manager Session Boot Report ===",
+tools/session_manager.py:                        "✅ No Git changes detected since last session",
+tools/session_manager.py:        # Session Status
+tools/session_manager.py:            "📊 Session Status:",
+tools/session_manager.py:            f"  {session_result}",
+tools/flow_tools.py:from ..database.session_queries import SessionQueries
+tools/flow_tools.py:                 session_queries: Optional[SessionQueries] = None,
+tools/flow_tools.py:        self.session_queries = session_queries
+tools/flow_tools.py:                        "session_id": {
+tools/flow_tools.py:                            "description": "Session ID for tracking"
+tools/flow_tools.py:                        "session_id": {
+tools/flow_tools.py:                            "description": "Session ID for tracking"
+tools/flow_tools.py:                        "session_id": {
+tools/flow_tools.py:                            "description": "Session ID for historical analysis"
+tools/flow_tools.py:            session_id = arguments.get("session_id")
+tools/flow_tools.py:            # Track usage if session provided
+tools/flow_tools.py:            if session_id and self.session_queries:
+tools/flow_tools.py:                    session_id, task_themes, [f["flow_id"] for f in selected_flows], task_description
+tools/flow_tools.py:            session_id = arguments.get("session_id")
+tools/flow_tools.py:            # Track update in session if provided
+tools/flow_tools.py:            if session_id and self.session_queries:
+tools/flow_tools.py:                await self.session_queries.log_flow_status_update(
+tools/flow_tools.py:                    session_id=session_id,
+tools/flow_tools.py:            session_id = arguments.get("session_id")
+tools/flow_tools.py:            if self.theme_flow_queries and session_id:
+tools/flow_tools.py:                        session_id=session_id,
+tools/flow_tools.py:                            f"Based on {successful_patterns.get('pattern_count', 0)} similar successful sessions"
+tools/flow_tools.py:    async def _track_selective_flow_loading(self, session_id: str, task_themes: List[str],
+tools/flow_tools.py:            if self.session_queries:
+tools/flow_tools.py:                await self.session_queries.log_flow_loading_event(
+tools/flow_tools.py:                    session_id=session_id,
+tools/command_tools.py:                "workflow": ["session_boot_with_git_detection", "task_list_active", "context_load_theme"],
+tools/command_tools.py:            # This would integrate with session manager and task tools
+tools/command_tools.py:                "message": "Resume command workflow: session_boot_with_git_detection → task_list_active → context_load_theme",
+tools/command_tools.py:                "next_steps": "Use session_manager and task_tools to implement full resume workflow"

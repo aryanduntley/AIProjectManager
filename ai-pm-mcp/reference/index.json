@@ -40,7 +40,7 @@
           "file": "reference/directives/database-integration.json",
           "purpose": "Optimized database integration with hybrid file-database architecture and schema validation",
           "triggers": ["Project initialization", "Database setup", "State synchronization"],
-          "keyWorkflows": ["hybridArchitecture", "realTimeStateSynchronization", "sessionPersistence", "schemaValidation"],
+          "keyWorkflows": ["hybridArchitecture", "realTimeStateSynchronization", "workActivityTracking", "schemaValidation"],
           "criticalSettings": ["database.enabled", "synchronization.atomicOperations"],
           "improvements": {
             "schemaAlignment": "Fixed API mismatches between code and database schema",
@@ -71,15 +71,15 @@
       "errorHandling": "Fail gracefully with clear error messages, require user intervention for critical issues"
     },
     "phase2": {
-      "name": "Session Management",
-      "description": "Session boot, context restoration, and task resumption logic",
+      "name": "Work Period Management", 
+      "description": "Work period initialization, context restoration, and task resumption logic",
       "priority": "high",
       "prerequisites": ["Project structure initialized", "Configuration loaded"],
       "directives": {
         "03-session-management": {
           "file": "reference/directives/03-session-management.json",
           "purpose": "Handle database-enhanced session continuity and boot sequences",
-          "triggers": ["Session start", "Continue development", "Task resumption"],
+          "triggers": ["Work period start", "Continue development", "Task resumption"],
           "keyWorkflows": ["databaseSessionBootProtocol", "sessionContextRestoration", "implementationPlanIntegration"],
           "criticalSettings": ["tasks.resumeTasksOnStart", "tasks.autoTaskCreation"]
         },
@@ -94,7 +94,7 @@
           "file": "reference/directives/database-integration.json",
           "purpose": "Database-enhanced session continuity and state preservation",
           "triggers": ["Session boot", "Context restoration", "State synchronization"],
-          "keyWorkflows": ["sessionPersistence", "contextSnapshots", "taskStatusTracking"],
+          "keyWorkflows": ["workActivityTracking", "contextSnapshots", "taskStatusTracking"],
           "criticalSettings": ["sessions.contextSnapshots", "synchronization.realTimeUpdates"]
         }
       },
@@ -330,10 +330,10 @@
   },
   "quickReference": {
     "systemStart": "phase1.01-system-initialization",
-    "sessionBoot": "phase2.03-session-management",
+    "workPeriodBoot": "phase2.03-session-management",
     "databaseIntegration": "phase1.database-integration + phase2.database-integration",
     "stateSynchronization": "phase1.database-integration + phase2.database-integration",
-    "sessionPersistence": "phase2.database-integration",
+    "workActivityTracking": "phase2.database-integration",
     "directiveEscalation": "phase3.directive-escalation-system",
     "contextEscalation": "phase3.05-context-loading + phase3.context-escalation-system",
     "themeDiscovery": "phase3.04-theme-management",

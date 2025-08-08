@@ -12,16 +12,27 @@ import sys
 import tempfile
 from pathlib import Path
 
-# Add the current directory and deps to Python path
+# Add the parent directory and deps to Python path for server imports
 current_dir = Path(__file__).parent
-sys.path.insert(0, str(current_dir))
-sys.path.insert(0, str(current_dir / "deps"))
+parent_dir = current_dir.parent  # ai-pm-mcp/
+sys.path.insert(0, str(parent_dir))
+sys.path.insert(0, str(parent_dir / "deps"))
 
-from .core.config_manager import ConfigManager
-from .core.mcp_api import MCPToolRegistry
-from .tools.theme_tools import ThemeTools
-from .utils.theme_discovery import ThemeDiscovery
-from .core.scope_engine import ScopeEngine, ContextMode
+# Import handling for both script and module execution
+try:
+    # Try relative imports first (when run as module from server)
+    from .core.config_manager import ConfigManager
+    from .core.mcp_api import MCPToolRegistry
+    from .tools.theme_tools import ThemeTools
+    from .utils.theme_discovery import ThemeDiscovery
+    from .core.scope_engine import ScopeEngine, ContextMode
+except ImportError:
+    # Fall back to absolute imports (when run directly as script)
+    from core.config_manager import ConfigManager
+    from core.mcp_api import MCPToolRegistry
+    from tools.theme_tools import ThemeTools
+    from utils.theme_discovery import ThemeDiscovery
+    from core.scope_engine import ScopeEngine, ContextMode
 
 
 async def create_test_project(temp_dir: Path) -> Path:

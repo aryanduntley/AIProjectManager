@@ -12,16 +12,17 @@ import time
 from pathlib import Path
 from datetime import datetime
 
-# Add the current directory and deps to Python path
+# Add the parent directory and deps to Python path for server imports
 current_dir = Path(__file__).parent
-sys.path.insert(0, str(current_dir))
-sys.path.insert(0, str(current_dir / "deps"))
+parent_dir = current_dir.parent
+sys.path.insert(0, str(parent_dir))
+sys.path.insert(0, str(parent_dir / "deps"))
 
-# Import test suites
-from test_basic import main as run_basic_tests
-from test_theme_system import main as run_theme_tests
-from test_database_infrastructure import main as run_database_tests
-from test_mcp_integration import main as run_mcp_tests
+# Import test suites from current tests directory
+from .test_basic import main as run_basic_tests
+from .test_theme_system import main as run_theme_tests  
+from .test_database_infrastructure import main as run_database_tests
+from .test_mcp_integration import main as run_mcp_tests
 
 
 class ComprehensiveTestRunner:

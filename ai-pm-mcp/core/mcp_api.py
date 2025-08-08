@@ -163,6 +163,11 @@ class MCPToolRegistry:
             command_tools = CommandTools(self.db_manager)
             await self._register_tool_module(command_tools)
             
+            # Import test tools for internal test execution within server context
+            from ..tools.test_tools import TestTools
+            test_tools = TestTools(self.config_manager)
+            await self._register_tool_module(test_tools)
+            
         except ImportError as e:
             logger.error(f"Critical tool modules not available: {e}")
             # Log missing modules and attempt fallback registration

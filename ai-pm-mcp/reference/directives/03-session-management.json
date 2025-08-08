@@ -1,34 +1,34 @@
 {
   "metadata": {
     "id": "03-session-management",
-    "title": "Session Management Directives",
+    "title": "Work Period Management Directives",
     "priority": "high",
-    "frequency": "session-start",
-    "version": "1.0.0",
+    "frequency": "work-period-start",
+    "version": "1.1.0",
     "humanReadable": "reference/directivesmd/03-session-management.md"
   },
   "triggers": [
-    "Session start",
+    "Work period start",
     "Continue development", 
     "Task resumption",
-    "New session initialization",
-    "Instance session boot",
+    "New work period initialization",
+    "Work period boot",
     "Git changes detected during boot",
     "Context restoration needed"
   ],
   "workflows": {
-    "sessionBootProtocol": {
-      "directive": "Follow exact sequence when starting new sessions or 'continue development'",
-      "prerequisites": "This assumes automatic state detection (from 01-system-initialization) has already notified the user and they have chosen to proceed with session boot",
+    "workPeriodBootProtocol": {
+      "directive": "Follow exact sequence when starting new work periods or 'continue development'",
+      "prerequisites": "This assumes automatic state detection (from 01-system-initialization) has already notified the user and they have chosen to proceed with work period initialization",
       "coreRequirements": [
-        "Initialize database connection and restore session context from project.db",
+        "Initialize database connection and restore work context from project.db",
         "Check initialization status and resume incomplete initialization if needed",
         "Load projectManagement/ProjectBlueprint/blueprint.md",
         "Load projectManagement/ProjectFlow/flow-index.json and selective flow files",
         "Load projectManagement/ProjectLogic/projectlogic.jsonl", 
         "Load projectManagement/Tasks/completion-path.json + implementation plan status from database",
         "Load recent noteworthy events from database (instead of file scanning)",
-        "Restore active themes, tasks, sidequests from session database context",
+        "Restore active themes, tasks, sidequests from work context database",
         "Check projectManagement/Implementations/active/{activeImplementationPlan.md}",
         "Query database for current task/sidequest status and analytics",
         "Load current implementation plan context and phase progress from database",
@@ -37,8 +37,8 @@
       ],
       "detailedBootSequence": [
         "1. Identify branch type (ai-pm-org-main vs work branch) and establish authority",
-        "2. Initialize database connection and restore session context from project.db",
-        "2a. Check initialization_phase in sessions table - if incomplete, offer to resume initialization",
+        "2. Initialize database connection and restore work context from project.db",
+        "2a. Check initialization_phase in work tracking table - if incomplete, offer to resume initialization",
         "2b. If initialization incomplete, load unanalyzed files using get_unanalyzed_files() method",
         "2c. Present initialization progress and offer resumption options to user",
         "3. [AI-PM-ORG-MAIN ONLY] Detect Git changes and perform organizational reconciliation if needed",
@@ -46,26 +46,26 @@
         "5. Read ProjectFlow (flow-index.json) for interaction understanding",
         "6. Read projectlogic.jsonl for reasoning history",
         "7. Load completion-path.json + implementation plan status from database",
-        "8. Restore active themes, tasks, sidequests from session database context",
+        "8. Restore active themes, tasks, sidequests from work context database",
         "9. Load recent noteworthy events from database (instead of file scanning)",
         "10. Assess current state using database task/sidequest status queries",
         "11. Load file metadata context using database file_metadata table for intelligent context decisions",
         "12. Determine next steps with priority suggestions based on database analytics",
         "13. Get user approval for direction",
-        "14. Determine/restore context mode from session database",
+        "14. Determine/restore context mode from work period database",
         "15. Generate/restore task context using database theme-flow relationships and file metadata",
-        "16. Begin task execution with preserved session state"
+        "16. Begin task execution with preserved work state"
       ],
       "statePreservationProtocol": {
-        "directive": "MANDATORY FOR SESSION CONTINUITY: Database-enhanced boot sequence requires STRICT adherence to real-time state updates",
+        "directive": "MANDATORY FOR WORK CONTINUITY: Database-enhanced boot sequence requires STRICT adherence to real-time state updates",
         "everyWorkUnitCompletion": [
           "1. Immediate Database Update: Task/subtask status, progress, completion timestamps",
           "2. File Synchronization: Update corresponding task files with current state",
-          "3. Context Snapshot: Save current AI context to session database",
-          "4. Event Logging: Record completion for analytics and session restoration",
+          "3. Context Snapshot: Save current AI context to work period database",
+          "4. Event Logging: Record completion for analytics and work restoration",
           "5. Atomic Operation: All updates must succeed or entire completion fails"
         ],
-        "sessionBootRestorationGuarantee": "AI must be able to resume from ANY point where work was interrupted, with complete context restoration and zero work loss",
+        "workRestorationGuarantee": "AI must be able to resume from ANY point where work was interrupted, with complete context restoration and zero work loss",
         "implementationRequirement": "Every MCP tool that modifies project state must implement this update protocol before considering any work unit complete"
       },
       "taskManagementLogic": {
@@ -239,12 +239,12 @@
       ]
     },
     "implementationPlanIntegration": {
-      "directive": "Integrate implementation plans into session management",
+      "directive": "Integrate implementation plans into work period management",
       "components": {
         "activeImplementationPlan": "If exists, load current phase and progress",
         "phaseContext": "Understanding of current implementation phase and objectives",
         "taskGeneration": "Create tasks based on current implementation plan phase",
-        "strategicContinuity": "Maintain implementation strategy across sessions",
+        "strategicContinuity": "Maintain implementation strategy across work periods",
         "noImplementationPlan": "If no active plan, analyze next milestone and create implementation plan"
       }
     },
@@ -386,29 +386,29 @@
     "Database session restoration",
     "Organizational file updates"
   ],
-  "sessionStateManagement": {
-    "directive": "Maintain session state through persistent project files and database",
+  "workStateManagement": {
+    "directive": "Maintain work state through persistent project files and database",
     "stateTracking": {
       "activeTasks": "Tasks/active/ directory",
       "projectProgress": "Tasks/completion-path.json",
       "implementationPlans": "Implementations/active/",
       "recentDecisions": "ProjectLogic/projectlogic.jsonl",
       "noteworthyItems": "Logs/noteworthy.json",
-      "sessionContext": "sessions table in project.db",
-      "initializationProgress": "initialization_phase and progress tracking in sessions table",
+      "workContext": "work activities tracking in project.db", 
+      "initializationProgress": "initialization_phase and progress tracking in database",
       "fileMetadata": "file_metadata table for context intelligence"
     },
-    "sessionContextRecovery": {
+    "workContextRecovery": {
       "bootSequence": "loads all relevant project files and database context",
       "activeTasks": "provide immediate context",
       "projectLogic": "maintains reasoning history",
-      "implementationPlans": "track current objectives",
-      "databaseContext": "restores complete session state including initialization progress",
+      "implementationPlans": "track current objectives", 
+      "databaseContext": "restores complete work state including initialization progress",
       "fileMetadata": "enables intelligent context loading decisions"
     }
   },
-  "sessionContinuityRequirements": {
-    "directive": "Ensure seamless transitions between sessions",
+  "workContinuityRequirements": {
+    "directive": "Ensure seamless transitions between work periods",
     "statePreservation": [
       "All work states saved in appropriate files and database",
       "Context loading can recreate working environment",
@@ -420,26 +420,26 @@
     ],
     "recoveryCapabilities": [
       "Can resume from any interruption point including incomplete initialization",
-      "Previous session state fully recoverable from database",
-      "Context can be recreated from saved state and file metadata",
-      "Task progress maintained across sessions",
+      "Previous work state fully recoverable from database",
+      "Context can be recreated from saved state and file metadata", 
+      "Task progress maintained across work periods",
       "Initialization progress resumption from exact point of interruption"  
     ]
   },
   "basicEdgeCaseHandling": {
-    "directive": "Handle common session management edge cases with basic recovery procedures",
+    "directive": "Handle common work period management edge cases with basic recovery procedures",
     "commonEdgeCases": {
       "corruptedFiles": {
         "basicResponse": "Notify user: 'Project file [FILE] appears corrupted. Options: [1] Restore from backup [2] Rebuild from database [3] Request manual repair'",
         "escalationTrigger": "IF corruption complex or affects multiple files → ESCALATE to reference/directivesmd/03-session-management.md for comprehensive recovery procedures"
       },
       "databaseConnectionFailed": {
-        "basicResponse": "Inform user: 'Database unavailable. Running in file-only mode with limited session persistence.'",
+        "basicResponse": "Inform user: 'Database unavailable. Running in file-only mode with limited work persistence.'",
         "escalationTrigger": "IF database issues persist or affect critical workflows → ESCALATE for detailed database troubleshooting procedures"
       },
-      "sessionRestorationFailed": {
-        "basicResponse": "Alert user: 'Unable to restore previous session fully. Options: [1] Start fresh [2] Partial recovery [3] Manual context reconstruction'",
-        "escalationTrigger": "IF restoration failure affects active work → ESCALATE for comprehensive session recovery protocols"
+      "workRestorationFailed": {
+        "basicResponse": "Alert user: 'Unable to restore previous work period fully. Options: [1] Start fresh [2] Partial recovery [3] Manual context reconstruction'",
+        "escalationTrigger": "IF restoration failure affects active work → ESCALATE for comprehensive work recovery protocols"
       },
       "conflictingTaskStates": {
         "basicResponse": "Warning: 'Inconsistent task states detected. Options: [1] Use database version [2] Use file version [3] Manual resolution'",

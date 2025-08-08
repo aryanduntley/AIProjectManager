@@ -11,6 +11,10 @@ ai-pm-mcp/core-context/directive-compressed.json
 ai-pm-mcp/reference/directivesmd/directive-escalation-system.md
 ai-pm-mcp/reference/directives/directive-escalation-system.json
 
+ai-pm-mcp/tests/README.md
+ai-pm-mcp/tests/import-issues-analysis.md
+ai-pm-mcp/tests/test-status-report.md
+
 NOTE:
 directives human readable in ai-pm-mcp/reference/directivesmd/?.md with index ai-pm-mcp/reference/directivesmd/directives.json
 directives AI efficient in ai-pm-mcp/reference/directives/?.json with index ai-pm-mcp/reference/index.json
@@ -32,10 +36,12 @@ docs/forRemoval/optimized-initialization-summary.md
 docs/forRemoval/communication-audit-resolution-status.md
 docs/forRemoval/testing-report.md
 docs/forRemoval/mcp-initialization-ux-problem.md
+docs/forRemoval/session-refactoring-plan.md
 
-should _pycache_ be saved to git?
+docs/forRemoval/grep_results.md
+docs/forRemoval/grep_results-full.txt
+
 context vs context_mode
-database sessions. How are sessions being assessed in code? We cannot track an "end" session (when user ends a session, there is no processing after to ensure a session is ended). We can only assess a session start or new session. We must make sure we aren't relying on sessions as actual sessions where a start and stop would need to be known. discuss "session" use.
 
 ai-pm-mcp/database/theme_flow_queries.py
 update_flow_step_status
@@ -53,8 +59,9 @@ review directives escalation. How often should json be reviewed? How often shoul
 
 user main branch, not mcp main branch, should never be automatically pushed to. Must be explicit user request. Ensure no code or directives mention anything to do with pushing to or modifying user's main branch. 
 
-proper /help
-
+======================
+-ril for just unique files only
+grep -ri --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=out --exclude-dir=build --exclude-dir=cache --exclude-dir=deps --exclude-dir=lib --exclude-dir=_mocks_ --exclude-dir=.vscode --exclude-dir=cache --exclude-dir=pbli --exclude-dir=__pycache__ --exclude-dir=test-results --exclude-dir=examples --exclude-dir=tests --exclude-dir=sample-inputs 'session'
 ======================
 
 our directives are 3 layered. More detailed, human readable md files in ai-pm-mcp/reference/directivesmd/?.md, more consolidated and more efficient for AI to read json files in mcp-s erver/reference/directives/?.json, and a compressed quick reference json ai-pm-mcp/core-context/directive-compressed.json. Further, the base index/reference for the various directives: ai-pm-mcp/reference/directivesmd/directives.json ai-pm-mcp/reference/index.json our directives structure allow for a hierarchy for AI to follow for context needed. compressed directives are not explicit enough but allow for mild and routine tasks. More context is provided in the json files for detailed step by step directives on how to handle the various scenarios of the project management steps. And the human readable (which should almost exactly match the json) for more explanatory context if AI decides something is unclear and might need more explanation.

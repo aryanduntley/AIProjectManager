@@ -6,22 +6,28 @@
 -- SESSION MANAGEMENT & PERSISTENCE
 -- ============================================================================
 
--- Enhanced Session Management
+-- Enhanced Session Management (Activity-Based Work Periods)
 CREATE TABLE IF NOT EXISTS sessions (
     session_id TEXT PRIMARY KEY,
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    work_period_started TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_tool_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     context_mode TEXT DEFAULT 'theme-focused',
     context TEXT DEFAULT '{}', -- JSON: session context data/content
     active_themes TEXT DEFAULT '[]', -- JSON array of theme names
     active_tasks TEXT DEFAULT '[]',  -- JSON array of task IDs
     active_sidequests TEXT DEFAULT '[]', -- JSON array of sidequest IDs
     project_path TEXT,
-    status TEXT DEFAULT 'active', -- active, paused, completed, terminated
+    -- REMOVED: status field (replaced with activity-based relevance)
     metadata TEXT DEFAULT '{}', -- JSON: user preferences, session config
     notes TEXT,
+    activity_summary TEXT DEFAULT '{}', -- JSON: summary of work activities
+    context_snapshot TEXT DEFAULT '{}', -- JSON: latest context state
+    archived_at TIMESTAMP NULL,
+    archive_reason TEXT, -- 'timeout', 'manual', 'project_moved'
     -- Initialization tracking fields
-    initialization_phase TEXT DEFAULT 'not_started', -- not_started → discovering_files → analyzing_themes → building_flows → complete
+    initialization_phase TEXT DEFAULT 'not_started', -- not_started, discovering_files, analyzing_themes, building_flows, complete
     files_processed INTEGER DEFAULT 0,
     total_files_discovered INTEGER DEFAULT 0,
     initialization_started_at TIMESTAMP NULL,
@@ -37,6 +43,18 @@ CREATE TABLE IF NOT EXISTS session_context (
     files_accessed TEXT DEFAULT '[]', -- JSON array
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (session_id) REFERENCES sessions(session_id)
+);
+
+-- Work Activity Tracking (Activity-Based Session Management)
+CREATE TABLE IF NOT EXISTS work_activities (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_path TEXT NOT NULL,
+    activity_type TEXT NOT NULL, -- 'tool_call', 'theme_load', 'task_update', 'context_escalation'
+    tool_name TEXT,             -- MCP tool that was called
+    activity_data TEXT,         -- JSON with activity details
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    duration_ms INTEGER,        -- How long the activity took
+    session_context_id TEXT     -- Link to session for context restoration
 );
 
 -- ============================================================================
@@ -371,6 +389,12 @@ CREATE INDEX IF NOT EXISTS idx_file_metadata_language ON file_metadata(language)
 CREATE INDEX IF NOT EXISTS idx_sessions_init_phase ON sessions(initialization_phase);
 CREATE INDEX IF NOT EXISTS idx_sessions_files_processed ON sessions(files_processed);
 
+-- Work activities indexes for performance
+CREATE INDEX IF NOT EXISTS idx_work_activities_project ON work_activities(project_path);
+CREATE INDEX IF NOT EXISTS idx_work_activities_timestamp ON work_activities(timestamp);
+CREATE INDEX IF NOT EXISTS idx_work_activities_type ON work_activities(activity_type);
+CREATE INDEX IF NOT EXISTS idx_work_activities_session ON work_activities(session_context_id);
+
 -- Views for Common Queries
 CREATE VIEW IF NOT EXISTS theme_flow_summary AS
 SELECT 
@@ -393,18 +417,26 @@ SELECT
 FROM theme_flows 
 GROUP BY flow_id;
 
-CREATE VIEW IF NOT EXISTS session_activity_summary AS
+CREATE VIEW IF NOT EXISTS work_period_summary AS
 SELECT 
-    session_id,
-    start_time,
-    last_activity,
-    ROUND((julianday(last_activity) - julianday(start_time)) * 24, 2) as duration_hours,
-    context_mode,
-    context,
-    active_themes,
-    active_tasks
-FROM sessions
-ORDER BY start_time DESC;
+    s.session_id,
+    s.project_path,
+    s.work_period_started,
+    s.last_tool_activity,
+    ROUND((julianday(s.last_tool_activity) - julianday(s.work_period_started)) * 24, 2) as duration_hours,
+    COUNT(wa.id) as total_activities,
+    s.context_mode,
+    s.active_themes,
+    s.active_tasks,
+    CASE 
+        WHEN s.last_tool_activity >= datetime('now', '-4 hours') THEN 'recent'
+        WHEN s.last_tool_activity >= datetime('now', '-24 hours') THEN 'stale'
+        ELSE 'archived'
+    END as relevance_status
+FROM sessions s
+LEFT JOIN work_activities wa ON wa.session_context_id = s.session_id
+GROUP BY s.session_id
+ORDER BY s.last_tool_activity DESC;
 
 -- Multiple Sidequest Views for Enhanced Query Capabilities
 CREATE VIEW IF NOT EXISTS active_sidequests_by_task AS

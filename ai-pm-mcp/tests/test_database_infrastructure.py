@@ -15,19 +15,20 @@ from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-# Add the current directory and deps to Python path
+# Add the parent directory and deps to Python path for server imports
 current_dir = Path(__file__).parent
-sys.path.insert(0, str(current_dir))
-sys.path.insert(0, str(current_dir / "deps"))
+parent_dir = current_dir.parent  # ai-pm-mcp/
+sys.path.insert(0, str(parent_dir))
+sys.path.insert(0, str(parent_dir / "deps"))
 
 # Import database components
-from .database.db_manager import DatabaseManager
-from .database.session_queries import SessionQueries
-from .database.task_status_queries import TaskStatusQueries
-from .database.theme_flow_queries import ThemeFlowQueries
-from .database.file_metadata_queries import FileMetadataQueries
-from .database.user_preference_queries import UserPreferenceQueries
-from .database.event_queries import EventQueries
+from database.db_manager import DatabaseManager
+from database.session_queries import SessionQueries
+from database.task_status_queries import TaskStatusQueries
+from database.theme_flow_queries import ThemeFlowQueries
+from database.file_metadata_queries import FileMetadataQueries
+from database.user_preference_queries import UserPreferenceQueries
+from database.event_queries import EventQueries
 
 
 class DatabaseTestSuite:
@@ -78,7 +79,7 @@ class DatabaseTestSuite:
             tables = [row[0] for row in cursor.fetchall()]
             
             expected_tables = [
-                'sessions', 'session_context', 'task_status', 'subtask_status',
+                'sessions', 'session_context', 'work_activities', 'task_status', 'subtask_status',
                 'sidequest_status', 'theme_flows', 'flow_status', 'flow_step_status',
                 'file_modifications', 'user_preferences', 'task_metrics',
                 'noteworthy_events', 'event_relationships'
@@ -150,10 +151,10 @@ class DatabaseTestSuite:
             )
             print("✓ Context escalation logged")
             
-            # Test session activity summary
-            activity = session_queries.get_session_activity_summary(days=7)
-            assert isinstance(activity, list), "Activity should return list"
-            print("✓ Session activity summary retrieved")
+            # Test work period analytics
+            activity = session_queries.get_work_period_analytics("/test/project", days=7)
+            assert isinstance(activity, dict), "Activity should return dict"
+            print("✓ Work period analytics retrieved")
             
             # Test session data retrieval
             sessions = session_queries.get_recent_sessions(limit=5)

@@ -13,21 +13,35 @@ import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
-# Add the current directory and deps to Python path
+# Add the parent directory and deps to Python path for server imports
 current_dir = Path(__file__).parent
-sys.path.insert(0, str(current_dir))
-sys.path.insert(0, str(current_dir / "deps"))
+parent_dir = current_dir.parent  # ai-pm-mcp/
+sys.path.insert(0, str(parent_dir))
+sys.path.insert(0, str(parent_dir / "deps"))
 
-# Import MCP components
-from .core.mcp_api import MCPToolRegistry
-from .core.config_manager import ConfigManager
-from .database.db_manager import DatabaseManager
-from .tools.log_tools import LogTools
-from .tools.project_tools import ProjectTools
-from .tools.theme_tools import ThemeTools
-from .tools.task_tools import TaskTools
-from .tools.session_manager import SessionManager
-from .utils.project_paths import get_database_path
+# Import handling for both script and module execution
+try:
+    # Try relative imports first (when run as module from server)
+    from .core.mcp_api import MCPToolRegistry
+    from .core.config_manager import ConfigManager
+    from .database.db_manager import DatabaseManager
+    from .tools.log_tools import LogTools
+    from .tools.project_tools import ProjectTools
+    from .tools.theme_tools import ThemeTools
+    from .tools.task_tools import TaskTools
+    from .tools.session_manager import SessionManager
+    from .utils.project_paths import get_database_path
+except ImportError:
+    # Fall back to absolute imports (when run directly as script)
+    from core.mcp_api import MCPToolRegistry
+    from core.config_manager import ConfigManager
+    from database.db_manager import DatabaseManager
+    from tools.log_tools import LogTools
+    from tools.project_tools import ProjectTools
+    from tools.theme_tools import ThemeTools
+    from tools.task_tools import TaskTools
+    from tools.session_manager import SessionManager
+    from utils.project_paths import get_database_path
 
 
 class MCPIntegrationTestSuite:
