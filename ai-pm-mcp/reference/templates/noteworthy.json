@@ -47,6 +47,25 @@
     "primaryTheme": "payment"
   },
   {
+    "timestamp": "2025-07-13T14:50:00Z",
+    "taskId": "TASK-20250713T140000", 
+    "type": "scope-escalation",
+    "description": "Issue detected that exceeds current task scope",
+    "details": {
+      "issueDescription": "Database schema changes affect authentication, user management, and payment systems simultaneously",
+      "currentTaskScope": "Add user profile fields",
+      "scopeExceeded": "Requires coordinated changes across multiple systems and potential data migration",
+      "severity": "high",
+      "recommendedAction": "Create high-priority task with dedicated implementation plan",
+      "affectedSystems": ["authentication", "user-management", "payment", "database"],
+      "estimatedComplexity": "2-3 weeks of dedicated work"
+    },
+    "requiresEscalation": true,
+    "existHighPriority": true,
+    "milestone": "M-02",
+    "primaryTheme": "user-management"
+  },
+  {
     "timestamp": "2025-07-13T14:45:00Z",
     "type": "archive-reference",
     "archive": "noteworthy-archived-2025-07-13.json",

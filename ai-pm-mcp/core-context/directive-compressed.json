@@ -74,6 +74,8 @@
       "Read ProjectBlueprint for project context",
       "Read completion-path.json + implementation plan status from database",
       "Restore active themes, tasks, sidequests from session database context",
+      "Check for high-priority items (HIGH-TASK files, H- plans, database events)",
+      "Surface high-priority items prominently if found and recommend immediate attention",
       "Load recent noteworthy events from database",
       "Load file metadata context for intelligent context decisions",
       "Assess current state using database task/sidequest status queries",
@@ -123,6 +125,13 @@
     },
     "requiredIntegration": ["milestone from completion-path.json", "primary/related themes", "flow references with flowFile context"],
     "lifecycle": ["creation with validation", "execution with context loading", "completion validation with state preservation", "archival"],
+    "highPriorityTaskManagement": {
+      "purpose": "Handle scope-exceeding issues through structured escalation to HIGH-TASK files",
+      "triggerConditions": ["Multi-system issues", "Architectural changes", "Security concerns", "Performance bottlenecks", "Technical debt blocking development"],
+      "workflow": ["AI detects scope-exceeding issue", "Present impact assessment to user", "User approves escalation", "Create HIGH-TASK-<timestamp>.json file", "Optionally create H-<timestamp>-<description>.md implementation plan", "System surfaces high-priority items in status and boot"],
+      "namingConventions": {"taskFiles": "HIGH-TASK-<timestamp>.json", "implementationPlans": "H-<timestamp>-<description>.md"},
+      "databaseIntegration": "Log with exist_high_priority=true and requires_escalation=true"
+    },
     "sidequests": {
       "purpose": "Support multiple simultaneous sidequests for tangential work with configurable limits",
       "multipleSidequestSupport": {
@@ -161,7 +170,14 @@
   "implementationPlans": {
     "lifecycle": ["milestone selection", "analysis and strategy creation", "user approval", "phase execution", "archival"],
     "naming": "M{milestone-id}-v{version}-{description}.md",
-    "integration": "Active implementation plans loaded during session boot for strategic continuity"
+    "integration": "Active implementation plans loaded during session boot for strategic continuity",
+    "highPriorityPlanCreation": {
+      "purpose": "Create dedicated implementation plans for scope-escalated issues",
+      "namingConvention": "H-<timestamp>-<description>.md",
+      "triggerConditions": ["Architectural changes", "Security vulnerabilities", "Performance optimization", "Technical debt remediation", "Integration challenges"],
+      "integrationWithHighTasks": "H- plans provide strategic framework for HIGH-TASK execution",
+      "userApprovalRequired": "Creation, structural changes, scope expansion"
+    }
   },
   "$projectManagement": {
     "blueprintManagement": "User approval required for all changes",
@@ -198,8 +214,9 @@
       },
       "eventAnalytics": {
         "tables": ["noteworthy_events", "event_relationships"],
-        "operations": ["log_event()", "track_decision_patterns()", "analyze_context_escalations()", "get_recent_events()"],
-        "realTimeLogging": "Current events in database for fast queries, archived to files when size limits reached"
+        "operations": ["log_event()", "track_decision_patterns()", "analyze_context_escalations()", "get_recent_events()", "log_scope_escalation_issue()", "mark_escalation_resolved()"],
+        "realTimeLogging": "Current events in database for fast queries, archived to files when size limits reached",
+        "highPriorityEventSupport": "exist_high_priority and requires_escalation fields for scope escalation tracking"
       }
     },
     "hybridArchitecture": {

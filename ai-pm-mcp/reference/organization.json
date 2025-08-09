@@ -99,12 +99,12 @@
         "directories": ["active/", "sidequests/", "archive/"],
         "purposes": {
           "completion-path.json": "Project completion roadmap with milestones",
-          "active/": "Current task files with milestone/theme/flow references",
+          "active/": "Current task files with milestone/theme/flow references. HIGH-TASK-* files indicate scope-escalated high-priority tasks",
           "sidequests/": "Subtasks spawned from main task context",
           "archive/": "Completed tasks and sidequests"
         },
         "filePatterns": {
-          "active/": "TASK-<timestamp>.json",
+          "active/": "TASK-<timestamp>.json | HIGH-TASK-<timestamp>.json",
           "sidequests/": "SQ-<tasktimestamp>-<seq>.json"
         },
         "approvalRequired": {
@@ -117,12 +117,12 @@
       "Implementations": {
         "directories": ["active/", "completed/"],
         "purposes": {
-          "active/": "Current milestone implementation plans",
+          "active/": "Current milestone implementation plans. H-* files indicate high-priority implementation plans for scope-escalated issues",
           "completed/": "Archived completed implementation plans"
         },
         "filePatterns": {
-          "active/": "M{milestone-id}-v{version}-{description}.md",
-          "completed/": "M{milestone-id}-v{version}-{description}.md"
+          "active/": "M{milestone-id}-v{version}-{description}.md | H-<timestamp>-{description}.md",
+          "completed/": "M{milestone-id}-v{version}-{description}.md | H-<timestamp>-{description}.md"
         },
         "approvalRequired": true,
         "format": "markdown"

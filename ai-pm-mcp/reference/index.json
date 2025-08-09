@@ -78,10 +78,10 @@
       "directives": {
         "03-session-management": {
           "file": "reference/directives/03-session-management.json",
-          "purpose": "Handle database-enhanced session continuity and boot sequences",
-          "triggers": ["Work period start", "Continue development", "Task resumption"],
-          "keyWorkflows": ["databaseSessionBootProtocol", "sessionContextRestoration", "implementationPlanIntegration"],
-          "criticalSettings": ["tasks.resumeTasksOnStart", "tasks.autoTaskCreation"]
+          "purpose": "Handle database-enhanced session continuity and boot sequences with high-priority detection",
+          "triggers": ["Work period start", "Continue development", "Task resumption", "High-priority item detection"],
+          "keyWorkflows": ["databaseSessionBootProtocol", "sessionContextRestoration", "implementationPlanIntegration", "highPriorityBootDetection"],
+          "criticalSettings": ["tasks.resumeTasksOnStart", "tasks.autoTaskCreation", "sessions.highPriorityChecks"]
         },
         "12-user-interaction": {
           "file": "reference/directives/12-user-interaction.json",
@@ -167,17 +167,17 @@
       "directives": {
         "06-task-management": {
           "file": "reference/directives/06-task-management.json",
-          "purpose": "Task lifecycle and execution management with multi-flow integration",
-          "triggers": ["Task creation", "Task execution", "Sidequest management", "Multi-flow task planning"],
-          "keyWorkflows": ["taskLifecycleManagement", "sidequestManagement", "completionPathIntegration", "multiFlowTaskIntegration"],
-          "criticalSettings": ["tasks.maxActiveSidequests", "tasks.parallelTasksEnabled"]
+          "purpose": "Task lifecycle and execution management with multi-flow integration and high-priority task system",
+          "triggers": ["Task creation", "Task execution", "Sidequest management", "Multi-flow task planning", "Scope escalation", "High-priority task detection"],
+          "keyWorkflows": ["taskLifecycleManagement", "sidequestManagement", "completionPathIntegration", "multiFlowTaskIntegration", "highPriorityTaskManagement", "scopeEscalationWorkflow"],
+          "criticalSettings": ["tasks.maxActiveSidequests", "tasks.parallelTasksEnabled", "tasks.highPriorityDetection"]
         },
         "07-implementation-plans": {
           "file": "reference/directives/07-implementation-plans.json",
-          "purpose": "Strategic implementation planning",
-          "triggers": ["Milestone implementation", "Strategic planning"],
-          "keyWorkflows": ["planLifecycle", "versionControl", "archivalSystem"],
-          "criticalSettings": []
+          "purpose": "Strategic implementation planning with high-priority escalation support",
+          "triggers": ["Milestone implementation", "Strategic planning", "High-priority issue escalation"],
+          "keyWorkflows": ["planLifecycle", "versionControl", "archivalSystem", "highPriorityPlanCreation"],
+          "criticalSettings": ["implementationPlans.highPriorityNaming"]
         },
         "10-file-operations": {
           "file": "reference/directives/10-file-operations.json",
@@ -341,6 +341,9 @@
     "multiFlowResourceOptimization": "phase3.05-context-loading",
     "taskExecution": "phase4.06-task-management",
     "multiFlowTaskIntegration": "phase4.06-task-management",
+    "highPriorityTasks": "phase4.06-task-management + phase2.03-session-management",
+    "scopeEscalation": "phase4.06-task-management",
+    "highPriorityBootDetection": "phase2.03-session-management",
     "fileOperations": "phase4.10-file-operations",
     "qualityCheck": "phase4.11-quality-assurance",
     "userInteraction": "phase2.12-user-interaction",

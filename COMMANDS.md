@@ -33,7 +33,16 @@
 
 ### Advanced Workflow
 - **`/branch`** - Create AI work branch for parallel development
-- **`/merge`** - Merge completed AI work back to main
+- **`/merge`** - Merge completed AI branch work back to ai-pm-org-main
+- **`/deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
+
+### 🔄 Git Remote Operations (New!)
+- **`/push`** - Push AI organizational state to remote repository
+- **`/pull`** - Pull latest AI organizational changes from remote
+- **`/sync`** - Synchronize local AI branch with remote (fetch + merge)
+- **`/setup-remote`** - Set up AI branch from user's code for team collaboration
+- **`/clone-team`** - Join existing team by cloning remote AI organizational state
+- **`/git-status`** - Check remote repository connection and branch status
 
 ## How Commands Work
 
@@ -72,6 +81,33 @@ AI: Discovers themes → Maps project structure → Shows organization
 
 User: "/themes"
 AI: Shows discovered themes → File mappings → Relationships
+```
+
+**AI Development & Deployment:**
+```
+User: "/branch"
+AI: Creates work branch → Switches to it → Ready for AI development
+
+User: "/merge" 
+AI: Merges work branch → Back to ai-pm-org-main → Creates PR if possible
+
+User: "/deploy"
+AI: Merges ai-pm-org-main → User's main → Creates backup → AI improvements deployed!
+```
+
+**Team Collaboration:**
+```
+User: "/setup-remote"
+AI: Creates ai-pm-org-main → Sets up team structure → Pushes to remote
+
+User: "/clone-team" 
+AI: Clones remote AI state → Sets up local collaboration → Ready to work
+
+User: "/push"
+AI: Pushes AI organizational changes → Updates remote → Notifies team ready
+
+User: "/sync"
+AI: Fetches remote updates → Merges changes → Keeps AI state current
 ```
 
 ## Technical Details
@@ -123,6 +159,13 @@ The AI Project Manager provides 62+ MCP tools that commands use behind the scene
 | `/flows` | Show flows | None | See user journeys |
 | `/branch` | Create branch | Workflow | Parallel work |
 | `/merge` | Merge branch | Workflow | Complete work |
+| `/deploy` | Deploy to main | Workflow | Accept AI improvements |
+| `/push` | Push to remote | Workflow | Share AI state with team |
+| `/pull` | Pull from remote | Workflow | Get team updates |
+| `/sync` | Sync with remote | Workflow | Stay up-to-date |
+| `/setup-remote` | Setup team collab | Workflow | First-time team setup |
+| `/clone-team` | Join existing team | Workflow | Join team project |
+| `/git-status` | Remote status | None | Check connections |
 | `/config` | Show config | None | Check settings |
 
 ---

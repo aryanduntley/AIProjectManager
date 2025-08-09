@@ -17,6 +17,7 @@ from ..database.session_queries import SessionQueries
 from ..database.task_status_queries import TaskStatusQueries
 from ..database.theme_flow_queries import ThemeFlowQueries
 from ..database.file_metadata_queries import FileMetadataQueries
+from ..database.event_queries import EventQueries
 from ..utils.project_paths import (
     get_project_management_path, get_blueprint_path, get_database_path, get_management_folder_name
 )
@@ -156,6 +157,39 @@ class ProjectTools:
                     "required": ["project_path"]
                 },
                 handler=self.get_initialization_progress
+            ),
+            ToolDefinition(
+                name="create_implementation_plan",
+                description="Create a new implementation plan",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "project_path": {
+                            "type": "string",
+                            "description": "Path to the project directory"
+                        },
+                        "milestone_id": {
+                            "type": "string",
+                            "description": "Milestone ID (e.g., M-01, M-02)"
+                        },
+                        "title": {
+                            "type": "string",
+                            "description": "Implementation plan title"
+                        },
+                        "version": {
+                            "type": "string",
+                            "description": "Plan version (e.g., v1, v2)",
+                            "default": "v1"
+                        },
+                        "is_high_priority": {
+                            "type": "boolean",
+                            "description": "Whether this is a high-priority implementation plan",
+                            "default": false
+                        }
+                    },
+                    "required": ["project_path", "milestone_id", "title"]
+                },
+                handler=self.create_implementation_plan
             )
         ]
     
@@ -198,6 +232,8 @@ class ProjectTools:
             "Tasks/sidequests",
             "Tasks/archive/tasks",
             "Tasks/archive/sidequests",
+            "Implementations/active",
+            "Implementations/archive",
             "Logs/archived",
             "Placeholders",
             "database"
@@ -419,7 +455,13 @@ This is the high-level blueprint for the {project_name} project. This document s
                 except:
                     status["themes"] = {"count": 0, "themes": []}
             
-            return f"Project Status:\n\n{json.dumps(status, indent=2)}"
+            # Check for high-priority items (if database exists)
+            status["highPriority"] = await self._check_high_priority_items(project_path, project_mgmt_dir)
+            
+            # Format status output with high-priority items at top
+            status_output = self._format_status_output(status)
+            
+            return status_output
             
         except Exception as e:
             logger.error(f"Error getting project status: {e}")
@@ -664,3 +706,285 @@ Analysis rate: {progress.get('analysis_rate', 'Unknown')} files/min
         except Exception as e:
             logger.error(f"Error getting initialization progress: {e}")
             return f"Error getting progress: {str(e)}"
+    
+    async def _check_high_priority_items(self, project_path: Path, project_mgmt_dir: Path) -> Dict[str, Any]:
+        """Check for high-priority tasks, implementation plans, and database events."""
+        high_priority_info = {
+            "hasHighPriority": False,
+            "tasks": [],
+            "implementationPlans": [],
+            "events": [],
+            "summary": "No high-priority items found"
+        }
+        
+        try:
+            # Check for HIGH-TASK-* files
+            active_tasks_dir = project_mgmt_dir / "Tasks" / "active"
+            if active_tasks_dir.exists():
+                high_task_files = list(active_tasks_dir.glob("HIGH-TASK-*.json"))
+                for task_file in high_task_files:
+                    try:
+                        task_data = json.loads(task_file.read_text())
+                        high_priority_info["tasks"].append({
+                            "file": task_file.name,
+                            "title": task_data.get("title", "Unknown"),
+                            "status": task_data.get("status", "unknown"),
+                            "created": task_data.get("created", "unknown")
+                        })
+                    except Exception as e:
+                        logger.warning(f"Error reading high-priority task file {task_file}: {e}")
+            
+            # Check for H-* implementation plan files
+            impl_plans_dir = project_mgmt_dir / "Implementations" / "active"
+            if impl_plans_dir.exists():
+                high_impl_files = list(impl_plans_dir.glob("H-*.md"))
+                for impl_file in high_impl_files:
+                    high_priority_info["implementationPlans"].append({
+                        "file": impl_file.name,
+                        "modified": impl_file.stat().st_mtime if impl_file.exists() else 0
+                    })
+            
+            # Check database for high-priority events (if database exists)
+            db_path = project_mgmt_dir / "project.db"
+            if db_path.exists() and self.db_manager:
+                try:
+                    event_queries = EventQueries(self.db_manager)
+                    
+                    # Check if high priority exists in database
+                    has_db_priority = event_queries.check_high_priority_exists(days_lookback=7)
+                    if has_db_priority:
+                        # Get recent high priority events (limit to 3 for status display)
+                        recent_events = event_queries.get_high_priority_events(limit=3, days_lookback=7)
+                        high_priority_info["events"] = [
+                            {
+                                "title": event.get("title", "Unknown"),
+                                "type": event.get("event_type", "unknown"),
+                                "created": event.get("created_at", "unknown"),
+                                "impact": event.get("impact_level", "unknown")
+                            }
+                            for event in recent_events
+                        ]
+                except Exception as e:
+                    logger.warning(f"Error checking database for high priority events: {e}")
+            
+            # Determine if we have any high priority items
+            total_items = len(high_priority_info["tasks"]) + len(high_priority_info["implementationPlans"]) + len(high_priority_info["events"])
+            high_priority_info["hasHighPriority"] = total_items > 0
+            
+            # Generate summary
+            if high_priority_info["hasHighPriority"]:
+                summary_parts = []
+                if high_priority_info["tasks"]:
+                    summary_parts.append(f"{len(high_priority_info['tasks'])} high-priority tasks")
+                if high_priority_info["implementationPlans"]:
+                    summary_parts.append(f"{len(high_priority_info['implementationPlans'])} high-priority implementation plans")
+                if high_priority_info["events"]:
+                    summary_parts.append(f"{len(high_priority_info['events'])} high-priority events")
+                
+                high_priority_info["summary"] = f"⚠️ Found: {', '.join(summary_parts)}"
+            
+            return high_priority_info
+            
+        except Exception as e:
+            logger.error(f"Error checking high priority items: {e}")
+            high_priority_info["summary"] = f"Error checking high priority items: {str(e)}"
+            return high_priority_info
+    
+    def _format_status_output(self, status: Dict[str, Any]) -> str:
+        """Format status output with high-priority items prominently displayed."""
+        output_lines = ["=== AI Project Manager Status ===\n"]
+        
+        # Show high-priority items first and prominently
+        if status.get("highPriority", {}).get("hasHighPriority", False):
+            output_lines.append("🚨 HIGH PRIORITY ITEMS DETECTED:")
+            output_lines.append(status["highPriority"]["summary"])
+            output_lines.append("")
+            
+            # Show details for high-priority items
+            hp_info = status["highPriority"]
+            if hp_info.get("tasks"):
+                output_lines.append("High-Priority Tasks:")
+                for task in hp_info["tasks"]:
+                    output_lines.append(f"  • {task['title']} ({task['status']}) - {task['file']}")
+                output_lines.append("")
+            
+            if hp_info.get("implementationPlans"):
+                output_lines.append("High-Priority Implementation Plans:")
+                for plan in hp_info["implementationPlans"]:
+                    output_lines.append(f"  • {plan['file']}")
+                output_lines.append("")
+            
+            if hp_info.get("events"):
+                output_lines.append("Recent High-Priority Events:")
+                for event in hp_info["events"]:
+                    output_lines.append(f"  • {event['title']} ({event['type']}, {event['impact']} impact)")
+                output_lines.append("")
+        
+        # Regular status information
+        output_lines.append("Project Information:")
+        output_lines.append(f"Path: {status['projectPath']}")
+        output_lines.append(f"Management Structure: {status['managementStructure']}")
+        output_lines.append(f"Initialized: {status['initialized']}")
+        output_lines.append("")
+        
+        # Component status
+        output_lines.append("Component Status:")
+        for name, info in status.get("components", {}).items():
+            status_icon = "✅" if info["exists"] else "❌"
+            size_info = f" ({info['size']} bytes)" if info["exists"] and info["size"] > 0 else ""
+            output_lines.append(f"  {status_icon} {name.title()}{size_info}")
+        output_lines.append("")
+        
+        # Task information
+        task_info = status.get("tasks", {})
+        output_lines.append("Task Summary:")
+        output_lines.append(f"  Active Tasks: {task_info.get('active', 0)}")
+        output_lines.append(f"  Sidequests: {task_info.get('sidequests', 0)}")
+        output_lines.append("")
+        
+        # Theme information
+        theme_info = status.get("themes", {})
+        if theme_info.get("count", 0) > 0:
+            output_lines.append("Themes:")
+            output_lines.append(f"  Count: {theme_info['count']}")
+            output_lines.append(f"  Themes: {', '.join(theme_info.get('themes', []))}")
+        else:
+            output_lines.append("Themes: Not configured")
+        
+        return "\n".join(output_lines)
+    
+    async def create_implementation_plan(self, arguments: Dict[str, Any]) -> str:
+        """Create a new implementation plan with high-priority support."""
+        try:
+            project_path = Path(arguments["project_path"])
+            milestone_id = arguments["milestone_id"]
+            title = arguments["title"]
+            version = arguments.get("version", "v1")
+            is_high_priority = arguments.get("is_high_priority", False)
+            
+            # Validate project structure exists
+            project_mgmt_dir = get_project_management_path(project_path, self.config_manager)
+            if not project_mgmt_dir.exists():
+                return f"Project management structure not found. Initialize project first."
+            
+            # Ensure Implementations/active directory exists
+            impl_dir = project_mgmt_dir / "Implementations" / "active"
+            impl_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Generate filename with H- prefix for high-priority plans
+            timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+            if is_high_priority:
+                filename = f"H-{timestamp}-{milestone_id}-{version}-{title.replace(' ', '-').lower()}.md"
+            else:
+                filename = f"{milestone_id}-{version}-{title.replace(' ', '-').lower()}.md"
+            
+            impl_file = impl_dir / filename
+            
+            # Create implementation plan content from template
+            plan_content = self._create_implementation_plan_content(
+                milestone_id, title, version, is_high_priority
+            )
+            
+            impl_file.write_text(plan_content)
+            
+            logger.info(f"Created implementation plan: {filename}")
+            
+            if is_high_priority:
+                return f"✅ High-priority implementation plan created: {filename}\n\nThis plan is marked as high-priority and will be surfaced in status checks and session boot."
+            else:
+                return f"✅ Implementation plan created: {filename}"
+            
+        except Exception as e:
+            logger.error(f"Error creating implementation plan: {e}")
+            return f"Error creating implementation plan: {str(e)}"
+    
+    def _create_implementation_plan_content(self, milestone_id: str, title: str, version: str, is_high_priority: bool) -> str:
+        """Create implementation plan content based on template."""
+        current_time = datetime.now().isoformat()
+        priority_marker = " [HIGH PRIORITY]" if is_high_priority else ""
+        
+        return f"""# Implementation Plan: {milestone_id}{priority_marker} - {title}
+
+## Metadata
+- **Milestone**: {milestone_id}
+- **Status**: active
+- **Version**: {version}
+- **Priority**: {'HIGH' if is_high_priority else 'medium'}
+- **Created**: {current_time}
+- **Updated**: {current_time}
+- **Completion Target**: [To be determined]
+- **Related Tasks**: [TASK-IDs that will be generated from this plan]
+
+## Analysis
+### Current State Assessment
+- What exists currently in the codebase related to this milestone
+- Dependencies that are already in place
+- Technical debt or constraints that affect implementation
+
+### Requirements Breakdown
+- Detailed breakdown of milestone requirements
+- User stories and acceptance criteria
+- Technical specifications and constraints
+- Performance and scalability requirements
+
+### Dependencies Identification
+- **External Dependencies**: Third-party APIs, libraries, services
+- **Internal Dependencies**: Other milestones, components, or systems
+- **Resource Dependencies**: Team members, tools, environments
+- **Timeline Dependencies**: Sequence constraints and critical path items
+
+### Risk Factors and Mitigation
+- Technical risks and mitigation strategies
+- Resource availability risks
+- Timeline risks and contingency plans
+- Quality risks and testing strategies
+
+## Implementation Strategy
+### Approach Overview
+- High-level implementation approach
+- Architecture decisions and rationale
+- Technology choices and justification
+
+### Phase Breakdown
+1. **Phase 1: [Phase Name]**
+   - Objectives and deliverables
+   - Timeline and milestones
+   - Dependencies and blockers
+   
+2. **Phase 2: [Phase Name]**
+   - Objectives and deliverables
+   - Timeline and milestones
+   - Dependencies and blockers
+
+### Testing Strategy
+- Unit testing approach
+- Integration testing requirements
+- End-to-end testing scenarios
+- Performance testing considerations
+
+## Task Generation Guidelines
+### Task Creation Criteria
+- When this plan is ready for task creation
+- How to break down phases into actionable tasks
+- Task naming conventions for this milestone
+
+### Context Loading Instructions
+- Which themes should be loaded for tasks from this plan
+- Required flows and dependencies for context
+- Specific development environment requirements
+
+## Progress Tracking
+### Success Metrics
+- Quantifiable measures of progress
+- Quality gates and checkpoints
+- Performance benchmarks
+
+### Completion Criteria
+- Definition of done for this milestone
+- Acceptance criteria for stakeholder review
+- Documentation and handoff requirements
+
+---
+*This implementation plan was created on {current_time}*
+{"*This is a HIGH PRIORITY implementation plan requiring immediate attention.*" if is_high_priority else ""}
+"""

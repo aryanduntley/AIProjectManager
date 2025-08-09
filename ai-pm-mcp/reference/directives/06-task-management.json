@@ -20,7 +20,10 @@
     "Multi-flow task planning",
     "Flow scope evaluation",
     "Instance merge task conflicts",
-    "Git changes affecting task relevance"
+    "Git changes affecting task relevance",
+    "Scope escalation detection",
+    "High-priority task creation",
+    "High-priority task resolution"
   ],
   "workflows": {
     "realTimeStatePreservation": {
@@ -361,6 +364,58 @@
         "Implementation plan phase conflicts",
         "Flow integration differences"
       ]
+    },
+    "highPriorityTaskManagement": {
+      "directive": "Detect and escalate issues that exceed current task scope through structured high-priority task creation",
+      "purpose": "Provide dedicated resources and attention for complex issues that cannot be resolved within normal task boundaries",
+      "required": true,
+      "scopeEscalationIndicators": [
+        "Issue affects multiple themes or systems simultaneously",
+        "Requires architectural changes or major refactoring",
+        "Security vulnerabilities or compliance issues",
+        "Performance bottlenecks requiring system-wide optimization",
+        "Breaking changes affecting multiple components",
+        "Complex integration challenges between systems",
+        "Technical debt that blocks further development"
+      ],
+      "escalationWorkflow": {
+        "step1": "AI detects issue during regular task execution",
+        "step2": "AI assesses if issue exceeds current task scope using natural reasoning",
+        "step3": "AI presents scope-exceeding issue to user with clear impact assessment",
+        "step4": "User approves escalation to high-priority task",
+        "step5": "AI creates HIGH-TASK-<timestamp>.json file with enhanced priority",
+        "step6": "AI may also create H-<timestamp>-<description>.md implementation plan",
+        "step7": "System automatically surfaces high-priority items in status and boot"
+      },
+      "databaseIntegration": {
+        "eventLogging": "Log scope escalation using EventQueries.log_scope_escalation_issue()",
+        "priorityFlags": "Set exist_high_priority=true and requires_escalation=true",
+        "resolutionTracking": "Use EventQueries.mark_escalation_resolved() when completed"
+      },
+      "namingConventions": {
+        "taskFiles": "HIGH-TASK-<timestamp>.json (uses existing task template)",
+        "implementationPlans": "H-<timestamp>-<description>.md (uses existing plan template)",
+        "location": "Same directories as regular tasks and plans"
+      }
+    },
+    "scopeEscalationWorkflow": {
+      "directive": "Handle the complete workflow from issue detection to high-priority task resolution",
+      "triggerConditions": [
+        "AI identifies issue that requires cross-system coordination",
+        "Current task scope insufficient for proper resolution",
+        "Issue complexity warrants dedicated implementation planning"
+      ],
+      "userCommunication": {
+        "initialDetection": "Present issue clearly with scope impact assessment",
+        "escalationRecommendation": "Explain why current task cannot handle the issue",
+        "approvalRequest": "Request permission to create high-priority task",
+        "statusUpdates": "Keep user informed of high-priority work progress"
+      },
+      "automaticSurfacing": {
+        "statusCommand": "HIGH-TASK files appear prominently in /status output",
+        "sessionBoot": "High-priority items detected and prioritized during session start",
+        "databaseQueries": "Efficient time-limited queries to prevent performance issues"
+      }
     }
   },
   "configSettings": {
@@ -390,6 +445,11 @@
       "default": true,
       "type": "boolean",
       "description": "Require TODO review before project completion"
+    },
+    "tasks.highPriorityDetection": {
+      "default": true,
+      "type": "boolean",
+      "description": "Enable automatic detection and escalation of scope-exceeding issues"
     }
   },
   "integrations": [

@@ -11,7 +11,9 @@
     "Milestone readiness",
     "Implementation planning",
     "Strategic planning",
-    "Execution phase start"
+    "Execution phase start",
+    "High-priority issue escalation",
+    "Scope-exceeding problem detection"
   ],
   "workflows": {
     "implementationPlanSystem": {
@@ -98,6 +100,40 @@
         "Focused task generation",
         "Progress clarity"
       ]
+    },
+    "highPriorityPlanCreation": {
+      "directive": "Create dedicated implementation plans for high-priority issues that exceed normal task scope",
+      "purpose": "Provide strategic implementation framework for complex scope-escalated issues",
+      "required": true,
+      "triggerConditions": [
+        "Issue requires architectural changes across multiple systems",
+        "Security vulnerabilities needing systematic resolution approach",
+        "Performance optimization requiring coordinated system changes",
+        "Technical debt remediation affecting multiple components",
+        "Integration challenges requiring comprehensive planning"
+      ],
+      "namingConvention": "H-<timestamp>-<description>.md",
+      "fileLocation": "Implementations/active/",
+      "templateSource": "Uses existing implementation-plan-template.md with priority markers",
+      "integrationWithHighTasks": {
+        "relationship": "HIGH-TASK files reference H- implementation plans",
+        "coordination": "Implementation plan provides strategic framework for high-priority task execution",
+        "progress tracking": "Plan phases align with HIGH-TASK subtask completion"
+      },
+      "planStructure": {
+        "priorityMarkers": "Plan title includes [HIGH PRIORITY] indicator",
+        "urgencyField": "Priority field set to 'HIGH' in metadata",
+        "escalationReason": "Documents why issue required scope escalation",
+        "impactAssessment": "Analyzes affected systems and coordination requirements",
+        "resourceEstimation": "Estimates timeline and expertise needed",
+        "riskMitigation": "Identifies risks and mitigation strategies"
+      },
+      "userApprovalRequired": {
+        "creation": true,
+        "structuralChanges": true,
+        "scopeExpansion": true,
+        "resourceAllocation": false
+      }
     }
   },
   "configSettings": {
@@ -115,6 +151,11 @@
       "default": true,
       "type": "boolean",
       "description": "Require user approval before plan execution"
+    },
+    "implementationPlans.highPriorityNaming": {
+      "default": "H-<timestamp>-<description>.md",
+      "type": "string",
+      "description": "Naming pattern for high-priority implementation plans"
     }
   },
   "integrations": [

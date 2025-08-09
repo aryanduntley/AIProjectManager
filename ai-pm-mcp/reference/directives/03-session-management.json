@@ -14,7 +14,9 @@
     "New work period initialization",
     "Work period boot",
     "Git changes detected during boot",
-    "Context restoration needed"
+    "Context restoration needed",
+    "High-priority item detection during boot",
+    "Scope-escalated issue surfacing"
   ],
   "workflows": {
     "workPeriodBootProtocol": {
@@ -28,6 +30,8 @@
         "Load projectManagement/ProjectLogic/projectlogic.jsonl", 
         "Load projectManagement/Tasks/completion-path.json + implementation plan status from database",
         "Load recent noteworthy events from database (instead of file scanning)",
+        "Check for high-priority items (HIGH-TASK files, H- plans, database events)",
+        "Surface high-priority items prominently if found",
         "Restore active themes, tasks, sidequests from work context database",
         "Check projectManagement/Implementations/active/{activeImplementationPlan.md}",
         "Query database for current task/sidequest status and analytics",
@@ -48,6 +52,8 @@
         "7. Load completion-path.json + implementation plan status from database",
         "8. Restore active themes, tasks, sidequests from work context database",
         "9. Load recent noteworthy events from database (instead of file scanning)",
+        "9a. Check for high-priority items (HIGH-TASK files, H- plans, database events)",
+        "9b. Surface high-priority items prominently if found, recommend immediate attention",
         "10. Assess current state using database task/sidequest status queries",
         "11. Load file metadata context using database file_metadata table for intelligent context decisions",
         "12. Determine next steps with priority suggestions based on database analytics",
@@ -359,6 +365,11 @@
       "default": false,
       "type": "boolean",
       "description": "Automatically create tasks without user approval"
+    },
+    "sessions.highPriorityChecks": {
+      "default": true,
+      "type": "boolean",
+      "description": "Enable high-priority item detection during session boot"
     }
   },
   "integrations": [
@@ -381,6 +392,7 @@
     "Task resumption", 
     "State preservation",
     "Implementation plan integration",
+    "High-priority boot detection",
     "Initialization progress checking",
     "File metadata context loading",
     "Database session restoration",
@@ -425,6 +437,42 @@
       "Task progress maintained across work periods",
       "Initialization progress resumption from exact point of interruption"  
     ]
+  },
+  "highPriorityBootDetection": {
+    "directive": "Detect and surface high-priority items during session boot to ensure immediate attention",
+    "purpose": "Automatically surface scope-escalated issues that require user attention during work period initialization",
+    "required": true,
+    "detectionProcess": [
+      "Scan Tasks/active/ directory for HIGH-TASK-*.json files",
+      "Scan Implementations/active/ directory for H-*.md implementation plans",
+      "Query database for events with exist_high_priority=true and requires_escalation=true",
+      "Check recent noteworthy events (within 30 days) for unresolved high-priority items"
+    ],
+    "surfacingProtocol": {
+      "highPriorityFound": [
+        "Display high-priority items prominently at start of boot sequence",
+        "Present clear summary: 'High-priority items detected that require attention:'",
+        "List each HIGH-TASK file with title and brief description",
+        "List each H- implementation plan with title and escalation reason",
+        "List relevant database events with timestamps and impact assessment",
+        "Recommend addressing high-priority items before regular work continuation"
+      ],
+      "userOptions": [
+        "Address high-priority items immediately",
+        "Continue with regular boot and address high-priority items after context loading",
+        "Review high-priority items in detail before deciding on approach"
+      ]
+    },
+    "integrationWithBoot": {
+      "earlyDetection": "High-priority detection occurs after database connection but before regular task assessment",
+      "contextPreservation": "If user chooses to address high-priority items, preserve regular boot context for later resumption",
+      "priorityWorkflow": "High-priority work follows same context loading and execution patterns as regular tasks"
+    },
+    "timeFiltering": {
+      "databaseQuery": "Limit high-priority event queries to last 30 days to prevent performance issues",
+      "fileScanning": "Check file modification times to focus on recent high-priority items",
+      "performanceOptimization": "Use efficient database queries with time limits and result limits"
+    }
   },
   "basicEdgeCaseHandling": {
     "directive": "Handle common work period management edge cases with basic recovery procedures",

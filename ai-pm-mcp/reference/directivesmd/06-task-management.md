@@ -458,7 +458,163 @@ Continuing with payment validation implementation..."
 - **Cross-Flow Coordination**: Manage dependencies between different flow files
 - **Progress Validation**: Track completion against specific flow requirements
 
-## 6.6 Completion Path Tracking with Flow Integration
+## 6.7 High-Priority Task Management System
+
+**Directive**: Detect and escalate issues that exceed current task scope through structured high-priority task creation.
+
+### Purpose and Scope
+
+**System Purpose**: Provide dedicated resources and attention for complex issues that cannot be resolved within normal task boundaries. This system handles scenarios where AI discovers issues during regular task execution that exceed the current task scope.
+
+**When to Use High-Priority Tasks**:
+- Issues affecting multiple themes or systems simultaneously
+- Architectural changes or major refactoring requirements
+- Security vulnerabilities or compliance issues
+- Performance bottlenecks requiring system-wide optimization
+- Breaking changes affecting multiple components
+- Complex integration challenges between systems
+- Technical debt that blocks further development
+
+### Scope Escalation Workflow
+
+**Step-by-Step Process**:
+
+1. **Issue Detection**: AI detects issue during regular task execution using natural reasoning capabilities
+2. **Scope Assessment**: AI assesses if issue exceeds current task scope and requires escalation
+3. **Impact Presentation**: AI presents scope-exceeding issue to user with clear impact assessment
+4. **User Approval**: User approves escalation to high-priority task
+5. **Task Creation**: AI creates `HIGH-TASK-<timestamp>.json` file with enhanced priority
+6. **Plan Creation** (Optional): AI may also create `H-<timestamp>-<description>.md` implementation plan
+7. **System Surfacing**: System automatically surfaces high-priority items in status and boot sequences
+
+### High-Priority Task File Structure
+
+**Naming Convention**: `HIGH-TASK-<timestamp>.json`
+
+**Enhanced Task Structure**:
+```json
+{
+  "id": "HIGH-TASK-20250711T140000",
+  "title": "[HIGH PRIORITY] Security Vulnerability Remediation",
+  "description": "Address authentication bypass vulnerability discovered during payment integration",
+  "status": "pending|in-progress|completed|blocked",
+  "priority": "HIGH",
+  "isHighPriorityTask": true,
+  "escalationReason": "Security vulnerability affecting multiple authentication systems",
+  "impactAssessment": {
+    "affectedSystems": ["authentication", "payment", "user-management"],
+    "severity": "high|critical",
+    "businessImpact": "Blocks production deployment until resolved",
+    "technicalComplexity": "Requires coordination across multiple themes"
+  },
+  "milestone": "M-XX",
+  "primaryTheme": "security",
+  "relatedThemes": ["authentication", "payment", "user-management"],
+  "contextMode": "project-wide",
+  "escalationDate": "ISO timestamp",
+  "originalTask": "TASK-20250711T120000",
+  "requiresEscalation": true,
+  "existHighPriority": true
+}
+```
+
+### Database Integration
+
+**Event Logging**: High-priority task creation logged using `EventQueries.log_scope_escalation_issue()`
+
+**Priority Flags**:
+- `exist_high_priority=true`: Marks event as high-priority for system surfacing
+- `requires_escalation=true`: Indicates scope escalation was required
+
+**Resolution Tracking**: Use `EventQueries.mark_escalation_resolved()` when high-priority work completed
+
+### Implementation Plan Integration
+
+**H- Naming Convention**: `H-<timestamp>-<description>.md`
+
+**High-Priority Implementation Plans**:
+- Created for complex high-priority tasks requiring strategic planning
+- Use existing implementation plan template with priority markers
+- Plan title includes `[HIGH PRIORITY]` indicator
+- Priority field set to 'HIGH' in metadata
+- Documents escalation reason and impact assessment
+- Estimates timeline and expertise needed
+- Identifies risks and mitigation strategies
+
+**Integration with HIGH-TASK Files**:
+- HIGH-TASK files reference H- implementation plans
+- Implementation plan provides strategic framework for high-priority task execution
+- Plan phases align with HIGH-TASK subtask completion
+
+### User Communication Protocol
+
+**Initial Detection Presentation**:
+```
+AI: "I've identified an issue that exceeds the current task scope:
+
+**Issue**: Authentication bypass vulnerability in payment integration
+**Impact**: Affects authentication, payment, and user-management systems
+**Scope Assessment**: Requires coordination across multiple themes and architectural changes
+
+**Recommendation**: This issue should be escalated to a high-priority task for dedicated attention and proper resolution.
+
+**Options**:
+1. Create HIGH-TASK with implementation plan
+2. Address within current task (may cause delays and incomplete resolution)
+3. Defer to future milestone (not recommended for security issues)
+
+Would you like me to create a high-priority task for this issue?"
+```
+
+**Escalation Recommendation**: Explain why current task cannot handle the issue properly and the benefits of dedicated high-priority attention.
+
+**Status Updates**: Keep user informed of high-priority work progress with regular updates and milestone notifications.
+
+### Automatic System Surfacing
+
+**Status Command Integration**: HIGH-TASK files appear prominently in `/status` output with priority indicators and escalation reasons.
+
+**Session Boot Detection**: High-priority items automatically detected and prioritized during session start:
+- Scan Tasks/active/ directory for HIGH-TASK-*.json files
+- Scan Implementations/active/ directory for H-*.md implementation plans
+- Query database for events with exist_high_priority=true
+- Present high-priority items prominently with recommendation for immediate attention
+
+**Database Query Optimization**: Efficient time-limited queries (30 days) to prevent performance issues in large projects.
+
+### Configuration Settings
+
+**High-Priority Detection**: `tasks.highPriorityDetection` (boolean, default: true)
+- Enable automatic detection and escalation of scope-exceeding issues
+- Can be disabled for projects that prefer manual escalation only
+
+### Workflow Integration
+
+**Task Execution Flow**:
+1. AI working on regular task execution
+2. Discovers issue requiring scope escalation
+3. Pauses current work to present escalation recommendation
+4. Creates HIGH-TASK and optional H- plan upon user approval
+5. System surfaces high-priority items in status and future boot sequences
+6. High-priority work follows same context loading and execution patterns as regular tasks
+
+**Context Preservation**: When escalating to high-priority tasks, preserve current work context for later resumption if needed.
+
+**Priority Workflow**: High-priority tasks can interrupt regular task flow and receive immediate attention when surfaced during session boot.
+
+### Benefits of High-Priority Task System
+
+**Structured Escalation**: Provides formal process for handling scope-exceeding issues rather than trying to squeeze complex issues into inadequate task boundaries.
+
+**Dedicated Attention**: High-priority tasks receive focused resources and strategic planning through optional implementation plans.
+
+**System Integration**: Automatic surfacing ensures high-priority items don't get lost and receive immediate attention during work sessions.
+
+**Impact Assessment**: Clear documentation of issue scope, affected systems, and escalation reasoning for informed decision-making.
+
+**Performance Optimization**: Time-limited database queries prevent system slowdown in large projects while maintaining effective high-priority detection.
+
+## 6.8 Completion Path Tracking with Flow Integration
 
 ### Enhanced Completion Path Management
 
@@ -558,7 +714,7 @@ Continuing with payment validation implementation..."
 - **Strategic Context**: Implementation plans provide detailed execution strategy
 - **Session Continuity**: AI can resume work with full strategic and tactical context
 
-## 6.7 Project Flow Status Tracking System
+## 6.9 Project Flow Status Tracking System
 
 **Directive**: Provide detailed progress tracking for user flows with step-level status management and milestone integration.
 
@@ -586,7 +742,7 @@ Continuing with payment validation implementation..."
 - **Progress Tracking**: Real-time completion tracking for milestone flow requirements
 - **User Experience Validation**: Ensure user flows provide complete user experience before milestone completion
 
-## 6.8 TODO Tracking Logic
+## 6.10 TODO Tracking Logic
 
 **Directive**: Systematically track and manage TODO items and placeholders.
 
@@ -606,7 +762,7 @@ Continuing with payment validation implementation..."
   
 **Integration**: These entries are optional and can be cross-referenced with `Tasks/` if any are formalized into proper subtasks
 
-## 6.8 Completion Path Definition Process
+## 6.11 Completion Path Definition Process
 
 ### completionObjective Management
 

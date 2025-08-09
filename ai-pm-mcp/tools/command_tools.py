@@ -81,6 +81,11 @@ class CommandTools:
                 "description": "Show current configuration settings",
                 "workflow": ["get_config"],
                 "approval_level": "none"
+            },
+            "deploy": {
+                "description": "Deploy AI improvements to your main branch (merges ai-pm-org-main → user's main)",
+                "workflow": ["get_branch_status", "git_merge_ai_main_to_user"],
+                "approval_level": "workflow"
             }
         }
     
@@ -237,6 +242,7 @@ class CommandTools:
 ## Advanced Features
 **`/branch`** - Create AI work branch for parallel development
 **`/merge`** - Merge AI work back to main branch
+**`/deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
 **`/config`** - Show current configuration settings
 
 ## How Commands Work
@@ -302,6 +308,8 @@ Use `help_commands` with a specific command name for detailed help on individual
                 return await self._execute_merge(project_path, args)
             elif command == "config":
                 return await self._execute_config(project_path, args)
+            elif command == "deploy":
+                return await self._execute_deploy(project_path, args)
             else:
                 return json.dumps({
                     "type": "info",
@@ -729,4 +737,80 @@ Use `/branch` command to create a new AI work branch first.
             return json.dumps({
                 "type": "error", 
                 "message": f"Error executing /merge command: {str(e)}"
+            }, indent=2)
+    
+    async def _execute_deploy(self, project_path: Path, args: Dict[str, Any]) -> str:
+        """Execute /deploy command to merge AI improvements to user's main branch."""
+        try:
+            from .branch_tools import BranchTools
+            branch_tools = BranchTools(str(project_path))
+            
+            # Get current branch status
+            from ..core.branch_manager import GitBranchManager
+            branch_manager = GitBranchManager(project_path)
+            current_branch = branch_manager.get_current_branch()
+            
+            deploy_report = f"""# /deploy Command - Deploy AI Improvements
+
+## Current Status:
+- **Current Branch**: {current_branch}
+- **Operation**: Merging AI improvements from ai-pm-org-main → user's main branch
+- **Purpose**: Deploy completed AI work to your production code
+
+## 🚀 Deployment Process:
+"""
+            
+            # Check if ai-pm-org-main exists
+            if not branch_manager._branch_exists("ai-pm-org-main"):
+                return f"""# /deploy Command - No AI Improvements Found
+
+❌ **No AI Branch to Deploy**
+- ai-pm-org-main branch not found
+- Nothing to deploy to your main branch
+
+🔧 **Next Steps:**
+1. Use `/init` to set up AI project management
+2. Use `/branch` to create AI work branches
+3. Complete some AI improvements first
+4. Then use `/deploy` to merge them to your main branch
+"""
+            
+            # Get deployment arguments with safety defaults
+            arguments = {
+                'project_path': str(project_path),
+                'user_main_branch': args.get('user_main_branch', 'main'),
+                'create_backup': args.get('create_backup', True)  # Always create backup by default
+            }
+            
+            result = await branch_tools._git_merge_ai_main_to_user(arguments)
+            
+            deploy_report += f"""## 🎯 Deployment Result:
+{result}
+
+## 📋 What Happened:
+- ✅ AI improvements merged from ai-pm-org-main into your main branch
+- 🔒 Backup branch automatically created for safety
+- 📝 Your main branch now contains all AI improvements
+- 🎉 Deployment complete - your code has been enhanced by AI!
+
+## 🔧 Next Steps:
+1. **Test thoroughly** - Verify all changes work as expected
+2. **Push to remote** - `git push origin main` (when ready)
+3. **Continue development** - Create new AI work branches with `/branch`
+4. **Iterate** - Use `/resume` to continue AI-assisted development
+
+## 🛡️ Safety Features:
+- Backup branch created before deployment
+- Conflict detection and resolution guidance
+- Rollback capability if needed
+- Your original code is always preserved
+"""
+            
+            return deploy_report
+            
+        except Exception as e:
+            logger.error(f"Error in _execute_deploy: {e}")
+            return json.dumps({
+                "type": "error",
+                "message": f"Error executing /deploy command: {str(e)}"
             }, indent=2)

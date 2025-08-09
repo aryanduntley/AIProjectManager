@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 from typing import Dict, Any, Optional
 from ..db_manager import DatabaseManager
+from ..event_queries import EventQueries
 
 
 class BootContextManager:
@@ -43,6 +44,9 @@ class BootContextManager:
             if latest_session:
                 initialization_status = self._get_initialization_status(latest_session["session_id"])
             
+            # Check for high-priority items
+            high_priority_status = self._check_high_priority_items()
+            
             # Build comprehensive boot context
             boot_context = {
                 "project_path": project_path,
@@ -50,8 +54,9 @@ class BootContextManager:
                 "session_context": session_context,
                 "recent_activities": recent_activities,
                 "initialization_status": initialization_status,
+                "high_priority_status": high_priority_status,
                 "boot_recommendations": self._generate_boot_recommendations(
-                    latest_session, session_context, initialization_status
+                    latest_session, session_context, initialization_status, high_priority_status
                 ),
                 "generated_at": datetime.now().isoformat()
             }
@@ -230,9 +235,24 @@ class BootContextManager:
     
     def _generate_boot_recommendations(self, latest_session: Optional[Dict], 
                                      session_context: Optional[Dict], 
-                                     initialization_status: Optional[Dict]) -> Dict[str, Any]:
+                                     initialization_status: Optional[Dict],
+                                     high_priority_status: Optional[Dict] = None) -> Dict[str, Any]:
         """Generate boot recommendations based on available context."""
         try:
+            # Check for high-priority items first - they take precedence
+            if high_priority_status and high_priority_status.get("has_high_priority", False):
+                return {
+                    "action": "address_high_priority",
+                    "reason": f"High priority work detected: {high_priority_status.get('summary', 'Unknown issues')}",
+                    "priority": "critical",
+                    "high_priority_details": high_priority_status,
+                    "suggestions": [
+                        "Review high-priority tasks and implementation plans",
+                        "Address scope-exceeding issues",
+                        "Consider escalating to dedicated high-priority workflow"
+                    ]
+                }
+            
             # No previous session
             if not latest_session:
                 return {
@@ -292,4 +312,69 @@ class BootContextManager:
                 "action": "start_fresh",
                 "reason": f"Error generating recommendations: {str(e)}",
                 "priority": "low"
+            }
+    
+    def _check_high_priority_items(self) -> Optional[Dict[str, Any]]:
+        """Check for high-priority events in the database."""
+        try:
+            event_queries = EventQueries(self.db)
+            
+            # Check if high priority exists (last 7 days for boot check)
+            has_high_priority = event_queries.check_high_priority_exists(days_lookback=7)
+            
+            if not has_high_priority:
+                return {
+                    "has_high_priority": False,
+                    "summary": "No high-priority items detected",
+                    "events": [],
+                    "escalation_required": []
+                }
+            
+            # Get high priority events (limited for boot context)
+            high_priority_events = event_queries.get_high_priority_events(limit=3, days_lookback=7)
+            
+            # Get escalation required events
+            escalation_events = event_queries.get_escalation_required_events(limit=2, days_lookback=3)
+            
+            # Generate summary
+            event_count = len(high_priority_events)
+            escalation_count = len(escalation_events)
+            
+            summary_parts = []
+            if event_count > 0:
+                summary_parts.append(f"{event_count} high-priority event{'s' if event_count != 1 else ''}")
+            if escalation_count > 0:
+                summary_parts.append(f"{escalation_count} item{'s' if escalation_count != 1 else ''} requiring escalation")
+            
+            summary = "Found: " + ", ".join(summary_parts) if summary_parts else "High-priority status detected"
+            
+            return {
+                "has_high_priority": True,
+                "summary": summary,
+                "events": [
+                    {
+                        "title": event.get("title", "Unknown"),
+                        "type": event.get("event_type", "unknown"),
+                        "impact": event.get("impact_level", "unknown"),
+                        "created": event.get("created_at", "unknown")
+                    }
+                    for event in high_priority_events
+                ],
+                "escalation_required": [
+                    {
+                        "title": event.get("title", "Unknown"),
+                        "type": event.get("event_type", "unknown"),
+                        "created": event.get("created_at", "unknown")
+                    }
+                    for event in escalation_events
+                ]
+            }
+            
+        except Exception as e:
+            print(f"Error checking high priority items: {e}")
+            return {
+                "has_high_priority": False,
+                "summary": f"Error checking high-priority status: {str(e)}",
+                "events": [],
+                "escalation_required": []
             }

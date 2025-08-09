@@ -53,7 +53,8 @@ The structure is designed to:
 │   ├── Tasks/
 │   |   ├── completion-path.json       # Evolving roadmap toward project finalization
 │   │   ├── active/
-│   │   │   └── TASK-<timestamp>.json          # Task file with milestone, theme, and flow references
+│   │   │   ├── TASK-<timestamp>.json          # Task file with milestone, theme, and flow references
+│   │   │   └── HIGH-TASK-<timestamp>.json     # High-priority task for scope-escalated issues
 │   │   ├── sidequests/
 │   │   │   └── SQ-<tasktimestamp>-<seq>.json  # Subtasks spun from main task context
 │   │   └── archive/
@@ -61,7 +62,8 @@ The structure is designed to:
 │   │       └── sidequests/
 │   ├── Implementations/
 │   │   ├── active/
-│   │   │   └── M01-v1-authentication-system.md     # Current milestone implementation plan
+│   │   │   ├── M01-v1-authentication-system.md     # Current milestone implementation plan
+│   │   │   └── H-<timestamp>-<description>.md      # High-priority implementation plan for escalated issues
 │   │   └── completed/
 │   │       └── M00-v1-project-setup.md             # Completed implementation plans
 │   ├── Logs/
@@ -609,6 +611,50 @@ See complete example structure in `reference/templates/task-active.json` and `re
 - AI loads milestone context for high-level goals
 - AI loads theme structure via README files first
 - AI loads flow-index.json to understand available flow files
+
+## 9. High-Priority Task System
+
+### Purpose
+
+The high-priority task system provides a structured approach for escalating issues that exceed the scope of current tasks, ensuring complex problems receive dedicated attention and resources.
+
+### High-Priority Naming Conventions
+
+**HIGH-TASK Files:**
+- `HIGH-TASK-<timestamp>.json` - Tasks that require dedicated focus due to scope escalation
+- Automatically surfaced in `/status` commands and session boot sequences
+- Use existing task template structure with enhanced priority indicators
+
+**H- Implementation Plans:**
+- `H-<timestamp>-<description>.md` - Implementation plans for high-priority issues
+- Located in `Implementations/active/` directory
+- Follow standard implementation plan template with priority markers
+
+### Escalation Workflow
+
+1. **Issue Detection**: AI naturally identifies issues during regular task execution that exceed current scope
+2. **AI Assessment**: AI determines the issue affects multiple systems or requires architectural changes  
+3. **User Discussion**: AI presents the scope-exceeding issue to user with clear explanation
+4. **Escalation Decision**: User approves creating high-priority task and implementation plan
+5. **Automated Creation**: AI creates HIGH-TASK and H- files using existing templates
+6. **Prioritization**: System automatically surfaces these items in status checks and session boot
+
+### Integration Points
+
+**Status System Integration:**
+- HIGH-TASK files appear prominently in `/status` command output
+- H- implementation plans are detected and displayed
+- Database events with `exist_high_priority=true` are surfaced
+
+**Session Boot Integration:**
+- High-priority items are detected during session initialization
+- Users are immediately notified of pending high-priority work
+- Recommendations prioritize addressing high-priority tasks first
+
+**Database Integration:**
+- Scope escalation events logged to `noteworthy_events` table
+- `exist_high_priority` and `requires_escalation` flags for efficient querying
+- Resolution tracking when high-priority work is completed
 - AI loads only relevant flow files based on task requirements
 - AI determines necessary code files based on task requirements
 - AI loads flow steps for implementation details from specific flow files

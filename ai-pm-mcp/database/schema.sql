@@ -314,6 +314,8 @@ CREATE TABLE IF NOT EXISTS noteworthy_events (
     user_feedback TEXT, -- User input or approval
     ai_reasoning TEXT, -- AI's reasoning for the decision
     outcome TEXT, -- Result or consequences if known
+    exist_high_priority BOOLEAN DEFAULT FALSE, -- Indicates project currently has high priority work
+    requires_escalation BOOLEAN DEFAULT FALSE, -- Issue exceeds current task scope
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     archived_at TIMESTAMP NULL, -- When moved to archived files
     FOREIGN KEY (session_id) REFERENCES sessions(session_id)
@@ -372,6 +374,8 @@ CREATE INDEX IF NOT EXISTS idx_noteworthy_events_task ON noteworthy_events(task_
 CREATE INDEX IF NOT EXISTS idx_noteworthy_events_session ON noteworthy_events(session_id);
 CREATE INDEX IF NOT EXISTS idx_noteworthy_events_created ON noteworthy_events(created_at);
 CREATE INDEX IF NOT EXISTS idx_noteworthy_events_impact ON noteworthy_events(impact_level);
+CREATE INDEX IF NOT EXISTS idx_noteworthy_events_high_priority ON noteworthy_events(exist_high_priority);
+CREATE INDEX IF NOT EXISTS idx_noteworthy_events_escalation ON noteworthy_events(requires_escalation);
 CREATE INDEX IF NOT EXISTS idx_event_relationships_parent ON event_relationships(parent_event_id);
 CREATE INDEX IF NOT EXISTS idx_event_relationships_child ON event_relationships(child_event_id);
 

@@ -210,7 +210,33 @@ The server will:
 ### Advanced Features
 - **`/branch`** - Create AI work branch for parallel development with comprehensive Git safety checks
 - **`/merge`** - Merge AI work using pull requests when possible, direct merge as fallback
+- **`/deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
 - **`/config`** - Show current configuration settings
+
+### 🔄 Git Remote Operations (New!)
+Advanced Git tools for team collaboration and remote repository management:
+
+**AI Branch Remote Operations:**
+- **`git_push_ai_main_remote`** - Push ai-pm-org-main to remote origin
+- **`git_fetch_ai_main_updates`** - Fetch latest ai-pm-org-main updates from remote
+- **`git_sync_ai_main_branch`** - Sync local with remote (fetch + merge/rebase)  
+- **`git_pull_ai_main_changes`** - Pull changes from remote (fetch + merge in one step)
+
+**AI Branch Setup & Team Collaboration:**
+- **`git_setup_ai_main_from_user`** - Create ai-pm-org-main branch from user's main branch
+- **`git_clone_remote_ai_main`** - Clone existing remote ai-pm-org-main (team setup)
+- **`git_push_work_branch_remote`** - Push ai-pm-org-branch-{XXX} work branches to remote
+
+**General Remote Operations:**
+- **`git_fetch_all_remotes`** - Fetch updates from all configured remote repositories  
+- **`git_check_remote_status`** - Check remote connectivity and branch information
+- **`git_merge_ai_main_to_user`** - **Deploy AI improvements to user's main branch (primary workflow)**
+- **`git_reconcile_user_changes`** - Merge user's main into ai-pm-org-main (reconciliation only)
+
+These tools enable seamless team collaboration with the AI Project Manager's 3-branch architecture:
+- **User's main** (your production code) ↔ **ai-pm-org-main** (AI improvements) ↔ **ai-pm-org-branch-{XXX}** (work branches)
+
+**Primary Workflow**: AI improves code → User deploys when satisfied (ai-pm-org-main → user's main)
 
 ### How Commands Work
 Commands provide **workflow-level approval** - when you use a command like `/init`, you're approving the entire initialization workflow. The AI can then:
@@ -226,7 +252,7 @@ Commands provide **workflow-level approval** - when you use a command like `/ini
 python3 -m ai-pm-mcp
 
 # The server will start and show connection info including:
-# "Registered 57 tools successfully"
+# "Registered 67+ tools successfully"
 # "AI Project Manager MCP Server initialized successfully"
 ```
 

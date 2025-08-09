@@ -72,6 +72,11 @@ class TaskTools:
                             "description": "Task priority",
                             "default": "medium"
                         },
+                        "is_high_priority_task": {
+                            "type": "boolean",
+                            "description": "Whether this is a high-priority task requiring special handling",
+                            "default": false
+                        },
                         "estimated_effort": {
                             "type": "string",
                             "description": "Estimated effort (e.g., '2 hours', '1 day')"
@@ -315,6 +320,7 @@ class TaskTools:
             related_themes = arguments.get("related_themes", [])
             priority = arguments.get("priority", "medium")
             estimated_effort = arguments.get("estimated_effort")
+            is_high_priority_task = arguments.get("is_high_priority_task", False)
             
             if not self.task_queries:
                 return "Database not available. Task management requires database connection."
@@ -324,8 +330,14 @@ class TaskTools:
             if not get_project_management_path(project_path_obj, self.config_manager).exists():
                 return f"Project management structure not found. Initialize project first."
             
-            # Generate task ID
-            task_id = f"TASK-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}"
+            # Generate task ID with HIGH prefix for high-priority tasks
+            timestamp = datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')
+            if is_high_priority_task:
+                task_id = f"HIGH-TASK-{timestamp}"
+                # Automatically set priority to high for high-priority tasks
+                priority = "high"
+            else:
+                task_id = f"TASK-{timestamp}"
             
             # Create task in database
             await self.task_queries.create_task(

@@ -46,18 +46,20 @@ class EventQueries:
             user_feedback = event_data.get('user_feedback')
             ai_reasoning = event_data.get('ai_reasoning')
             outcome = event_data.get('outcome')
+            exist_high_priority = event_data.get('exist_high_priority', False)
+            requires_escalation = event_data.get('requires_escalation', False)
             
             # Insert into database
             self.db_manager.execute("""
                 INSERT INTO noteworthy_events 
                 (event_id, event_type, title, description, primary_theme, related_themes,
                  task_id, session_id, impact_level, decision_data, context_data,
-                 user_feedback, ai_reasoning, outcome)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 user_feedback, ai_reasoning, outcome, exist_high_priority, requires_escalation)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 event_id, event_type, title, description, primary_theme, related_themes,
                 task_id, session_id, impact_level, decision_data, context_data,
-                user_feedback, ai_reasoning, outcome
+                user_feedback, ai_reasoning, outcome, exist_high_priority, requires_escalation
             ))
             
             logger.info(f"Created event {event_id}: {title}")
@@ -458,3 +460,151 @@ class EventQueries:
         except Exception as e:
             logger.error(f"Error importing legacy events: {e}")
             return 0
+    
+    def check_high_priority_exists(self, days_lookback: int = 30) -> bool:
+        """Check if there are any recent active high priority issues."""
+        try:
+            result = self.db_manager.execute("""
+                SELECT COUNT(*) as count 
+                FROM noteworthy_events 
+                WHERE exist_high_priority = 1 
+                AND archived_at IS NULL
+                AND created_at >= datetime('now', '-' || ? || ' days')
+            """, (days_lookback,))
+            
+            return result[0]['count'] > 0 if result else False
+            
+        except Exception as e:
+            logger.error(f"Error checking high priority existence: {e}")
+            return False
+    
+    def get_high_priority_events(self, limit: int = 10, days_lookback: int = 30) -> List[Dict[str, Any]]:
+        """Get recent active high priority events with limits."""
+        try:
+            results = self.db_manager.execute("""
+                SELECT * FROM noteworthy_events 
+                WHERE exist_high_priority = 1 
+                AND archived_at IS NULL
+                AND created_at >= datetime('now', '-' || ? || ' days')
+                ORDER BY created_at DESC
+                LIMIT ?
+            """, (days_lookback, limit))
+            
+            events = []
+            for result in results:
+                event = dict(result)
+                # Parse JSON fields
+                event['related_themes'] = json.loads(event.get('related_themes', '[]'))
+                event['decision_data'] = json.loads(event.get('decision_data', '{}'))
+                event['context_data'] = json.loads(event.get('context_data', '{}'))
+                events.append(event)
+            
+            return events
+            
+        except Exception as e:
+            logger.error(f"Error getting high priority events: {e}")
+            return []
+    
+    def get_escalation_required_events(self, limit: int = 5, days_lookback: int = 7) -> List[Dict[str, Any]]:
+        """Get recent events that require escalation to high priority tasks."""
+        try:
+            results = self.db_manager.execute("""
+                SELECT * FROM noteworthy_events 
+                WHERE requires_escalation = 1 
+                AND archived_at IS NULL
+                AND created_at >= datetime('now', '-' || ? || ' days')
+                ORDER BY created_at DESC
+                LIMIT ?
+            """, (days_lookback, limit))
+            
+            events = []
+            for result in results:
+                event = dict(result)
+                # Parse JSON fields
+                event['related_themes'] = json.loads(event.get('related_themes', '[]'))
+                event['decision_data'] = json.loads(event.get('decision_data', '{}'))
+                event['context_data'] = json.loads(event.get('context_data', '{}'))
+                events.append(event)
+            
+            return events
+            
+        except Exception as e:
+            logger.error(f"Error getting escalation required events: {e}")
+            return []
+    
+    def set_high_priority_state(self, event_id: str, exists: bool) -> bool:
+        """Set the high priority state for an event."""
+        try:
+            self.db_manager.execute("""
+                UPDATE noteworthy_events 
+                SET exist_high_priority = ?
+                WHERE event_id = ?
+            """, (exists, event_id))
+            
+            logger.info(f"Set high priority state for {event_id}: {exists}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error setting high priority state: {e}")
+            return False
+    
+    def clear_all_high_priority_states(self) -> bool:
+        """Clear high priority state from all events (when high priority work is completed)."""
+        try:
+            self.db_manager.execute("""
+                UPDATE noteworthy_events 
+                SET exist_high_priority = 0
+                WHERE exist_high_priority = 1 AND archived_at IS NULL
+            """)
+            
+            logger.info("Cleared all high priority states")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error clearing high priority states: {e}")
+            return False
+    
+    def log_scope_escalation_issue(self, title: str, description: str, 
+                                  current_task_id: Optional[str] = None,
+                                  session_id: Optional[str] = None,
+                                  severity: str = "high") -> str:
+        """Log an issue that requires scope escalation to high-priority task."""
+        try:
+            event_data = {
+                "event_type": "issue",
+                "title": title,
+                "description": description,
+                "impact_level": severity,
+                "exist_high_priority": severity in ["high", "critical"],
+                "requires_escalation": True,
+                "task_id": current_task_id,
+                "session_id": session_id,
+                "ai_reasoning": f"AI determined this issue exceeds current task scope and requires escalation to high-priority task. Severity: {severity}."
+            }
+            
+            event_id = self.create_event(event_data)
+            logger.info(f"Logged scope escalation issue: {event_id}")
+            return event_id
+            
+        except Exception as e:
+            logger.error(f"Error logging scope escalation issue: {e}")
+            raise
+    
+    def mark_escalation_resolved(self, event_id: str, resolution_task_id: str) -> bool:
+        """Mark a scope escalation issue as resolved by linking to resolution task."""
+        try:
+            # Update the original event with resolution info
+            self.db_manager.execute("""
+                UPDATE noteworthy_events 
+                SET exist_high_priority = 0,
+                    requires_escalation = 0,
+                    outcome = ?
+                WHERE event_id = ?
+            """, (f"Resolved by high-priority task: {resolution_task_id}", event_id))
+            
+            logger.info(f"Marked escalation {event_id} as resolved by task {resolution_task_id}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error marking escalation as resolved: {e}")
+            return False

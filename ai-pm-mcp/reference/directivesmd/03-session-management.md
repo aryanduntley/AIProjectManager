@@ -41,6 +41,8 @@
 5. Load completion-path.json + implementation plan status from database
 6. Restore active themes, tasks, sidequests from session database context
 7. Load recent noteworthy events from database (instead of file scanning)
+7a. Check for high-priority items (HIGH-TASK files, H- plans, database events)
+7b. Surface high-priority items prominently if found, recommend immediate attention
 8. Assess current state using database task/sidequest status queries
 9. Determine next steps with priority suggestions based on database analytics
 10. Get user approval for direction
@@ -196,3 +198,124 @@ When these discussions occur and decisions are made:
 9. Make any noteworthy notes to noteworthy.json (if needed, do not feel obligated to add things here)
 
 **Important**: All changes to these files EXCEPT noteworthy and projectlogic, must be explicitly approved by the user. For projectlogic, since it's a historical record, make a generalized summary of changes made to projectlogic based on recent discussion.
+
+## 3.6 High-Priority Boot Detection System
+
+**Directive**: Detect and surface high-priority items during session boot to ensure immediate attention for scope-escalated issues.
+
+### Purpose and Integration
+
+**System Purpose**: Automatically surface scope-escalated issues that require user attention during work period initialization, ensuring high-priority items don't get overlooked and receive immediate focus.
+
+**Integration with Boot Sequence**: High-priority detection occurs after database connection establishment but before regular task assessment, allowing early identification and user decision-making on priority workflow.
+
+### Detection Process
+
+**Comprehensive High-Priority Scanning**:
+
+1. **HIGH-TASK File Detection**: Scan `Tasks/active/` directory for `HIGH-TASK-*.json` files
+2. **H- Implementation Plan Detection**: Scan `Implementations/active/` directory for `H-*.md` implementation plans  
+3. **Database Event Queries**: Query database for events with `exist_high_priority=true` and `requires_escalation=true`
+4. **Recent Event Filtering**: Check recent noteworthy events (within 30 days) for unresolved high-priority items
+
+### Surfacing Protocol
+
+**When High-Priority Items Found**:
+
+```
+AI: "High-priority items detected that require attention:
+
+🔴 HIGH-PRIORITY TASKS:
+- HIGH-TASK-20250711T140000: [HIGH PRIORITY] Security Vulnerability Remediation
+  Escalation: Authentication bypass affecting multiple systems
+  Created: 2025-07-11, Status: pending
+
+🔴 HIGH-PRIORITY IMPLEMENTATION PLANS:
+- H-20250711T141500-security-remediation.md: Security vulnerability systematic resolution
+  Impact: Blocks production deployment until resolved
+  
+🔴 DATABASE ESCALATION EVENTS:
+- 2025-07-11 15:30: Performance bottleneck requiring cross-system optimization
+  Affected systems: payment, authentication, user-management
+  
+RECOMMENDATION: Address high-priority items before regular work continuation.
+
+OPTIONS:
+1. Address high-priority items immediately
+2. Continue with regular boot and address high-priority items after context loading  
+3. Review high-priority items in detail before deciding approach
+
+Which approach would you prefer?"
+```
+
+### User Interaction Options
+
+**Immediate High-Priority Focus**:
+- Load context specifically for high-priority items
+- Begin work on HIGH-TASK or H- implementation plan execution
+- Preserve regular boot context for later resumption if needed
+
+**Regular Boot with High-Priority Awareness**:
+- Complete standard boot sequence with high-priority items noted
+- Surface high-priority items again after regular context loading
+- Allow user to transition to high-priority work when ready
+
+**Detailed Review First**:
+- Present comprehensive details on each high-priority item
+- Show impact assessments, escalation reasons, and coordination requirements
+- Enable informed decision-making on approach and resource allocation
+
+### Context Preservation and Workflow
+
+**Early Detection Benefits**:
+- High-priority items identified immediately upon session start
+- User can make informed decisions about work priority before loading regular task context
+- Prevents high-priority issues from being buried in regular workflow
+
+**Context Preservation**: 
+- If user chooses immediate high-priority focus, preserve regular boot context for later
+- Enable seamless transition between high-priority work and regular task flow
+- Maintain session state for both workflows simultaneously when needed
+
+**Priority Workflow Integration**:
+- High-priority work follows same context loading and execution patterns as regular tasks
+- Database tracking maintains separation between high-priority and regular work progress
+- Session restoration works for both high-priority and regular work contexts
+
+### Performance Optimization
+
+**Time-Limited Queries**: 
+- Database queries limited to last 30 days to prevent performance issues in large projects
+- File scanning checks modification times to focus on recent high-priority items
+- Result limits prevent overwhelming output while ensuring comprehensive detection
+
+**Efficient Detection**:
+- Combined file system and database queries for comprehensive coverage
+- Optimized query patterns to minimize boot time impact
+- Cached results when appropriate to avoid repeated expensive operations
+
+### Configuration and Control
+
+**Configuration Setting**: `sessions.highPriorityChecks` (boolean, default: true)
+- Enable/disable high-priority item detection during session boot
+- Can be disabled for projects that prefer manual high-priority management
+- Provides user control over boot sequence complexity
+
+**Escalation Integration**: 
+- Works seamlessly with high-priority task creation from scope escalation workflow
+- Surfaces items created during previous sessions for continued attention
+- Ensures high-priority items remain visible across session boundaries
+
+### Benefits of High-Priority Boot Detection
+
+**Immediate Visibility**: High-priority items surface immediately upon session start, ensuring they receive proper attention rather than being lost in regular workflow.
+
+**Informed Decision-Making**: Users can make informed decisions about work priority with full context on high-priority items and their impact.
+
+**Workflow Flexibility**: Multiple interaction options allow users to choose appropriate approach based on context and available time.
+
+**Performance Balance**: Efficient detection ensures comprehensive coverage without significantly impacting boot time or system performance.
+
+**Context Preservation**: System maintains both high-priority and regular work contexts, enabling smooth transitions between different types of work.
+
+**Cross-Session Continuity**: High-priority items remain visible and actionable across multiple work sessions until resolved.
