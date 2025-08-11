@@ -36,6 +36,11 @@
 - **`/merge`** - Merge completed AI branch work back to ai-pm-org-main
 - **`/deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
 
+### Database Management
+- **`/backup`** - Create manual database backup with timestamp
+- **`/maintenance`** - Run database cleanup, archiving, and optimization
+- **`/db-stats`** - Show database health and storage statistics
+
 ### 🔄 Git Remote Operations (New!)
 - **`/push`** - Push AI organizational state to remote repository
 - **`/pull`** - Pull latest AI organizational changes from remote
@@ -117,14 +122,14 @@ AI: Fetches remote updates → Merges changes → Keeps AI state current
 - **MCP Tools** (`get_project_state_analysis`, etc.) - Individual operations with separate approvals
 
 ### Available MCP Tools
-The AI Project Manager provides 62+ MCP tools that commands use behind the scenes:
+The AI Project Manager provides 65+ MCP tools that commands use behind the scenes:
 - Project management tools (initialize, status, blueprints)
 - Task management tools (create, update, list, sidequests)  
 - Context loading tools (themes, flows, escalation)
 - File operations tools (read, analyze, cross-reference)
 - Branch management tools (create, switch, merge, status)
 - Session management tools (boot, persistence, restoration)
-- Database tools (queries, analytics, optimization)
+- Database tools (queries, analytics, optimization, backup, maintenance)
 
 ### Getting Help
 - **`/help`** - Overview of all commands
@@ -167,6 +172,9 @@ The AI Project Manager provides 62+ MCP tools that commands use behind the scene
 | `/clone-team` | Join existing team | Workflow | Join team project |
 | `/git-status` | Remote status | None | Check connections |
 | `/config` | Show config | None | Check settings |
+| `/backup` | Database backup | None | Before major changes |
+| `/maintenance` | Database cleanup | Workflow | Monthly maintenance |
+| `/db-stats` | Database health | None | Check storage usage |
 
 ---
 

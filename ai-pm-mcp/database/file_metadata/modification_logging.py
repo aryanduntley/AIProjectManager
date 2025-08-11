@@ -81,8 +81,8 @@ class ModificationLogging:
         base_query = """
             SELECT file_path, file_type, operation, session_id, details, timestamp
             FROM file_modifications
-            WHERE timestamp >= datetime('now', '-{} days')
-        """.format(days)
+            WHERE 1=1
+        """
         
         conditions = []
         params = []
@@ -106,10 +106,19 @@ class ModificationLogging:
         if conditions:
             base_query += " AND " + " AND ".join(conditions)
         
-        base_query += " ORDER BY timestamp DESC"
+        # Use relevance-based ordering prioritizing session context
+        base_query += """
+            ORDER BY 
+                CASE WHEN session_id IS NOT NULL THEN 0 ELSE 1 END,
+                timestamp DESC
+        """
         
-        if limit:
-            base_query += f" LIMIT {limit}"
+        # Apply limit (default 50 if not specified, or use days-based filter as fallback)
+        actual_limit = limit or 50
+        if days and not limit:
+            # If days specified but no limit, add time filter for backwards compatibility
+            base_query = base_query.replace("WHERE 1=1", f"WHERE timestamp >= datetime('now', '-{days} days')")
+        base_query += f" LIMIT {actual_limit}"
         
         results = []
         for row in self.db.execute_query(base_query, tuple(params)):
@@ -175,12 +184,12 @@ class ModificationLogging:
 
     # Performance and Analytics
     
-    def get_file_hotspots(self, days: int = 30) -> List[Dict[str, Any]]:
+    def get_file_hotspots(self, limit: int = 20) -> List[Dict[str, Any]]:
         """
-        Get file modification hotspots for performance analysis.
+        Get file modification hotspots for performance analysis using relevance ordering.
         
         Args:
-            days: Number of days to analyze
+            limit: Maximum number of hotspot files to return
             
         Returns:
             List of file hotspots with activity metrics
@@ -191,19 +200,22 @@ class ModificationLogging:
                 file_type,
                 COUNT(*) as modification_count,
                 COUNT(DISTINCT session_id) as session_count,
+                COUNT(CASE WHEN session_id IS NOT NULL THEN 1 END) as session_modifications,
                 MIN(timestamp) as first_modification,
                 MAX(timestamp) as last_modification,
                 COUNT(DISTINCT operation) as operation_types
             FROM file_modifications
-            WHERE timestamp >= datetime('now', '-{} days')
             GROUP BY file_path, file_type
             HAVING modification_count > 1
-            ORDER BY modification_count DESC, session_count DESC
-            LIMIT 50
-        """.format(days)
+            ORDER BY 
+                session_modifications DESC,
+                modification_count DESC,
+                session_count DESC
+            LIMIT ?
+        """
         
         results = []
-        for row in self.db.execute_query(query):
+        for row in self.db.execute_query(query, (limit,)):
             # Calculate modification frequency
             first_mod = datetime.fromisoformat(row["first_modification"])
             last_mod = datetime.fromisoformat(row["last_modification"])
@@ -225,24 +237,29 @@ class ModificationLogging:
         
         return results
     
-    def cleanup_old_modifications(self, days: int = 90) -> int:
+    def cleanup_old_modifications(self, keep_count: int = 500) -> int:
         """
-        Clean up old file modification records.
+        Clean up old file modification records, keeping only the most recent ones.
         
         Args:
-            days: Keep records newer than this many days
+            keep_count: Number of most recent records to keep per project
             
         Returns:
             Number of records deleted
         """
         try:
+            # Delete everything except the most recent keep_count records
             query = """
                 DELETE FROM file_modifications 
-                WHERE timestamp < datetime('now', '-{} days')
-            """.format(days)
+                WHERE id NOT IN (
+                    SELECT id FROM file_modifications 
+                    ORDER BY timestamp DESC 
+                    LIMIT ?
+                )
+            """
             
-            deleted_count = self.db.execute_update(query)
-            self.db.logger.info(f"Cleaned up {deleted_count} old file modification records")
+            deleted_count = self.db.execute_update(query, (keep_count,))
+            self.db.logger.info(f"Cleaned up {deleted_count} old file modification records, kept {keep_count} most recent")
             return deleted_count
             
         except Exception as e:

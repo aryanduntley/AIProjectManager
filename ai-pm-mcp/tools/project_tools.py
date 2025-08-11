@@ -184,7 +184,7 @@ class ProjectTools:
                         "is_high_priority": {
                             "type": "boolean",
                             "description": "Whether this is a high-priority implementation plan",
-                            "default": false
+                            "default": False
                         }
                     },
                     "required": ["project_path", "milestone_id", "title"]

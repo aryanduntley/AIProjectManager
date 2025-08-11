@@ -216,7 +216,7 @@ When these discussions occur and decisions are made:
 1. **HIGH-TASK File Detection**: Scan `Tasks/active/` directory for `HIGH-TASK-*.json` files
 2. **H- Implementation Plan Detection**: Scan `Implementations/active/` directory for `H-*.md` implementation plans  
 3. **Database Event Queries**: Query database for events with `exist_high_priority=true` and `requires_escalation=true`
-4. **Recent Event Filtering**: Check recent noteworthy events (within 30 days) for unresolved high-priority items
+4. **Relevant Event Detection**: Check most relevant noteworthy events from recent sessions for unresolved high-priority items
 
 ### Surfacing Protocol
 
@@ -285,7 +285,7 @@ Which approach would you prefer?"
 ### Performance Optimization
 
 **Time-Limited Queries**: 
-- Database queries limited to last 30 days to prevent performance issues in large projects
+- Database queries use result limiting (default 5 items) with relevance ordering to prevent performance issues in large projects
 - File scanning checks modification times to focus on recent high-priority items
 - Result limits prevent overwhelming output while ensuring comprehensive detection
 
@@ -294,12 +294,7 @@ Which approach would you prefer?"
 - Optimized query patterns to minimize boot time impact
 - Cached results when appropriate to avoid repeated expensive operations
 
-### Configuration and Control
-
-**Configuration Setting**: `sessions.highPriorityChecks` (boolean, default: true)
-- Enable/disable high-priority item detection during session boot
-- Can be disabled for projects that prefer manual high-priority management
-- Provides user control over boot sequence complexity
+### Escalation Integration
 
 **Escalation Integration**: 
 - Works seamlessly with high-priority task creation from scope escalation workflow

@@ -580,13 +580,7 @@ Would you like me to create a high-priority task for this issue?"
 - Query database for events with exist_high_priority=true
 - Present high-priority items prominently with recommendation for immediate attention
 
-**Database Query Optimization**: Efficient time-limited queries (30 days) to prevent performance issues in large projects.
-
-### Configuration Settings
-
-**High-Priority Detection**: `tasks.highPriorityDetection` (boolean, default: true)
-- Enable automatic detection and escalation of scope-exceeding issues
-- Can be disabled for projects that prefer manual escalation only
+**Database Query Optimization**: Efficient result-limited queries with relevance ordering to prevent performance issues in large projects.
 
 ### Workflow Integration
 

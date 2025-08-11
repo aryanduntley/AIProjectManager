@@ -72,29 +72,31 @@ class WorkActivityTracker:
             print(f"Error recording work activity: {e}")
             return False
     
-    def get_recent_work_context(self, project_path: str, hours: int = 4) -> Dict[str, Any]:
+    def get_recent_work_context(self, project_path: str, limit: int = 20) -> Dict[str, Any]:
         """
-        Get recent work context based on activity timeline.
+        Get recent work context based on session relevance and activity timeline.
         
         Args:
             project_path: Project path to get context for
-            hours: Number of hours to look back for recent activity
+            limit: Maximum number of activities to analyze
             
         Returns:
             Dict[str, Any]: Recent work context data
         """
         try:
+            # Use relevance-based ordering prioritizing session context over time windows
             query = """
             SELECT wa.*, s.context_mode, s.active_themes, s.active_tasks, s.active_sidequests
             FROM work_activities wa
             LEFT JOIN sessions s ON wa.session_context_id = s.session_id
-            WHERE wa.project_path = ? 
-            AND wa.timestamp >= datetime('now', '-{} hours')
-            ORDER BY wa.timestamp DESC
-            LIMIT 50
-            """.format(hours)
+            WHERE wa.project_path = ?
+            ORDER BY 
+                CASE WHEN wa.session_context_id IS NOT NULL THEN 0 ELSE 1 END,
+                wa.timestamp DESC
+            LIMIT ?
+            """
             
-            result = self.db.execute_query(query, (project_path,))
+            result = self.db.execute_query(query, (project_path, limit))
             
             if not result:
                 return {
@@ -140,27 +142,34 @@ class WorkActivityTracker:
                 "session_context": None
             }
     
-    def archive_stale_work_periods(self, hours_threshold: int = 24) -> int:
+    def archive_stale_work_periods(self, keep_sessions: int = 20) -> int:
         """
-        Archive work periods with no recent activity.
+        Archive old work periods, keeping only the most recent sessions per project.
         
         Args:
-            hours_threshold: Hours of inactivity before archiving
+            keep_sessions: Number of most recent sessions to keep active per project
             
         Returns:
             int: Number of work periods archived
         """
         try:
-            # Archive sessions with no recent activity
+            # Archive all but the most recent keep_sessions sessions per project
             query = """
             UPDATE sessions 
-            SET archived_at = ?, archive_reason = 'timeout'
-            WHERE last_tool_activity <= datetime('now', '-{} hours')
+            SET archived_at = ?, archive_reason = 'maintenance_cleanup'
+            WHERE session_id NOT IN (
+                SELECT session_id 
+                FROM sessions 
+                WHERE project_path = sessions.project_path 
+                AND archived_at IS NULL
+                ORDER BY last_tool_activity DESC 
+                LIMIT ?
+            )
             AND archived_at IS NULL
-            """.format(hours_threshold)
+            """
             
             current_time = datetime.now().isoformat()
-            cursor = self.db.execute_update(query, (current_time,))
+            cursor = self.db.execute_update(query, (current_time, keep_sessions))
             
             return cursor.rowcount if hasattr(cursor, 'rowcount') else 0
             

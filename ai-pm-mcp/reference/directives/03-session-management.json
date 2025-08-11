@@ -365,11 +365,6 @@
       "default": false,
       "type": "boolean",
       "description": "Automatically create tasks without user approval"
-    },
-    "sessions.highPriorityChecks": {
-      "default": true,
-      "type": "boolean",
-      "description": "Enable high-priority item detection during session boot"
     }
   },
   "integrations": [
@@ -446,7 +441,7 @@
       "Scan Tasks/active/ directory for HIGH-TASK-*.json files",
       "Scan Implementations/active/ directory for H-*.md implementation plans",
       "Query database for events with exist_high_priority=true and requires_escalation=true",
-      "Check recent noteworthy events (within 30 days) for unresolved high-priority items"
+      "Check most relevant noteworthy events from recent sessions for unresolved high-priority items"
     ],
     "surfacingProtocol": {
       "highPriorityFound": [
@@ -468,10 +463,12 @@
       "contextPreservation": "If user chooses to address high-priority items, preserve regular boot context for later resumption",
       "priorityWorkflow": "High-priority work follows same context loading and execution patterns as regular tasks"
     },
-    "timeFiltering": {
-      "databaseQuery": "Limit high-priority event queries to last 30 days to prevent performance issues",
-      "fileScanning": "Check file modification times to focus on recent high-priority items",
-      "performanceOptimization": "Use efficient database queries with time limits and result limits"
+    "relevanceBasedQuerying": {
+      "resultLimiting": "Limit high-priority queries to 5 most relevant results ordered by session context and recency",
+      "sessionPriority": "Prioritize items from last meaningful work session over arbitrary time windows",
+      "configurableParams": "Allow users to configure result limits and lookback preferences via .ai-pm-config.json",
+      "performanceOptimization": "Use efficient database queries with result limits and relevance ordering",
+      "hybridApproach": "Combine recent items (if any exist within reasonable timeframe) with last session context"
     }
   },
   "basicEdgeCaseHandling": {

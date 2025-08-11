@@ -152,9 +152,9 @@ class FileMetadataQueries:
         """Get file modification hotspots for performance analysis.""" 
         return self.modification_logging.get_file_hotspots(days)
     
-    def cleanup_old_modifications(self, days: int = 90) -> int:
-        """Clean up old file modification records."""
-        return self.modification_logging.cleanup_old_modifications(days)
+    def cleanup_old_modifications(self, keep_count: int = 500) -> int:
+        """Clean up old file modification records, keeping only the most recent ones."""
+        return self.modification_logging.cleanup_old_modifications(keep_count)
     
     # ========================================================================
     # INITIALIZATION TRACKING - Delegate to InitializationTracking

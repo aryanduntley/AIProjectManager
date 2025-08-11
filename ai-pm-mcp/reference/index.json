@@ -81,7 +81,7 @@
           "purpose": "Handle database-enhanced session continuity and boot sequences with high-priority detection",
           "triggers": ["Work period start", "Continue development", "Task resumption", "High-priority item detection"],
           "keyWorkflows": ["databaseSessionBootProtocol", "sessionContextRestoration", "implementationPlanIntegration", "highPriorityBootDetection"],
-          "criticalSettings": ["tasks.resumeTasksOnStart", "tasks.autoTaskCreation", "sessions.highPriorityChecks"]
+          "criticalSettings": ["tasks.resumeTasksOnStart", "tasks.autoTaskCreation"]
         },
         "12-user-interaction": {
           "file": "reference/directives/12-user-interaction.json",
@@ -170,14 +170,14 @@
           "purpose": "Task lifecycle and execution management with multi-flow integration and high-priority task system",
           "triggers": ["Task creation", "Task execution", "Sidequest management", "Multi-flow task planning", "Scope escalation", "High-priority task detection"],
           "keyWorkflows": ["taskLifecycleManagement", "sidequestManagement", "completionPathIntegration", "multiFlowTaskIntegration", "highPriorityTaskManagement", "scopeEscalationWorkflow"],
-          "criticalSettings": ["tasks.maxActiveSidequests", "tasks.parallelTasksEnabled", "tasks.highPriorityDetection"]
+          "criticalSettings": ["tasks.maxActiveSidequests", "tasks.parallelTasksEnabled"]
         },
         "07-implementation-plans": {
           "file": "reference/directives/07-implementation-plans.json",
           "purpose": "Strategic implementation planning with high-priority escalation support",
           "triggers": ["Milestone implementation", "Strategic planning", "High-priority issue escalation"],
           "keyWorkflows": ["planLifecycle", "versionControl", "archivalSystem", "highPriorityPlanCreation"],
-          "criticalSettings": ["implementationPlans.highPriorityNaming"]
+          "criticalSettings": []
         },
         "10-file-operations": {
           "file": "reference/directives/10-file-operations.json",

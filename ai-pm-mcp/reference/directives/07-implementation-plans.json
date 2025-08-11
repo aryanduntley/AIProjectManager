@@ -151,11 +151,6 @@
       "default": true,
       "type": "boolean",
       "description": "Require user approval before plan execution"
-    },
-    "implementationPlans.highPriorityNaming": {
-      "default": "H-<timestamp>-<description>.md",
-      "type": "string",
-      "description": "Naming pattern for high-priority implementation plans"
     }
   },
   "integrations": [

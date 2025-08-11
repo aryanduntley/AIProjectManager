@@ -43,6 +43,13 @@ AI Project Manager is a sophisticated Model Context Protocol (MCP) server that e
 - **Branch Ancestry Validation**: Ensures proper branch creation from ai-pm-org-main
 - **Team Collaboration Support**: Safe multi-developer workflows with user attribution
 
+### 💾 **Database Management & Maintenance**
+- **Manual Backup System**: Create timestamped database backups on-demand
+- **Automated Archiving**: Intelligent cleanup of old sessions, events, and file modifications
+- **Database Optimization**: VACUUM and ANALYZE operations for performance
+- **Health Monitoring**: Detailed statistics and storage usage reporting
+- **Data Lifecycle Management**: Configurable retention policies with result limiting
+
 ## Architecture
 
 AI Project Manager uses a hybrid file-database architecture:
@@ -373,6 +380,11 @@ The AI Project Manager exposes these tools through the MCP protocol:
 - **`switch_to_branch`**: Switch to an AI instance branch
 - **`get_branch_status`**: Get detailed status of AI branches with repository type detection
 - **`check_user_code_changes`**: Check for user code changes outside AI management
+
+### Database Management Tools
+- **`database_backup`**: Create manual database backups with timestamps
+- **`database_maintenance`**: Run comprehensive cleanup, archiving, and optimization
+- **`database_stats`**: Get detailed database health and storage statistics
 
 ### Configuration Tools
 - **`get_config`**: Get current configuration settings

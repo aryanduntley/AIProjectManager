@@ -414,7 +414,7 @@
       "automaticSurfacing": {
         "statusCommand": "HIGH-TASK files appear prominently in /status output",
         "sessionBoot": "High-priority items detected and prioritized during session start",
-        "databaseQueries": "Efficient time-limited queries to prevent performance issues"
+        "databaseQueries": "Efficient result-limited queries with relevance ordering to prevent performance issues"
       }
     }
   },
@@ -445,11 +445,6 @@
       "default": true,
       "type": "boolean",
       "description": "Require TODO review before project completion"
-    },
-    "tasks.highPriorityDetection": {
-      "default": true,
-      "type": "boolean",
-      "description": "Enable automatic detection and escalation of scope-exceeding issues"
     }
   },
   "integrations": [

@@ -540,13 +540,17 @@ class ImpactAnalysis:
         Returns:
             List of critical files with analysis
         """
-        # Get files with high modification frequency
+        # Get files with high modification frequency using relevance-based ordering
         frequent_modifications = self.db.execute_query("""
-            SELECT file_path, COUNT(*) as mod_count
+            SELECT file_path, COUNT(*) as mod_count, 
+                   MAX(timestamp) as last_modified,
+                   COUNT(CASE WHEN session_id IS NOT NULL THEN 1 END) as session_modifications
             FROM file_modifications
-            WHERE timestamp >= datetime('now', '-30 days')
             GROUP BY file_path
-            ORDER BY mod_count DESC
+            ORDER BY 
+                session_modifications DESC,
+                mod_count DESC,
+                last_modified DESC
             LIMIT 20
         """)
         

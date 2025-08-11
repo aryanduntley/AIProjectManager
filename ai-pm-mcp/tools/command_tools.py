@@ -19,8 +19,9 @@ logger = logging.getLogger(__name__)
 class CommandTools:
     """MCP tools for command system and user workflow management."""
     
-    def __init__(self, db_manager=None):
+    def __init__(self, db_manager=None, config_manager=None):
         self.db_manager = db_manager
+        self.config_manager = config_manager
         self.commands = {
             "status": {
                 "description": "Get current project state and available options",
@@ -86,6 +87,21 @@ class CommandTools:
                 "description": "Deploy AI improvements to your main branch (merges ai-pm-org-main → user's main)",
                 "workflow": ["get_branch_status", "git_merge_ai_main_to_user"],
                 "approval_level": "workflow"
+            },
+            "backup": {
+                "description": "Create manual database backup with timestamp",
+                "workflow": ["database_backup"],
+                "approval_level": "none"
+            },
+            "maintenance": {
+                "description": "Run database cleanup with automatic pre-maintenance backup (keeps 500 recent file modifications, 20 recent sessions per project)",
+                "workflow": ["database_backup", "database_maintenance"],
+                "approval_level": "workflow"
+            },
+            "db-stats": {
+                "description": "Show database health and storage statistics",
+                "workflow": ["database_stats"],
+                "approval_level": "none"
             }
         }
     
@@ -245,6 +261,11 @@ class CommandTools:
 **`/deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
 **`/config`** - Show current configuration settings
 
+## Database Management
+**`/backup`** - Create manual database backup with timestamp
+**`/maintenance`** - Run database cleanup, archiving, and optimization
+**`/db-stats`** - Show database health and storage statistics
+
 ## How Commands Work
 Commands provide **workflow-level approval** - when you use a command like `/init`, you're approving the entire initialization workflow. The AI can then:
 - ✅ Chain multiple MCP tools automatically
@@ -310,6 +331,12 @@ Use `help_commands` with a specific command name for detailed help on individual
                 return await self._execute_config(project_path, args)
             elif command == "deploy":
                 return await self._execute_deploy(project_path, args)
+            elif command == "backup":
+                return await self._execute_backup(project_path, args)
+            elif command == "maintenance":
+                return await self._execute_maintenance(project_path, args)
+            elif command == "db-stats":
+                return await self._execute_db_stats(project_path, args)
             else:
                 return json.dumps({
                     "type": "info",
@@ -814,3 +841,58 @@ Use `/branch` command to create a new AI work branch first.
                 "type": "error",
                 "message": f"Error executing /deploy command: {str(e)}"
             }, indent=2)
+
+    async def _execute_backup(self, project_path: Path, args: Dict[str, Any]) -> str:
+        """Execute /backup command."""
+        try:
+            from ..tools.database_tools import DatabaseTools
+            database_tools = DatabaseTools(self.db_manager, self.config_manager)
+            
+            arguments = {
+                'project_path': str(project_path),
+                'backup_name': args.get('backup_name', '')
+            }
+            
+            result = await database_tools.backup_database(arguments)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in _execute_backup: {e}")
+            return f"❌ Error creating database backup: {str(e)}"
+
+    async def _execute_maintenance(self, project_path: Path, args: Dict[str, Any]) -> str:
+        """Execute /maintenance command."""
+        try:
+            from ..tools.database_tools import DatabaseTools
+            database_tools = DatabaseTools(self.db_manager, self.config_manager)
+            
+            arguments = {
+                'project_path': str(project_path),
+                'keep_modifications': args.get('keep_modifications', 500),
+                'keep_sessions': args.get('keep_sessions', 20),
+                'vacuum': args.get('vacuum', True)
+            }
+            
+            result = await database_tools.database_maintenance(arguments)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in _execute_maintenance: {e}")
+            return f"❌ Error running database maintenance: {str(e)}"
+
+    async def _execute_db_stats(self, project_path: Path, args: Dict[str, Any]) -> str:
+        """Execute /db-stats command."""
+        try:
+            from ..tools.database_tools import DatabaseTools
+            database_tools = DatabaseTools(self.db_manager, self.config_manager)
+            
+            arguments = {
+                'project_path': str(project_path)
+            }
+            
+            result = await database_tools.database_statistics(arguments)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in _execute_db_stats: {e}")
+            return f"❌ Error getting database statistics: {str(e)}"

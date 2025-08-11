@@ -109,8 +109,13 @@ class MCPToolRegistry:
         try:
             # Import project tools with database integration
             from ..tools.project_tools import ProjectTools
-            project_tools = ProjectTools(self.db_manager)
+            project_tools = ProjectTools(self.db_manager, self.config_manager)
             await self._register_tool_module(project_tools)
+            
+            # Import database tools
+            from ..tools.database_tools import DatabaseTools
+            database_tools = DatabaseTools(self.db_manager, self.config_manager)
+            await self._register_tool_module(database_tools)
             
             # Import task tools with database integration
             from ..tools.task_tools import TaskTools
@@ -160,7 +165,7 @@ class MCPToolRegistry:
             
             # Import command tools for better user experience and command discovery
             from ..tools.command_tools import CommandTools
-            command_tools = CommandTools(self.db_manager)
+            command_tools = CommandTools(self.db_manager, self.config_manager)
             await self._register_tool_module(command_tools)
             
             # Import test tools for internal test execution within server context

@@ -48,8 +48,6 @@ ai-pm-mcp/database/theme_flow_queries.py
 update_flow_step_status
 we need to ensure that the multi flow system relative to the databae is working.
 
-Need database cleaning maintenance and backups (let's make this manual upon user's request. Need code in place for the backup process and upon user request, MCP executes backup code).
-
 ai-pm-mcp full code review.
 
 config.json review, map to directives. Ensure all configurable options (eg. true/false) are accounted for in directives (if true, do this, if false, do that) but also accounted for in the mcp code itself.
@@ -65,48 +63,6 @@ Often there are issues, inconsistencies, fixes, etc that are discovered by AI. I
 exist_high_priority
 requires_escalation
 ensure we have dabatse calls for these
-
-Clean db noted above. Also ensure in state we are getting limited result sets. Either that or refine search to more specific.
-
-ensure high priority in init. think through this later
-
-I don't see an "Implementations" directory in the project
-  structure. Let me add it and create a simple implementation
-  plan creation tool. Let me first add the Implementations
-  directory to the project structure:
-● Update(ai-pm-mcp/tools/project_tools.py)
-  ⎿  Updated ai-pm-mcp/tools/project_tools.py with 2 additions
-       199                "Tasks/sidequests",
-       200                "Tasks/archive/tasks",
-       201                "Tasks/archive/sidequests",
-       202 +              "Implementations/active",
-       203 +              "Implementations/archive",
-Just tools? All code is there, directives, etc???
-
-Is there direct file copy instead of creating from scratch for all template files? Including json that tracks. If duplcate, will have template data. let's pick and choose.
-
-
- ☒ Update 06-task-management directive (JSON and MD) to     
-       include high-priority task workflows
-     ☐ Update 07-implementation-plans directive (JSON and MD) to 
-       include high-priority plan creation
-     ☐ Update 03-session-management directive (JSON and MD) to
-       include high-priority boot detection
-     ☐ Update directive-compressed.json with all high-priority
-       system changes
-ai-pm-mcp/reference/directives/07-implementation-plans.json
-"implementationPlans.highPriorityNaming": {
-      "default": "H-<timestamp>-<description>.md",
-      "type": "string",
-      "description": "Naming pattern for high-priority implementation plans"
-Review each for config settings changes. Not sure we need them. If useful, then need to update config template as well.
-
-ai-pm-mcp/reference/directives/03-session-management.json
- "timeFiltering": {
-       466 +        "databaseQuery": "Limit high-priority event 
-           + queries to last 30 days to prevent performance 
-           + issues",
-We should limit to 5 results and get results by order of date. If querying by date for the last 30 days, it's possibe a user hasn't returned to the project in 30 days, so this isn't useful.
 
 ======================
 -ril for just unique files only

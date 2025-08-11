@@ -151,9 +151,9 @@ class SessionQueries:
         """Get recent work context based on activity timeline."""
         return self.work_activity.get_recent_work_context(project_path, hours)
     
-    def archive_stale_work_periods(self, hours_threshold: int = 24) -> int:
-        """Archive work periods with no recent activity."""
-        return self.work_activity.archive_stale_work_periods(hours_threshold)
+    def archive_stale_work_periods(self, keep_sessions: int = 20) -> int:
+        """Archive work periods, keeping only the most recent sessions per project."""
+        return self.work_activity.archive_stale_work_periods(keep_sessions)
     
     def get_work_period_analytics(self, project_path: str, days: int = 30) -> Dict[str, Any]:
         """Get work activity analytics (replaces session analytics)."""
