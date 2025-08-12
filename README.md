@@ -144,17 +144,17 @@ The server will:
    Once connected with Claude, use these commands to get started:
    
    ```
-   /status    - Get current project state and available options
-   /init      - Initialize AI project management  
-   /help      - Show all available commands
-   /resume    - Resume previous work
+   /aipm-status    - Get current project state and available options
+   /aipm-init      - Initialize AI project management  
+   /aipm-help      - Show all available commands
+   /aipm-resume    - Resume previous work
    ```
    
    📋 **See [COMMANDS.md](COMMANDS.md) for complete command reference and troubleshooting**
 
 3. **Initialize a New Project**:
-   - Use `/status` to see current project state
-   - Use `/init` to set up AI project management
+   - Use `/aipm-status` to see current project state
+   - Use `/aipm-init` to set up AI project management
    - Or use individual MCP tools for fine-grained control
 
 3. **Connect with Claude Code**:
@@ -190,35 +190,35 @@ The server will:
 
 5. **Start Managing Your Project**:
    ```
-   User: "/status"
+   User: "/aipm-status"
    AI: Shows project state and available options
    
-   User: "/init" 
+   User: "/aipm-init" 
    AI: Initializes project management and begins work
    ```
 
 ## 🎯 AI Project Manager Commands
 
 ### Getting Started
-- **`/status`** - See current project state and available options
-- **`/help`** - Show all available commands with descriptions  
-- **`/init`** - Initialize AI project management (intelligently detects existing setups and suggests `/resume` when appropriate)
+- **`/aipm-status`** - See current project state and available options
+- **`/aipm-help`** - Show all available commands with descriptions  
+- **`/aipm-init`** - Initialize AI project management (intelligently detects existing setups and suggests `/aipm-resume` when appropriate)
 
 ### Task Management  
-- **`/resume`** - Resume previous work and active tasks
-- **`/tasks`** - Show active tasks and progress
-- **`/newTask <description>`** - Create and start new task
+- **`/aipm-resume`** - Resume previous work and active tasks
+- **`/aipm-tasks`** - Show active tasks and progress
+- **`/aipm-newTask <description>`** - Create and start new task
 
 ### Project Analysis
-- **`/analyze`** - Full project analysis and theme discovery
-- **`/themes`** - Show project themes and structure
-- **`/flows`** - Show user experience flows
+- **`/aipm-analyze`** - Full project analysis and theme discovery
+- **`/aipm-themes`** - Show project themes and structure
+- **`/aipm-flows`** - Show user experience flows
 
 ### Advanced Features
-- **`/branch`** - Create AI work branch for parallel development with comprehensive Git safety checks
-- **`/merge`** - Merge AI work using pull requests when possible, direct merge as fallback
-- **`/deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
-- **`/config`** - Show current configuration settings
+- **`/aipm-branch`** - Create AI work branch for parallel development with comprehensive Git safety checks
+- **`/aipm-merge`** - Merge AI work using pull requests when possible, direct merge as fallback
+- **`/aipm-deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
+- **`/aipm-config`** - Show current configuration settings
 
 ### 🔄 Git Remote Operations (New!)
 Advanced Git tools for team collaboration and remote repository management:

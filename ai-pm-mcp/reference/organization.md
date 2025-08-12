@@ -622,7 +622,7 @@ The high-priority task system provides a structured approach for escalating issu
 
 **HIGH-TASK Files:**
 - `HIGH-TASK-<timestamp>.json` - Tasks that require dedicated focus due to scope escalation
-- Automatically surfaced in `/status` commands and session boot sequences
+- Automatically surfaced in `/aipm-status` commands and session boot sequences
 - Use existing task template structure with enhanced priority indicators
 
 **H- Implementation Plans:**
@@ -642,7 +642,7 @@ The high-priority task system provides a structured approach for escalating issu
 ### Integration Points
 
 **Status System Integration:**
-- HIGH-TASK files appear prominently in `/status` command output
+- HIGH-TASK files appear prominently in `/aipm-status` command output
 - H- implementation plans are detected and displayed
 - Database events with `exist_high_priority=true` are surfaced
 

@@ -1,10 +1,10 @@
 # Project Initialization Directives
 
-## `/init` Command Behavior
+## `/aipm-init` Command Behavior
 
 ### CRITICAL: Status Check First
 
-**The `/init` command MUST always check project state before proceeding with any initialization actions.**
+**The `/aipm-init` command MUST always check project state before proceeding with any initialization actions.**
 
 ### Behavior by Project State
 
@@ -17,22 +17,22 @@
 ## Current Status:
 [Display current project state analysis]
 
-## 🔄 Did you mean `/resume`?
+## 🔄 Did you mean `/aipm-resume`?
 
 This project appears to already have AI Project Manager fully set up and running. 
 
 **If you want to:**
-- **Continue previous work** → Use `/resume` 
-- **See current tasks** → Use `/tasks`
-- **Check project status** → Use `/status`
-- **Create work branch** → Use `/branch`
+- **Continue previous work** → Use `/aipm-resume` 
+- **See current tasks** → Use `/aipm-tasks`
+- **Check project status** → Use `/aipm-status`
+- **Create work branch** → Use `/aipm-branch`
 
 **If you really want to re-initialize:**
 - Move or backup the existing `projectManagement/` directory first
-- Then run `/init` again
+- Then run `/aipm-init` again
 
 ## 💡 Recommended Next Step:
-Try `/resume` to continue your previous work, or `/status` to see available options.
+Try `/aipm-resume` to continue your previous work, or `/aipm-status` to see available options.
 ```
 
 #### State: `partial` - Incomplete Initialization

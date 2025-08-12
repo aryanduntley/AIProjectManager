@@ -5,54 +5,54 @@
 **First time using AI Project Manager?** Try these commands in order:
 
 ```
-1. /status    - See what state your project is in
-2. /help      - Learn all available commands  
-3. /init      - Set up AI project management
-4. /resume    - Start working on your project
+1. /aipm-status    - See what state your project is in
+2. /aipm-help      - Learn all available commands  
+3. /aipm-init      - Set up AI project management
+4. /aipm-resume    - Start working on your project
 ```
 
 ## Essential Commands
 
 ### Discovery Commands
-- **`/status`** - Get current project state and suggested next steps
-- **`/help`** - Show all commands with detailed descriptions
-- **`/analyze`** - Full project analysis and theme discovery
+- **`/aipm-status`** - Get current project state and suggested next steps
+- **`/aipm-help`** - Show all commands with detailed descriptions
+- **`/aipm-analyze`** - Full project analysis and theme discovery
 
 ### Setup Commands  
-- **`/init`** - Initialize AI project management (auto-selects best option)
-- **`/config`** - View current configuration settings
+- **`/aipm-init`** - Initialize AI project management (auto-selects best option)
+- **`/aipm-config`** - View current configuration settings
 
 ### Work Commands
-- **`/resume`** - Resume previous work and active tasks
-- **`/tasks`** - Show active tasks and progress
-- **`/newTask <description>`** - Create and start working on new task
+- **`/aipm-resume`** - Resume previous work and active tasks
+- **`/aipm-tasks`** - Show active tasks and progress
+- **`/aipm-newTask <description>`** - Create and start working on new task
 
 ### Project Understanding
-- **`/themes`** - Show project themes and file organization
-- **`/flows`** - Show user experience flows and journeys
+- **`/aipm-themes`** - Show project themes and file organization
+- **`/aipm-flows`** - Show user experience flows and journeys
 
 ### Advanced Workflow
-- **`/branch`** - Create AI work branch for parallel development
-- **`/merge`** - Merge completed AI branch work back to ai-pm-org-main
-- **`/deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
+- **`/aipm-branch`** - Create AI work branch for parallel development
+- **`/aipm-merge`** - Merge completed AI branch work back to ai-pm-org-main
+- **`/aipm-deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
 
 ### Database Management
-- **`/backup`** - Create manual database backup with timestamp
-- **`/maintenance`** - Run database cleanup, archiving, and optimization
-- **`/db-stats`** - Show database health and storage statistics
+- **`/aipm-backup`** - Create manual database backup with timestamp
+- **`/aipm-maintenance`** - Run database cleanup, archiving, and optimization
+- **`/aipm-db-stats`** - Show database health and storage statistics
 
 ### 🔄 Git Remote Operations (New!)
-- **`/push`** - Push AI organizational state to remote repository
-- **`/pull`** - Pull latest AI organizational changes from remote
-- **`/sync`** - Synchronize local AI branch with remote (fetch + merge)
-- **`/setup-remote`** - Set up AI branch from user's code for team collaboration
-- **`/clone-team`** - Join existing team by cloning remote AI organizational state
-- **`/git-status`** - Check remote repository connection and branch status
+- **`/aipm-push`** - Push AI organizational state to remote repository
+- **`/aipm-pull`** - Pull latest AI organizational changes from remote
+- **`/aipm-sync`** - Synchronize local AI branch with remote (fetch + merge)
+- **`/aipm-setup-remote`** - Set up AI branch from user's code for team collaboration
+- **`/aipm-clone-team`** - Join existing team by cloning remote AI organizational state
+- **`/aipm-git-status`** - Check remote repository connection and branch status
 
 ## How Commands Work
 
 ### Workflow-Level Approval
-When you use a command like `/init`, you're giving **workflow-level approval**. This means:
+When you use a command like `/aipm-init`, you're giving **workflow-level approval**. This means:
 
 ✅ **AI can chain multiple tools automatically**  
 ✅ **AI makes decisions based on your project data**  
@@ -63,55 +63,55 @@ When you use a command like `/init`, you're giving **workflow-level approval**. 
 
 **Getting Started:**
 ```
-User: "/status"
+User: "/aipm-status"
 AI: Analyzes project → Shows current state → Suggests next commands
 
-User: "/init"  
+User: "/aipm-init"  
 AI: Analyzes project → Presents options → Executes initialization → Sets up structure
 ```
 
 **Daily Development:**
 ```
-User: "/resume"
+User: "/aipm-resume"
 AI: Loads context → Finds active tasks → Continues where you left off
 
-User: "/tasks"
+User: "/aipm-tasks"
 AI: Shows active work → Progress status → Next steps
 ```
 
 **Project Analysis:**
 ```
-User: "/analyze"
+User: "/aipm-analyze"
 AI: Discovers themes → Maps project structure → Shows organization
 
-User: "/themes"
+User: "/aipm-themes"
 AI: Shows discovered themes → File mappings → Relationships
 ```
 
 **AI Development & Deployment:**
 ```
-User: "/branch"
+User: "/aipm-branch"
 AI: Creates work branch → Switches to it → Ready for AI development
 
-User: "/merge" 
+User: "/aipm-merge" 
 AI: Merges work branch → Back to ai-pm-org-main → Creates PR if possible
 
-User: "/deploy"
+User: "/aipm-deploy"
 AI: Merges ai-pm-org-main → User's main → Creates backup → AI improvements deployed!
 ```
 
 **Team Collaboration:**
 ```
-User: "/setup-remote"
+User: "/aipm-setup-remote"
 AI: Creates ai-pm-org-main → Sets up team structure → Pushes to remote
 
-User: "/clone-team" 
+User: "/aipm-clone-team" 
 AI: Clones remote AI state → Sets up local collaboration → Ready to work
 
-User: "/push"
+User: "/aipm-push"
 AI: Pushes AI organizational changes → Updates remote → Notifies team ready
 
-User: "/sync"
+User: "/aipm-sync"
 AI: Fetches remote updates → Merges changes → Keeps AI state current
 ```
 
@@ -139,43 +139,43 @@ The AI Project Manager provides 65+ MCP tools that commands use behind the scene
 ## Troubleshooting
 
 ### "Nothing happened when I said 'continue development'"
-**Solution**: Use `/status` or `/resume` commands instead of natural language.
+**Solution**: Use `/aipm-status` or `/aipm-resume` commands instead of natural language.
 
 ### "I don't know what state my project is in"
-**Solution**: Use `/status` to get current state analysis and suggested next steps.
+**Solution**: Use `/aipm-status` to get current state analysis and suggested next steps.
 
 ### "The AI isn't doing anything automatically"
-**Solution**: Commands provide workflow approval. Use `/init` for initial setup, `/resume` for ongoing work.
+**Solution**: Commands provide workflow approval. Use `/aipm-init` for initial setup, `/aipm-resume` for ongoing work.
 
 ### "I want to see all available options"
-**Solution**: Use `/help` for command overview, or `help_commands` tool for detailed information.
+**Solution**: Use `/aipm-help` for command overview, or `help_commands` tool for detailed information.
 
 ## Command Reference Card
 
 | Command | Purpose | Approval Level | When to Use |
 |---------|---------|----------------|-------------|
-| `/status` | Project state | None | Always first step |
-| `/help` | Show commands | None | When confused |
-| `/init` | Initialize | Workflow | New project setup |
-| `/resume` | Continue work | Workflow | Daily development |
-| `/tasks` | Show tasks | None | Check progress |
-| `/analyze` | Deep analysis | Workflow | Understand project |
-| `/themes` | Show themes | None | See organization |
-| `/flows` | Show flows | None | See user journeys |
-| `/branch` | Create branch | Workflow | Parallel work |
-| `/merge` | Merge branch | Workflow | Complete work |
-| `/deploy` | Deploy to main | Workflow | Accept AI improvements |
-| `/push` | Push to remote | Workflow | Share AI state with team |
-| `/pull` | Pull from remote | Workflow | Get team updates |
-| `/sync` | Sync with remote | Workflow | Stay up-to-date |
-| `/setup-remote` | Setup team collab | Workflow | First-time team setup |
-| `/clone-team` | Join existing team | Workflow | Join team project |
-| `/git-status` | Remote status | None | Check connections |
-| `/config` | Show config | None | Check settings |
-| `/backup` | Database backup | None | Before major changes |
-| `/maintenance` | Database cleanup | Workflow | Monthly maintenance |
-| `/db-stats` | Database health | None | Check storage usage |
+| `/aipm-status` | Project state | None | Always first step |
+| `/aipm-help` | Show commands | None | When confused |
+| `/aipm-init` | Initialize | Workflow | New project setup |
+| `/aipm-resume` | Continue work | Workflow | Daily development |
+| `/aipm-tasks` | Show tasks | None | Check progress |
+| `/aipm-analyze` | Deep analysis | Workflow | Understand project |
+| `/aipm-themes` | Show themes | None | See organization |
+| `/aipm-flows` | Show flows | None | See user journeys |
+| `/aipm-branch` | Create branch | Workflow | Parallel work |
+| `/aipm-merge` | Merge branch | Workflow | Complete work |
+| `/aipm-deploy` | Deploy to main | Workflow | Accept AI improvements |
+| `/aipm-push` | Push to remote | Workflow | Share AI state with team |
+| `/aipm-pull` | Pull from remote | Workflow | Get team updates |
+| `/aipm-sync` | Sync with remote | Workflow | Stay up-to-date |
+| `/aipm-setup-remote` | Setup team collab | Workflow | First-time team setup |
+| `/aipm-clone-team` | Join existing team | Workflow | Join team project |
+| `/aipm-git-status` | Remote status | None | Check connections |
+| `/aipm-config` | Show config | None | Check settings |
+| `/aipm-backup` | Database backup | None | Before major changes |
+| `/aipm-maintenance` | Database cleanup | Workflow | Monthly maintenance |
+| `/aipm-db-stats` | Database health | None | Check storage usage |
 
 ---
 
-**Need more help?** Use `/help` for interactive command assistance or see the main README.md for full documentation.
+**Need more help?** Use `/aipm-help` for interactive command assistance or see the main README.md for full documentation.

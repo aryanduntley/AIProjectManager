@@ -24,12 +24,12 @@
     "failureAction": "Report clear error messages, require user intervention for critical issues"
   },
   "projectInitialization": {
-    "triggers": ["New project creation", "Existing project analysis", "/init command execution"],
+    "triggers": ["New project creation", "Existing project analysis", "/aipm-init command execution"],
     "initCommandBehavior": {
       "statusCheckFirst": "CRITICAL: Always check project state before proceeding with initialization",
-      "existingProjectDetection": "If state='complete', suggest /resume instead of proceeding with init",
+      "existingProjectDetection": "If state='complete', suggest /aipm-resume instead of proceeding with init",
       "userGuidance": [
-        "State 'complete' → Block init, suggest /resume, /tasks, /status, /branch alternatives",
+        "State 'complete' → Block init, suggest /aipm-resume, /aipm-tasks, /aipm-status, /aipm-branch alternatives",
         "State 'partial' → Proceed with completion initialization", 
         "State 'no_structure' → Proceed with full initialization",
         "State 'git_history_found' → Handle team member joining scenario"

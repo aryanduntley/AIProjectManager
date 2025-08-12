@@ -185,7 +185,7 @@ Use this backup to restore your project database if needed."""
 **What to do**: 
 1. Check database permissions
 2. Ensure sufficient disk space
-3. Try manual backup first: `/backup`
+3. Try manual backup first: `/aipm-backup`
 
 ⚠️ **Safety First**: Maintenance includes permanent deletion of old file modification records. A backup is required before proceeding."""
             

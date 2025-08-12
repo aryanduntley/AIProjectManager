@@ -11,7 +11,7 @@
     "New project creation",
     "Existing project analysis", 
     "First project setup",
-    "/init command execution"
+    "/aipm-init command execution"
   ],
   "initCommandHandling": {
     "statusCheckRequired": "CRITICAL: Always check project state before proceeding with any initialization",
@@ -20,10 +20,10 @@
         "action": "block_initialization",
         "message": "Project already has AI Project Manager fully set up and running",
         "suggestions": [
-          "Use /resume to continue previous work",
-          "Use /tasks to see current work items", 
-          "Use /status to check project status",
-          "Use /branch to create work branch"
+          "Use /aipm-resume to continue previous work",
+          "Use /aipm-tasks to see current work items", 
+          "Use /aipm-status to check project status",
+          "Use /aipm-branch to create work branch"
         ],
         "forceReinitInstructions": "If user really wants to re-initialize, instruct to backup existing projectManagement/ directory first"
       },
@@ -44,8 +44,8 @@
       }
     },
     "userCommunication": {
-      "blockMessage": "# ℹ️ Project Already Initialized\n\n## Current Status:\n[Project state details]\n\n## 🔄 Did you mean `/resume`?\n\nThis project appears to already have AI Project Manager fully set up and running.",
-      "suggestionFormat": "**If you want to:**\n- **Continue previous work** → Use `/resume`\n- **See current tasks** → Use `/tasks`\n- **Check project status** → Use `/status`\n- **Create work branch** → Use `/branch`"
+      "blockMessage": "# ℹ️ Project Already Initialized\n\n## Current Status:\n[Project state details]\n\n## 🔄 Did you mean `/aipm-resume`?\n\nThis project appears to already have AI Project Manager fully set up and running.",
+      "suggestionFormat": "**If you want to:**\n- **Continue previous work** → Use `/aipm-resume`\n- **See current tasks** → Use `/aipm-tasks`\n- **Check project status** → Use `/aipm-status`\n- **Create work branch** → Use `/aipm-branch`"
     }
   },
   "workflows": {

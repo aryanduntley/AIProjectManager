@@ -412,7 +412,7 @@
         "statusUpdates": "Keep user informed of high-priority work progress"
       },
       "automaticSurfacing": {
-        "statusCommand": "HIGH-TASK files appear prominently in /status output",
+        "statusCommand": "HIGH-TASK files appear prominently in /aipm-status output",
         "sessionBoot": "High-priority items detected and prioritized during session start",
         "databaseQueries": "Efficient result-limited queries with relevance ordering to prevent performance issues"
       }

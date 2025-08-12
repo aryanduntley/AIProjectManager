@@ -572,7 +572,7 @@ Would you like me to create a high-priority task for this issue?"
 
 ### Automatic System Surfacing
 
-**Status Command Integration**: HIGH-TASK files appear prominently in `/status` output with priority indicators and escalation reasons.
+**Status Command Integration**: HIGH-TASK files appear prominently in `/aipm-status` output with priority indicators and escalation reasons.
 
 **Session Boot Detection**: High-priority items automatically detected and prioritized during session start:
 - Scan Tasks/active/ directory for HIGH-TASK-*.json files

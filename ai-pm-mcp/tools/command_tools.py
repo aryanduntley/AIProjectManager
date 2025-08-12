@@ -23,82 +23,82 @@ class CommandTools:
         self.db_manager = db_manager
         self.config_manager = config_manager
         self.commands = {
-            "status": {
+            "aipm-status": {
                 "description": "Get current project state and available options",
                 "workflow": ["get_project_state_analysis"],
                 "approval_level": "none"
             },
-            "help": {
+            "aipm-help": {
                 "description": "Show all available commands with descriptions",
                 "workflow": ["show_command_help"],
                 "approval_level": "none"
             },
-            "init": {
-                "description": "Initialize AI project management (checks status first, suggests /resume if already set up)",
+            "aipm-init": {
+                "description": "Initialize AI project management (checks status first, suggests /aipm-resume if already set up)",
                 "workflow": ["get_project_state_analysis", "check_existing_setup", "make_initialization_choice"],
                 "approval_level": "workflow"
             },
-            "resume": {
+            "aipm-resume": {
                 "description": "Resume previous work and active tasks",
                 "workflow": ["session_boot_with_git_detection", "task_list_active", "context_load_theme"],
                 "approval_level": "workflow"
             },
-            "tasks": {
+            "aipm-tasks": {
                 "description": "Show active tasks and progress",
                 "workflow": ["task_list_active", "sidequest_list_active"],
                 "approval_level": "none"
             },
-            "newTask": {
+            "aipm-newTask": {
                 "description": "Create and start new task",
                 "workflow": ["task_create", "context_load_theme", "flow_load_selective"],
                 "approval_level": "workflow"
             },
-            "analyze": {
+            "aipm-analyze": {
                 "description": "Full project analysis and theme discovery",
                 "workflow": ["get_project_state_analysis", "theme_discover", "project_get_status"],
                 "approval_level": "workflow"
             },
-            "themes": {
+            "aipm-themes": {
                 "description": "Show project themes and structure",
                 "workflow": ["theme_list", "theme_get_context"],
                 "approval_level": "none"
             },
-            "flows": {
+            "aipm-flows": {
                 "description": "Show user experience flows",
                 "workflow": ["flow_index_create", "context_get_flows"],
                 "approval_level": "none"
             },
-            "branch": {
+            "aipm-branch": {
                 "description": "Create AI work branch for parallel development",
                 "workflow": ["create_instance_branch", "switch_to_branch"],
                 "approval_level": "workflow"
             },
-            "merge": {
+            "aipm-merge": {
                 "description": "Merge AI work back to main branch",
                 "workflow": ["get_branch_status", "merge_instance_branch"],
                 "approval_level": "workflow"
             },
-            "config": {
+            "aipm-config": {
                 "description": "Show current configuration settings",
                 "workflow": ["get_config"],
                 "approval_level": "none"
             },
-            "deploy": {
+            "aipm-deploy": {
                 "description": "Deploy AI improvements to your main branch (merges ai-pm-org-main → user's main)",
                 "workflow": ["get_branch_status", "git_merge_ai_main_to_user"],
                 "approval_level": "workflow"
             },
-            "backup": {
+            "aipm-backup": {
                 "description": "Create manual database backup with timestamp",
                 "workflow": ["database_backup"],
                 "approval_level": "none"
             },
-            "maintenance": {
+            "aipm-maintenance": {
                 "description": "Run database cleanup with automatic pre-maintenance backup (keeps 500 recent file modifications, 20 recent sessions per project)",
                 "workflow": ["database_backup", "database_maintenance"],
                 "approval_level": "workflow"
             },
-            "db-stats": {
+            "aipm-db-stats": {
                 "description": "Show database health and storage statistics",
                 "workflow": ["database_stats"],
                 "approval_level": "none"
@@ -157,7 +157,7 @@ class CommandTools:
             ),
             ToolDefinition(
                 name="command_status",
-                description="Get project state and show available next steps (implements /status command)",
+                description="Get project state and show available next steps (implements /aipm-status command)",
                 input_schema={
                     "type": "object",
                     "properties": {
@@ -241,33 +241,33 @@ class CommandTools:
         help_text = """# 🎯 AI Project Manager Commands
 
 ## Getting Started
-**`/status`** - Get current project state and available options
-**`/help`** - Show all available commands with descriptions  
-**`/init`** - Initialize AI project management for this project
+**`/aipm-status`** - Get current project state and available options
+**`/aipm-help`** - Show all available commands with descriptions  
+**`/aipm-init`** - Initialize AI project management for this project
 
 ## Task Management  
-**`/resume`** - Resume previous work and active tasks
-**`/tasks`** - Show active tasks and progress
-**`/newTask <description>`** - Create and start new task
+**`/aipm-resume`** - Resume previous work and active tasks
+**`/aipm-tasks`** - Show active tasks and progress
+**`/aipm-newTask <description>`** - Create and start new task
 
 ## Project Analysis
-**`/analyze`** - Full project analysis and theme discovery
-**`/themes`** - Show project themes and structure
-**`/flows`** - Show user experience flows
+**`/aipm-analyze`** - Full project analysis and theme discovery
+**`/aipm-themes`** - Show project themes and structure
+**`/aipm-flows`** - Show user experience flows
 
 ## Advanced Features
-**`/branch`** - Create AI work branch for parallel development
-**`/merge`** - Merge AI work back to main branch
-**`/deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
-**`/config`** - Show current configuration settings
+**`/aipm-branch`** - Create AI work branch for parallel development
+**`/aipm-merge`** - Merge AI work back to main branch
+**`/aipm-deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
+**`/aipm-config`** - Show current configuration settings
 
 ## Database Management
-**`/backup`** - Create manual database backup with timestamp
-**`/maintenance`** - Run database cleanup, archiving, and optimization
-**`/db-stats`** - Show database health and storage statistics
+**`/aipm-backup`** - Create manual database backup with timestamp
+**`/aipm-maintenance`** - Run database cleanup, archiving, and optimization
+**`/aipm-db-stats`** - Show database health and storage statistics
 
 ## How Commands Work
-Commands provide **workflow-level approval** - when you use a command like `/init`, you're approving the entire initialization workflow. The AI can then:
+Commands provide **workflow-level approval** - when you use a command like `/aipm-init`, you're approving the entire initialization workflow. The AI can then:
 - ✅ Chain multiple MCP tools automatically
 - ✅ Make decisions based on project data  
 - ✅ Execute complex multi-step processes
@@ -275,13 +275,13 @@ Commands provide **workflow-level approval** - when you use a command like `/ini
 
 ## Usage Examples
 ```
-User: "/status"
+User: "/aipm-status"
 AI: [Shows project state and next steps]
 
-User: "/init"  
+User: "/aipm-init"  
 AI: [Analyzes project → presents options → executes choice → sets up management]
 
-User: "/resume"
+User: "/aipm-resume"
 AI: [Loads context → finds active tasks → continues work]
 ```
 
@@ -307,35 +307,37 @@ Use `help_commands` with a specific command name for detailed help on individual
             logger.info(f"Executing command: /{command}")
             
             # Execute the command workflow
-            if command == "status":
+            if command == "aipm-status":
                 return await self._execute_status(project_path, args)
-            elif command == "help":
+            elif command == "aipm-help":
                 return await self.help_commands({"format": "detailed"})
-            elif command == "init":
+            elif command == "aipm-init":
                 return await self._execute_init(project_path, args)
-            elif command == "resume":
+            elif command == "aipm-resume":
                 return await self._execute_resume(project_path, args)
-            elif command == "tasks":
+            elif command == "aipm-tasks":
                 return await self._execute_tasks(project_path, args)
-            elif command == "analyze":
+            elif command == "aipm-newTask":
+                return await self._execute_newTask(project_path, args)
+            elif command == "aipm-analyze":
                 return await self._execute_analyze(project_path, args)
-            elif command == "themes":
+            elif command == "aipm-themes":
                 return await self._execute_themes(project_path, args)
-            elif command == "flows":
+            elif command == "aipm-flows":
                 return await self._execute_flows(project_path, args)
-            elif command == "branch":
+            elif command == "aipm-branch":
                 return await self._execute_branch(project_path, args)
-            elif command == "merge":
+            elif command == "aipm-merge":
                 return await self._execute_merge(project_path, args)
-            elif command == "config":
+            elif command == "aipm-config":
                 return await self._execute_config(project_path, args)
-            elif command == "deploy":
+            elif command == "aipm-deploy":
                 return await self._execute_deploy(project_path, args)
-            elif command == "backup":
+            elif command == "aipm-backup":
                 return await self._execute_backup(project_path, args)
-            elif command == "maintenance":
+            elif command == "aipm-maintenance":
                 return await self._execute_maintenance(project_path, args)
-            elif command == "db-stats":
+            elif command == "aipm-db-stats":
                 return await self._execute_db_stats(project_path, args)
             else:
                 return json.dumps({
@@ -379,10 +381,10 @@ Use `help_commands` with a specific command name for detailed help on individual
                 return f"""{state_result}
 
 ## Available Commands
-Use `/help` to see all available commands, or try:
-- `/init` - Initialize project management
-- `/analyze` - Analyze project structure  
-- `/tasks` - Show active tasks
+Use `/aipm-help` to see all available commands, or try:
+- `/aipm-init` - Initialize project management
+- `/aipm-analyze` - Analyze project structure  
+- `/aipm-tasks` - Show active tasks
 """
                 
         except Exception as e:
@@ -390,28 +392,28 @@ Use `/help` to see all available commands, or try:
             return json.dumps({
                 "type": "error",
                 "message": f"Error getting project status: {str(e)}",
-                "suggested_commands": ["help", "init"]
+                "suggested_commands": ["aipm-help", "aipm-init"]
             }, indent=2)
     
     def _get_command_suggestions(self, state: str) -> List[str]:
         """Get suggested commands based on project state."""
         if state == "no_structure":
-            return ["init", "analyze"]
+            return ["aipm-init", "aipm-analyze"]
         elif state == "partial":
-            return ["init", "status", "analyze"]
+            return ["aipm-init", "aipm-status", "aipm-analyze"]
         elif state == "complete":
-            return ["resume", "tasks", "status"]
+            return ["aipm-resume", "aipm-tasks", "aipm-status"]
         elif state == "git_history_found":
-            return ["init", "resume", "branch"]
+            return ["aipm-init", "aipm-resume", "aipm-branch"]
         else:
-            return ["help", "status", "analyze"]
+            return ["aipm-help", "aipm-status", "aipm-analyze"]
     
     async def _execute_status(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /status command."""
+        """Execute /aipm-status command."""
         return await self.command_status({"project_path": str(project_path)})
     
     async def _execute_init(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /init command with status check and appropriate redirection."""
+        """Execute /aipm-init command with status check and appropriate redirection."""
         try:
             from .initialization_tools import InitializationTools
             init_tools = InitializationTools(self.db_manager)
@@ -426,29 +428,29 @@ Use `/help` to see all available commands, or try:
                 state_data = json.loads(state_result)
                 state = state_data.get("state", "unknown")
                 
-                # If project is already complete, suggest /resume instead
+                # If project is already complete, suggest /aipm-resume instead
                 if state == "complete":
                     return f"""# ℹ️ Project Already Initialized
 
 ## Current Status:
 {state_result}
 
-## 🔄 Did you mean `/resume`?
+## 🔄 Did you mean `/aipm-resume`?
 
 This project appears to already have AI Project Manager fully set up and running. 
 
 **If you want to:**
-- **Continue previous work** → Use `/resume` 
-- **See current tasks** → Use `/tasks`
-- **Check project status** → Use `/status`
-- **Create work branch** → Use `/branch`
+- **Continue previous work** → Use `/aipm-resume` 
+- **See current tasks** → Use `/aipm-tasks`
+- **Check project status** → Use `/aipm-status`
+- **Create work branch** → Use `/aipm-branch`
 
 **If you really want to re-initialize:**
 - Move or backup the existing `projectManagement/` directory first
-- Then run `/init` again
+- Then run `/aipm-init` again
 
 ## 💡 Recommended Next Step:
-Try `/resume` to continue your previous work, or `/status` to see available options.
+Try `/aipm-resume` to continue your previous work, or `/aipm-status` to see available options.
 """
                 
                 # Auto-select appropriate initialization choice for non-complete states
@@ -468,7 +470,7 @@ Try `/resume` to continue your previous work, or `/status` to see available opti
                     "context": args
                 })
                 
-                return f"""# /init Command Executed
+                return f"""# /aipm-init Command Executed
 
 ## Project Analysis:
 {state_result}
@@ -480,13 +482,13 @@ Choice: {choice}
 {choice_result}
 
 ## 🎯 Next Steps:
-- Use `/resume` to start working with tasks
-- Use `/branch` to create a work branch  
-- Use `/tasks` to see active items
+- Use `/aipm-resume` to start working with tasks
+- Use `/aipm-branch` to create a work branch  
+- Use `/aipm-tasks` to see active items
 """
             except Exception as parse_error:
                 logger.warning(f"Failed to parse state analysis: {parse_error}")
-                return f"""# /init Command - Analysis Complete
+                return f"""# /aipm-init Command - Analysis Complete
 
 {state_result}
 
@@ -497,11 +499,11 @@ Choice: {choice}
             logger.error(f"Error in _execute_init: {e}")
             return json.dumps({
                 "type": "error",
-                "message": f"Error executing /init command: {str(e)}"
+                "message": f"Error executing /aipm-init command: {str(e)}"
             }, indent=2)
     
     async def _execute_resume(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /resume command."""
+        """Execute /aipm-resume command."""
         try:
             # This would integrate with session manager and task tools
             return json.dumps({
@@ -514,11 +516,11 @@ Choice: {choice}
             logger.error(f"Error in _execute_resume: {e}")
             return json.dumps({
                 "type": "error", 
-                "message": f"Error executing /resume command: {str(e)}"
+                "message": f"Error executing /aipm-resume command: {str(e)}"
             }, indent=2)
     
     async def _execute_tasks(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /tasks command."""
+        """Execute /aipm-tasks command."""
         try:
             from .task_tools import TaskTools
             task_tools = TaskTools(self.db_manager)
@@ -526,23 +528,54 @@ Choice: {choice}
             # Get active tasks
             active_result = await task_tools.list_active_tasks({"project_path": str(project_path)})
             
-            return f"""# /tasks Command Result
+            return f"""# /aipm-tasks Command Result
 
 ## Active Tasks:
 {active_result}
 
-Use `/resume` to continue work on these tasks.
+Use `/aipm-resume` to continue work on these tasks.
 """
             
         except Exception as e:
             logger.error(f"Error in _execute_tasks: {e}")
             return json.dumps({
                 "type": "error",
-                "message": f"Error executing /tasks command: {str(e)}"
+                "message": f"Error executing /aipm-tasks command: {str(e)}"
+            }, indent=2)
+    
+    async def _execute_newTask(self, project_path: Path, args: Dict[str, Any]) -> str:
+        """Execute /aipm-newTask command."""
+        try:
+            from .task_tools import TaskTools
+            task_tools = TaskTools(self.db_manager)
+            
+            # Create new task with description
+            task_description = args.get('description', 'New task created via command')
+            
+            create_result = await task_tools.create_task({
+                "project_path": str(project_path),
+                "description": task_description
+            })
+            
+            return f"""# /aipm-newTask Command Result
+
+## New Task Created:
+{create_result}
+
+## Next Steps:
+- Use `/aipm-tasks` to view all active tasks
+- Use `/aipm-resume` to begin working on tasks
+"""
+            
+        except Exception as e:
+            logger.error(f"Error in _execute_newTask: {e}")
+            return json.dumps({
+                "type": "error",
+                "message": f"Error executing /aipm-newTask command: {str(e)}"
             }, indent=2)
     
     async def _execute_analyze(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /analyze command."""
+        """Execute /aipm-analyze command."""
         try:
             # This would integrate with theme discovery and project analysis tools
             return json.dumps({
@@ -555,11 +588,11 @@ Use `/resume` to continue work on these tasks.
             logger.error(f"Error in _execute_analyze: {e}")
             return json.dumps({
                 "type": "error",
-                "message": f"Error executing /analyze command: {str(e)}"
+                "message": f"Error executing /aipm-analyze command: {str(e)}"
             }, indent=2)
     
     async def _execute_themes(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /themes command."""
+        """Execute /aipm-themes command."""
         try:
             from .theme_tools import ThemeTools
             theme_tools = ThemeTools(self.db_manager)
@@ -567,7 +600,7 @@ Use `/resume` to continue work on these tasks.
             # List themes
             themes_result = await theme_tools.list_themes({"project_path": str(project_path)})
             
-            return f"""# /themes Command Result
+            return f"""# /aipm-themes Command Result
 
 {themes_result}
 """
@@ -576,11 +609,11 @@ Use `/resume` to continue work on these tasks.
             logger.error(f"Error in _execute_themes: {e}")
             return json.dumps({
                 "type": "error",
-                "message": f"Error executing /themes command: {str(e)}"
+                "message": f"Error executing /aipm-themes command: {str(e)}"
             }, indent=2)
     
     async def _execute_flows(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /flows command."""
+        """Execute /aipm-flows command."""
         try:
             from .flow_tools import FlowTools
             flow_tools = FlowTools(self.db_manager)
@@ -596,11 +629,11 @@ Use `/resume` to continue work on these tasks.
             logger.error(f"Error in _execute_flows: {e}")
             return json.dumps({
                 "type": "error",
-                "message": f"Error executing /flows command: {str(e)}"
+                "message": f"Error executing /aipm-flows command: {str(e)}"
             }, indent=2)
     
     async def _execute_config(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /config command."""
+        """Execute /aipm-config command."""
         try:
             from .config_tools import ConfigTools
             config_tools = ConfigTools(self.db_manager)
@@ -608,7 +641,7 @@ Use `/resume` to continue work on these tasks.
             # Get configuration
             config_result = await config_tools.get_config({})
             
-            return f"""# /config Command Result
+            return f"""# /aipm-config Command Result
 
 {config_result}
 """
@@ -617,11 +650,11 @@ Use `/resume` to continue work on these tasks.
             logger.error(f"Error in _execute_config: {e}")
             return json.dumps({
                 "type": "error",
-                "message": f"Error executing /config command: {str(e)}"
+                "message": f"Error executing /aipm-config command: {str(e)}"
             }, indent=2)
     
     async def _execute_branch(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /branch command with safety checks."""
+        """Execute /aipm-branch command with safety checks."""
         try:
             from .branch_tools import BranchTools
             branch_tools = BranchTools(str(project_path))
@@ -633,7 +666,7 @@ Use `/resume` to continue work on these tasks.
             # Check workflow safety
             safety_check = branch_manager.check_workflow_safety()
             
-            safety_report = f"""# /branch Command - Safety Check
+            safety_report = f"""# /aipm-branch Command - Safety Check
 
 ## Current Repository Status:
 - **Repository Type**: {safety_check['repository_type']}
@@ -672,7 +705,7 @@ Use `/resume` to continue work on these tasks.
 
 ## 🎯 Next Steps:
 - Your new branch is ready for development
-- Use `/merge` when ready to create a pull request
+- Use `/aipm-merge` when ready to create a pull request
 - Use `/tasks` to see current work items
 """
             
@@ -680,11 +713,11 @@ Use `/resume` to continue work on these tasks.
             logger.error(f"Error in _execute_branch: {e}")
             return json.dumps({
                 "type": "error",
-                "message": f"Error executing /branch command: {str(e)}"
+                "message": f"Error executing /aipm-branch command: {str(e)}"
             }, indent=2)
     
     async def _execute_merge(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /merge command with PR creation."""
+        """Execute /aipm-merge command with PR creation."""
         try:
             from .branch_tools import BranchTools
             branch_tools = BranchTools(str(project_path))
@@ -695,7 +728,7 @@ Use `/resume` to continue work on these tasks.
             current_branch = branch_manager._get_current_branch()
             repo_info = branch_manager._detect_repository_type()
             
-            merge_report = f"""# /merge Command - Pull Request Creation
+            merge_report = f"""# /aipm-merge Command - Pull Request Creation
 
 ## Current Status:
 - **Current Branch**: {current_branch}
@@ -714,7 +747,7 @@ You're currently on branch '{current_branch}' which is not an AI work branch.
 - Branches starting with 'ai-pm-org-branch-' (e.g., ai-pm-org-branch-001)
 
 ### To create a work branch:
-Use `/branch` command to create a new AI work branch first.
+Use `/aipm-branch` command to create a new AI work branch first.
 """
                 return merge_report
             
@@ -754,7 +787,7 @@ Use `/branch` command to create a new AI work branch first.
 ## 🎯 Next Steps:
 - Changes are now in the main AI branch
 - Consider pushing changes to remote if working with a team
-- Use `/branch` to create a new work branch for additional work
+- Use `/aipm-branch` to create a new work branch for additional work
 """
             
             return merge_report
@@ -763,7 +796,7 @@ Use `/branch` command to create a new AI work branch first.
             logger.error(f"Error in _execute_merge: {e}")
             return json.dumps({
                 "type": "error", 
-                "message": f"Error executing /merge command: {str(e)}"
+                "message": f"Error executing /aipm-merge command: {str(e)}"
             }, indent=2)
     
     async def _execute_deploy(self, project_path: Path, args: Dict[str, Any]) -> str:
@@ -789,17 +822,17 @@ Use `/branch` command to create a new AI work branch first.
             
             # Check if ai-pm-org-main exists
             if not branch_manager._branch_exists("ai-pm-org-main"):
-                return f"""# /deploy Command - No AI Improvements Found
+                return f"""# /aipm-deploy Command - No AI Improvements Found
 
 ❌ **No AI Branch to Deploy**
 - ai-pm-org-main branch not found
 - Nothing to deploy to your main branch
 
 🔧 **Next Steps:**
-1. Use `/init` to set up AI project management
-2. Use `/branch` to create AI work branches
+1. Use `/aipm-init` to set up AI project management
+2. Use `/aipm-branch` to create AI work branches
 3. Complete some AI improvements first
-4. Then use `/deploy` to merge them to your main branch
+4. Then use `/aipm-deploy` to merge them to your main branch
 """
             
             # Get deployment arguments with safety defaults
@@ -823,8 +856,8 @@ Use `/branch` command to create a new AI work branch first.
 ## 🔧 Next Steps:
 1. **Test thoroughly** - Verify all changes work as expected
 2. **Push to remote** - `git push origin main` (when ready)
-3. **Continue development** - Create new AI work branches with `/branch`
-4. **Iterate** - Use `/resume` to continue AI-assisted development
+3. **Continue development** - Create new AI work branches with `/aipm-branch`
+4. **Iterate** - Use `/aipm-resume` to continue AI-assisted development
 
 ## 🛡️ Safety Features:
 - Backup branch created before deployment
@@ -839,11 +872,11 @@ Use `/branch` command to create a new AI work branch first.
             logger.error(f"Error in _execute_deploy: {e}")
             return json.dumps({
                 "type": "error",
-                "message": f"Error executing /deploy command: {str(e)}"
+                "message": f"Error executing /aipm-deploy command: {str(e)}"
             }, indent=2)
 
     async def _execute_backup(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /backup command."""
+        """Execute /aipm-backup command."""
         try:
             from ..tools.database_tools import DatabaseTools
             database_tools = DatabaseTools(self.db_manager, self.config_manager)
@@ -861,7 +894,7 @@ Use `/branch` command to create a new AI work branch first.
             return f"❌ Error creating database backup: {str(e)}"
 
     async def _execute_maintenance(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /maintenance command."""
+        """Execute /aipm-maintenance command."""
         try:
             from ..tools.database_tools import DatabaseTools
             database_tools = DatabaseTools(self.db_manager, self.config_manager)
@@ -881,7 +914,7 @@ Use `/branch` command to create a new AI work branch first.
             return f"❌ Error running database maintenance: {str(e)}"
 
     async def _execute_db_stats(self, project_path: Path, args: Dict[str, Any]) -> str:
-        """Execute /db-stats command."""
+        """Execute /aipm-db-stats command."""
         try:
             from ..tools.database_tools import DatabaseTools
             database_tools = DatabaseTools(self.db_manager, self.config_manager)

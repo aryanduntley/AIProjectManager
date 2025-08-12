@@ -92,12 +92,12 @@ class GitSafetyChecker:
                 })
                 safety_check["recommendations"].append({
                     "action": "create_work_branch",
-                    "message": "Then create a work branch using `/branch` command"
+                    "message": "Then create a work branch using `/aipm-branch` command"
                 })
             else:
                 safety_check["recommendations"].append({
                     "action": "use_init_command",
-                    "message": "Use `/init` command to set up AI project management properly"
+                    "message": "Use `/aipm-init` command to set up AI project management properly"
                 })
         
         # Check if trying to branch from wrong base
@@ -156,7 +156,7 @@ class GitSafetyChecker:
                 ancestry_check["message"] = f"Target branch '{target_branch}' does not exist"
                 ancestry_check["recommendations"].append({
                     "action": "create_ai_main",
-                    "message": f"Use `/init` to create '{target_branch}' branch"
+                    "message": f"Use `/aipm-init` to create '{target_branch}' branch"
                 })
                 return ancestry_check
             
