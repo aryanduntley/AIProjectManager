@@ -75,7 +75,7 @@ class TaskTools:
                         "is_high_priority_task": {
                             "type": "boolean",
                             "description": "Whether this is a high-priority task requiring special handling",
-                            "default": false
+                            "default": False
                         },
                         "estimated_effort": {
                             "type": "string",

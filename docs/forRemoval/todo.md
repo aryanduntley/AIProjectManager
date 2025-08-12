@@ -56,14 +56,6 @@ review directives and mcp flow regarding directives. Does it follow the instruct
 
 review directives escalation. How often should json be reviewed? How often should md? examples for escalation, directives on escalation. I am worried json will not be viewed as often as it should and compressed will likely be relied upon even when more directives context would likely be needed. 
 
-user main branch, not mcp main branch, should never be automatically pushed to. Must be explicit user request. Ensure no code or directives mention anything to do with pushing to or modifying user's main branch.
-
-Often there are issues, inconsistencies, fixes, etc that are discovered by AI. If issues found, notify user and offer to create side task or new task(s) depending on issues (should be new task files or should be subtasks relative to current working task)
-
-exist_high_priority
-requires_escalation
-ensure we have dabatse calls for these
-
 ======================
 -ril for just unique files only
 grep -ri --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=out --exclude-dir=build --exclude-dir=cache --exclude-dir=deps --exclude-dir=lib --exclude-dir=_mocks_ --exclude-dir=.vscode --exclude-dir=cache --exclude-dir=pbli --exclude-dir=__pycache__ --exclude-dir=test-results --exclude-dir=examples --exclude-dir=tests --exclude-dir=sample-inputs 'session'
