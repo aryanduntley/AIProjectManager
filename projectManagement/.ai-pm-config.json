@@ -1,0 +1,14 @@
+{
+  "project": {
+    "max_file_lines": 900,
+    "auto_modularize": true,
+    "theme_discovery": true,
+    "backup_enabled": true,
+    "management_folder_name": "projectManagement"
+  },
+  "archiving": {
+    "projectlogicSizeLimit": "2MB",
+    "noteworthySizeLimit": "1MB",
+    "deleteArchivesOlderThan": "90 days"
+  }
+}

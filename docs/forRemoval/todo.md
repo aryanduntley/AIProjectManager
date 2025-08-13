@@ -38,6 +38,8 @@ docs/forRemoval/testing-report.md
 docs/forRemoval/mcp-initialization-ux-problem.md
 docs/forRemoval/session-refactoring-plan.md
 
+docs/forRemoval/mcp-critical-gap-analysis.md
+
 docs/forRemoval/grep_results.md
 docs/forRemoval/grep_results-full.txt
 docs/forRemoval/mcp-server-debugging-log.md
