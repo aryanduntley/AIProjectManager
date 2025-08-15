@@ -28,10 +28,11 @@ logger = logging.getLogger(__name__)
 class ProjectTools:
     """Tools for project management operations."""
     
-    def __init__(self, db_manager: Optional[DatabaseManager] = None, config_manager=None):
+    def __init__(self, db_manager: Optional[DatabaseManager] = None, config_manager=None, directive_processor=None):
         self.tools = []
         self.db_manager = db_manager
         self.config_manager = config_manager
+        self.directive_processor = directive_processor
         self.session_queries = SessionQueries(db_manager) if db_manager else None
         self.task_queries = TaskStatusQueries(db_manager) if db_manager else None
         self.theme_flow_queries = ThemeFlowQueries(db_manager) if db_manager else None
@@ -194,7 +195,7 @@ class ProjectTools:
         ]
     
     async def initialize_project(self, arguments: Dict[str, Any]) -> str:
-        """Initialize project management structure."""
+        """Initialize project management structure with directive-driven consultation."""
         try:
             project_path = Path(arguments["project_path"])
             project_name = arguments["project_name"]
@@ -209,10 +210,33 @@ class ProjectTools:
             if project_mgmt_dir.exists() and not force:
                 return f"Project management structure already exists at {project_mgmt_dir}. Use force=true to override."
             
-            # Create the structure
-            await self._create_project_structure(project_path, project_name)
-            
-            return f"Project management structure initialized successfully at {project_mgmt_dir}"
+            # CRITICAL FIX: Use directive processor for proper AI-driven initialization
+            if self.directive_processor:
+                logger.info("Using directive processor for project initialization")
+                
+                context = {
+                    "trigger": "project_initialization", 
+                    "project_path": str(project_path),
+                    "project_name": project_name,
+                    "force": force,
+                    "management_dir": str(project_mgmt_dir),
+                    "initialization_request": arguments
+                }
+                
+                # Execute projectInitialization directive - this will escalate for proper consultation
+                result = await self.directive_processor.execute_directive("projectInitialization", context)
+                
+                # The directive execution should handle the actual consultation and blueprint creation
+                if result.get("actions_taken"):
+                    return f"Project initialization directive executed successfully. Actions taken: {len(result.get('actions_taken', []))}"
+                else:
+                    return f"Project initialization directive executed but no actions determined. Result: {result}"
+                    
+            else:
+                # Fallback to old behavior if no directive processor (should not happen in fixed system)
+                logger.warning("No directive processor available - falling back to basic structure creation")
+                await self._create_project_structure(project_path, project_name)
+                return f"Project management structure initialized successfully at {project_mgmt_dir} (fallback mode)"
             
         except Exception as e:
             logger.error(f"Error initializing project: {e}")

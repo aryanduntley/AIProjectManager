@@ -45,10 +45,14 @@ class ToolDefinition(BaseModel):
 class MCPToolRegistry:
     """Registry for MCP tools with automatic discovery and registration."""
     
-    def __init__(self, config_manager: ConfigManager):
+    def __init__(self, config_manager: ConfigManager, directive_processor=None):
         self.config_manager = config_manager
+        self.directive_processor = directive_processor
         self.tools: Dict[str, ToolDefinition] = {}
         self.tool_handlers: Dict[str, Callable] = {}
+        
+        # Server instance for hook point integration
+        self.server_instance = None
         
         # Database components
         self.db_manager: Optional[DatabaseManager] = None
@@ -69,6 +73,9 @@ class MCPToolRegistry:
     async def register_all_tools(self, server: Server, project_path: Optional[str] = None):
         """Register all available tools with the MCP server."""
         try:
+            # Store server instance for hook point integration
+            self.server_instance = server
+            
             # Initialize database if project path provided
             if project_path:
                 await self._initialize_database(project_path)
@@ -107,9 +114,9 @@ class MCPToolRegistry:
     async def _discover_tools(self):
         """Discover and import all tool modules."""
         try:
-            # Import project tools with database integration
+            # Import project tools with database integration and directive processor
             from ..tools.project_tools import ProjectTools
-            project_tools = ProjectTools(self.db_manager, self.config_manager)
+            project_tools = ProjectTools(self.db_manager, self.config_manager, self.directive_processor)
             await self._register_tool_module(project_tools)
             
             # Import database tools
@@ -120,6 +127,8 @@ class MCPToolRegistry:
             # Import task tools with database integration
             from ..tools.task_tools import TaskTools
             task_tools = TaskTools(self.task_queries, self.session_queries, self.file_metadata_queries)
+            # Add server instance for hook point integration
+            task_tools.server_instance = self.server_instance
             await self._register_tool_module(task_tools)
             
             # Import session manager with database integration
@@ -133,12 +142,16 @@ class MCPToolRegistry:
             
             # Import theme tools with database integration
             from ..tools.theme_tools import ThemeTools
-            theme_tools = ThemeTools(self.theme_flow_queries, self.file_metadata_queries)
+            theme_tools = ThemeTools(self.theme_flow_queries, self.file_metadata_queries, self.config_manager)
+            # Add server instance for hook point integration
+            theme_tools.server_instance = self.server_instance
             await self._register_tool_module(theme_tools)
             
             # Import flow tools with database integration
             from ..tools.flow_tools import FlowTools
             flow_tools = FlowTools(self.theme_flow_queries, self.session_queries, self.file_metadata_queries)
+            # Add server instance for hook point integration
+            flow_tools.server_instance = self.server_instance
             await self._register_tool_module(flow_tools)
             
             # Import enhanced core processing tools if components available

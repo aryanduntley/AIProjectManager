@@ -25,6 +25,7 @@ class ThemeTools:
         self.theme_flow_queries = theme_flow_queries
         self.file_metadata_queries = file_metadata_queries
         self.config_manager = config_manager
+        self.server_instance = None  # Will be set by MCPToolRegistry
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get all theme management tools."""
@@ -358,6 +359,19 @@ class ThemeTools:
                     operation="create",
                     details={"theme_name": theme_name, "description": description}
                 )
+            
+            # Trigger directive processing for file creation
+            if self.server_instance and hasattr(self.server_instance, 'on_file_edit_complete'):
+                try:
+                    changes_made = {
+                        "operation": "create_theme",
+                        "theme_name": theme_name,
+                        "description": description,
+                        "file_created": str(theme_file)
+                    }
+                    await self.server_instance.on_file_edit_complete(str(theme_file), changes_made)
+                except Exception as e:
+                    logger.warning(f"Failed to trigger file edit completion directive: {e}")
             
             return f"Theme '{theme_name}' created successfully at {theme_file}"
             

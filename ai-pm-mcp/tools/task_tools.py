@@ -30,6 +30,7 @@ class TaskTools:
         self.session_queries = session_queries
         self.file_metadata_queries = file_metadata_queries
         self.config_manager = config_manager
+        self.server_instance = None  # Will be set by MCPToolRegistry
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get all task management tools."""
@@ -421,6 +422,32 @@ class TaskTools:
                         "notes": notes
                     }
                 )
+            
+            # Trigger directive processing for task status updates, especially completions
+            if self.server_instance and hasattr(self.server_instance, 'on_task_completion'):
+                try:
+                    # Check if this is a completion
+                    is_completion = status.lower() in ['completed', 'done', 'finished']
+                    
+                    completion_result = {
+                        "task_id": task_id,
+                        "status": status,
+                        "progress_percentage": progress_percentage,
+                        "actual_effort": actual_effort,
+                        "notes": notes,
+                        "is_completion": is_completion,
+                        "task_data": {
+                            "operation": "task_status_update",
+                            "previous_status": "unknown",  # Could be enhanced to track this
+                            "new_status": status
+                        }
+                    }
+                    
+                    # Always trigger for status updates, directive processor will decide appropriate actions
+                    await self.server_instance.on_task_completion(task_id, completion_result)
+                    
+                except Exception as e:
+                    logger.warning(f"Failed to trigger task completion directive: {e}")
             
             return f"Task {task_id} updated to status: {status}" + (f" ({progress_percentage}% complete)" if progress_percentage is not None else "")
             

@@ -40,6 +40,7 @@ docs/forRemoval/session-refactoring-plan.md
 
 docs/forRemoval/mcp-critical-gap-analysis.md
 docs/forRemoval/mcp-gap-fix-implementation-plan.md
+docs/directive-integration-completion-plan.md
 
 docs/forRemoval/grep_results.md
 docs/forRemoval/grep_results-full.txt
@@ -51,7 +52,7 @@ ai-pm-mcp/database/theme_flow_queries.py
 update_flow_step_status
 we need to ensure that the multi flow system relative to the databae is working.
 
-ai-pm-mcp full code review.
+ai-pm-mcp full code review. Need to find every place that a call to directives review should go
 
 config.json review, map to directives. Ensure all configurable options (eg. true/false) are accounted for in directives (if true, do this, if false, do that) but also accounted for in the mcp code itself.
 
@@ -59,7 +60,11 @@ review directives and mcp flow regarding directives. Does it follow the instruct
 
 review directives escalation. How often should json be reviewed? How often should md? examples for escalation, directives on escalation. I am worried json will not be viewed as often as it should and compressed will likely be relied upon even when more directives context would likely be needed. 
 
-and /aipm-pause tool. This will tell MCP/AI to find a suitible stopping point. Handle all cleanup and project Management data entry, evolution, updates, entries, etc. Check off any completed subtasks, and prepare the project for a clean /aipm-resume. This should happen with each subtask completion anyway, but the /aippm-pause will simply be a bit more thorough in preparation for a session end.
+add /aipm-pause tool. This will tell MCP/AI to find a suitible stopping point. Handle all cleanup and project Management data entry, evolution, updates, entries, etc. Check off any completed subtasks, and prepare the project for a clean /aipm-resume. This should happen with each subtask completion anyway, but the /aippm-pause will simply be a bit more thorough in preparation for a session end. ai-pm-mcp/server.py _on_work_pause  Need directives for this as well
+
+ensure database file metadata is useful so that general state of files can be assessed from database without having to read through the various files themselves. For more thorough understanging, the files of course should be read, but for context analysis when editing a file, or preparing for a theme or flow, should not have to read all related files themselves, but should be able to get sufficient data from database regarding files.
+
+test_directive_integration.py
 
 ======================
 -ril for just unique files only

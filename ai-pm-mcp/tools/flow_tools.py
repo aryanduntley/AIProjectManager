@@ -34,6 +34,7 @@ class FlowTools:
         self.session_queries = session_queries
         self.file_metadata_queries = file_metadata_queries
         self.config_manager = config_manager
+        self.server_instance = None  # Will be set by MCPToolRegistry
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get available flow management tools."""
@@ -447,6 +448,21 @@ class FlowTools:
             
             # Write flow file
             flow_file_path.write_text(json.dumps(flow_data, indent=2))
+            
+            # Trigger directive processing for flow file creation
+            if self.server_instance and hasattr(self.server_instance, 'on_file_edit_complete'):
+                try:
+                    changes_made = {
+                        "operation": "create_flow",
+                        "flow_id": flow_id,
+                        "flow_name": flow_name,
+                        "description": description,
+                        "primary_themes": primary_themes,
+                        "file_created": str(flow_file_path)
+                    }
+                    await self.server_instance.on_file_edit_complete(str(flow_file_path), changes_made)
+                except Exception as e:
+                    logger.warning(f"Failed to trigger file edit completion directive for flow creation: {e}")
             
             # Update flow index if it exists
             await self._update_flow_index_with_new_flow(

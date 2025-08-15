@@ -27,6 +27,8 @@ from .core.config_manager import ConfigManager
 from .core.mcp_api import MCPToolRegistry
 from .core.state_analyzer import ProjectStateAnalyzer
 from .core.user_communication import UserCommunicationService
+from .core.directive_processor import DirectiveProcessor, create_directive_processor
+from .core.action_executor import ActionExecutor, create_action_executor
 
 
 # Configure enhanced debugging logging
@@ -52,10 +54,14 @@ class AIProjectManagerServer:
     def __init__(self):
         self.server = Server("ai-project-manager")
         self.config_manager = ConfigManager()
-        self.tool_registry = MCPToolRegistry(self.config_manager)
         self.state_analyzer = ProjectStateAnalyzer()
         self.user_comm = UserCommunicationService()
         self.initial_state = None
+        
+        # Initialize directive processing system
+        self.action_executor = None
+        self.directive_processor = None
+        self.tool_registry = None  # Will be created after directive processor
         
     async def initialize(self):
         """Initialize the server and register tools."""
@@ -67,10 +73,30 @@ class AIProjectManagerServer:
             await self.config_manager.load_config()
             logger.debug("Configuration loaded successfully")
             
+            # Initialize directive processing system
+            logger.debug("Initializing directive processing system")
+            await self._initialize_directive_system()
+            logger.debug("Directive processing system initialized")
+            
+            # Create tool registry with directive processor
+            logger.debug("Creating tool registry with directive processor")
+            from .core.mcp_api import MCPToolRegistry
+            self.tool_registry = MCPToolRegistry(self.config_manager, self.directive_processor)
+            
             # Register all tools
             logger.debug("Registering tools")
             await self.tool_registry.register_all_tools(self.server)
             logger.debug("Tools registered successfully")
+            
+            # Update ActionExecutor with database manager now that tool registry has initialized it
+            if hasattr(self.tool_registry, 'db_manager') and self.tool_registry.db_manager:
+                logger.debug("Updating ActionExecutor with database manager")
+                self.action_executor.db_manager = self.tool_registry.db_manager
+                self.action_executor._initialize_database_queries()
+                logger.debug("ActionExecutor database integration completed")
+            
+            # Execute session start hook
+            await self._on_session_start()
             
             # Store initial state analysis but don't auto-execute
             logger.debug("Analyzing initial project state")
@@ -82,6 +108,156 @@ class AIProjectManagerServer:
         except Exception as e:
             logger.error(f"Failed to initialize server: {e}", exc_info=True)
             raise
+    
+    async def _initialize_directive_system(self):
+        """Initialize the directive processing and action execution system."""
+        try:
+            # Create action executor with MCP tools reference (database manager will be added later)
+            mcp_tools = {
+                "task_tools": None,  # Will be populated after tool registry initialization
+                "project_tools": None,
+                "log_tools": None,
+                "theme_tools": None,
+                "database_tools": None,
+                "session_tools": None,
+                "file_tools": None,
+                "branch_tools": None
+            }
+            
+            self.action_executor = create_action_executor(mcp_tools, db_manager=None)  # Will get DB later
+            
+            # Create directive processor with action executor
+            self.directive_processor = create_directive_processor(self.action_executor)
+            
+            logger.info("Directive processing system initialized")
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize directive system: {e}")
+            raise
+    
+    async def _on_session_start(self):
+        """Hook point: Session starting."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for session start hook")
+            return
+        
+        try:
+            context = {
+                "trigger": "session_start",
+                "server_instance": "ai-project-manager",
+                "project_path": str(Path.cwd()),
+                "session_context": {
+                    "server_initialized": True,
+                    "tools_registered": True
+                },
+                "project_state": self.initial_state
+            }
+            
+            logger.info("Executing session start directive")
+            result = await self.directive_processor.execute_directive("sessionManagement", context)
+            logger.info(f"Session start directive completed: {result.get('actions_taken', [])}")
+            
+        except Exception as e:
+            logger.error(f"Error in session start hook: {e}")
+    
+    async def _on_work_pause(self):
+        """Hook point: Work pause preparation (for /aipm-pause command)."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for work pause hook")
+            return
+        
+        try:
+            context = {
+                "trigger": "work_pause",
+                "server_instance": "ai-project-manager",
+                "pause_context": {
+                    "thorough_cleanup": True,
+                    "prepare_for_resume": True,
+                    "check_completions": True
+                },
+                "current_project_state": self.initial_state
+            }
+            
+            logger.info("Executing work pause directive")
+            result = await self.directive_processor.execute_directive("sessionManagement", context)
+            logger.info(f"Work pause directive completed: {result.get('actions_taken', [])}")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in work pause hook: {e}")
+            return {"error": str(e), "actions_taken": []}
+    
+    # Hook point methods that can be called from MCP tools
+    async def on_file_edit_complete(self, file_path: str, changes_made: Dict[str, Any]) -> Dict[str, Any]:
+        """Hook point: File editing completed - real-time state preservation."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for file edit hook")
+            return {"error": "No directive processor"}
+        
+        try:
+            context = {
+                "trigger": "file_edit_completion",
+                "file_path": file_path,
+                "changes_made": changes_made,
+                "project_context": self.initial_state,
+                "timestamp": "now"
+            }
+            
+            logger.debug(f"Executing file edit completion directive for: {file_path}")
+            result = await self.directive_processor.execute_directive("fileOperations", context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in file edit completion hook: {e}")
+            return {"error": str(e), "actions_taken": []}
+    
+    async def on_task_completion(self, task_id: str, completion_result: Dict[str, Any]) -> Dict[str, Any]:
+        """Hook point: Task/subtask completed - real-time state preservation."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for task completion hook")
+            return {"error": "No directive processor"}
+        
+        try:
+            context = {
+                "trigger": "task_completion",
+                "task_id": task_id,
+                "completion_result": completion_result,
+                "task_data": completion_result.get("task_data", {}),
+                "project_state": self.initial_state,
+                "timestamp": "now"
+            }
+            
+            logger.info(f"Executing task completion directive for task: {task_id}")
+            result = await self.directive_processor.execute_directive("taskManagement", context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in task completion hook: {e}")
+            return {"error": str(e), "actions_taken": []}
+    
+    async def on_conversation_to_action_transition(self, conversation_context: Dict[str, Any]) -> Dict[str, Any]:
+        """Hook point: AI moving from conversation to action - state preservation opportunity."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for conversation transition hook")
+            return {"error": "No directive processor"}
+        
+        try:
+            context = {
+                "trigger": "conversation_to_action_transition",
+                "conversation_context": conversation_context,
+                "session_state": {"project_state": self.initial_state},
+                "project_context": self.initial_state,
+                "timestamp": "now"
+            }
+            
+            logger.debug("Executing conversation to action transition directive")
+            result = await self.directive_processor.execute_directive("sessionManagement", context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in conversation transition hook: {e}")
+            return {"error": str(e), "actions_taken": []}
     
     async def analyze_initial_state(self):
         """Analyze initial project state without auto-executing actions."""
