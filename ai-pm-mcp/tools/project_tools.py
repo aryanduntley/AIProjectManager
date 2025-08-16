@@ -31,11 +31,12 @@ logger = logging.getLogger(__name__)
 class ProjectTools:
     """Tools for project management operations."""
     
-    def __init__(self, db_manager: Optional[DatabaseManager] = None, config_manager=None, directive_processor=None):
+    def __init__(self, db_manager: Optional[DatabaseManager] = None, config_manager=None, directive_processor=None, server_instance=None):
         self.tools = []
         self.db_manager = db_manager
         self.config_manager = config_manager
         self.directive_processor = directive_processor
+        self.server_instance = server_instance
         self.session_queries = SessionQueries(db_manager) if db_manager else None
         self.task_queries = TaskStatusQueries(db_manager) if db_manager else None
         self.theme_flow_queries = ThemeFlowQueries(db_manager) if db_manager else None
@@ -46,6 +47,7 @@ class ProjectTools:
             'db_manager': db_manager,
             'config_manager': config_manager,
             'directive_processor': directive_processor,
+            'server_instance': server_instance,
             'session_queries': self.session_queries,
             'task_queries': self.task_queries,
             'theme_flow_queries': self.theme_flow_queries,

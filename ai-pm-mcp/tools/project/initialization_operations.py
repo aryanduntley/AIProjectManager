@@ -58,6 +58,21 @@ class ProjectInitializationOperations(BaseProjectOperations):
                 
                 # The directive execution should handle the actual consultation and blueprint creation
                 if result.get("actions_taken"):
+                    # Add directive hook for server notification
+                    if self.server_instance and hasattr(self.server_instance, 'on_project_operation_complete'):
+                        hook_context = {
+                            "trigger": "project_initialization_complete",
+                            "operation_type": "project_initialization",
+                            "project_path": str(project_path),
+                            "project_name": project_name,
+                            "actions_taken": result.get('actions_taken', []),
+                            "timestamp": datetime.now().isoformat()
+                        }
+                        try:
+                            await self.server_instance.on_project_operation_complete(hook_context, "projectManagement")
+                        except Exception as e:
+                            logger.warning(f"Project operation hook failed: {e}")
+                    
                     return f"Project initialization directive executed successfully. Actions taken: {len(result.get('actions_taken', []))}"
                 else:
                     return f"Project initialization directive executed but no actions determined. Result: {result}"

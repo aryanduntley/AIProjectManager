@@ -21,11 +21,12 @@ logger = logging.getLogger(__name__)
 class BaseProjectOperations:
     """Base class for project operations with shared utilities."""
     
-    def __init__(self, db_manager=None, config_manager=None, directive_processor=None):
+    def __init__(self, db_manager=None, config_manager=None, directive_processor=None, server_instance=None, **kwargs):
         self.tools = []
         self.db_manager = db_manager
         self.config_manager = config_manager
         self.directive_processor = directive_processor
+        self.server_instance = server_instance
     
     def get_project_management_dir(self, project_path: Path) -> Path:
         """Get the project management directory path."""

@@ -28,17 +28,18 @@ class SessionManager:
     def __init__(self, session_queries: Optional[SessionQueries] = None, 
                  file_metadata_queries: Optional[FileMetadataQueries] = None,
                  git_queries: Optional[GitQueries] = None,
-                 db_manager = None):
+                 db_manager = None, server_instance=None):
         self.session_queries = session_queries
         self.file_metadata_queries = file_metadata_queries
         self.git_queries = git_queries
         self.db_manager = db_manager
+        self.server_instance = server_instance
         
         # Initialize operation modules
-        self.core_ops = CoreOperations(session_queries, file_metadata_queries)
-        self.analytics_ops = AnalyticsOperations(session_queries)
-        self.git_ops = GitIntegration(session_queries, git_queries, db_manager)
-        self.init_ops = InitializationOperations(session_queries, file_metadata_queries)
+        self.core_ops = CoreOperations(session_queries, file_metadata_queries, server_instance)
+        self.analytics_ops = AnalyticsOperations(session_queries, server_instance)
+        self.git_ops = GitIntegration(session_queries, git_queries, db_manager, server_instance)
+        self.init_ops = InitializationOperations(session_queries, file_metadata_queries, server_instance)
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get all work period management tools."""

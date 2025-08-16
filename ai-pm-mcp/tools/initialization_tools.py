@@ -9,6 +9,7 @@ Provides proper user communication through MCP protocol instead of stderr.
 import logging
 from pathlib import Path
 from typing import Dict, Any, List
+from datetime import datetime
 
 from ..core.mcp_api import ToolDefinition
 from ..core.state_analyzer import ProjectStateAnalyzer
@@ -20,8 +21,9 @@ logger = logging.getLogger(__name__)
 class InitializationTools:
     """MCP tools for initialization user interaction."""
     
-    def __init__(self, db_manager=None):
+    def __init__(self, db_manager=None, server_instance=None):
         self.db_manager = db_manager
+        self.server_instance = server_instance
         self.state_analyzer = ProjectStateAnalyzer()
         self.user_comm = UserCommunicationService()
     
@@ -166,6 +168,23 @@ class InitializationTools:
                     "type": "error",
                     "message": f"Unknown choice: {choice}. Please use get_project_state_analysis to see available options."
                 }
+            
+            # Add directive hook for server notification on successful operations
+            if self.server_instance and hasattr(self.server_instance, 'on_initialization_operation_complete'):
+                if result.get("type") != "error":  # Only trigger for successful operations
+                    hook_context = {
+                        "trigger": "initialization_choice_complete",
+                        "operation_type": "initialization_choice",
+                        "project_path": str(project_path),
+                        "choice": choice,
+                        "result_type": result.get("type", "unknown"),
+                        "context": context,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    try:
+                        await self.server_instance.on_initialization_operation_complete(hook_context, "projectInitialization")
+                    except Exception as e:
+                        logger.warning(f"Initialization operation hook failed: {e}")
             
             return self.user_comm.format_as_json_response(result)
             

@@ -146,6 +146,20 @@ class ProjectBlueprintManager(BaseProjectOperations):
             
             # Save updated blueprint
             if self.save_blueprint(project_path, blueprint_data):
+                # Add directive hook for server notification
+                if self.server_instance and hasattr(self.server_instance, 'on_project_operation_complete'):
+                    hook_context = {
+                        "trigger": "blueprint_update_complete",
+                        "operation_type": "blueprint_update",
+                        "project_path": str(project_path),
+                        "updated_fields": updated_fields,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    try:
+                        await self.server_instance.on_project_operation_complete(hook_context, "projectManagement")
+                    except Exception as e:
+                        logger.warning(f"Blueprint update hook failed: {e}")
+                
                 result = f"Blueprint updated successfully:\n"
                 for field in updated_fields:
                     result += f"  - {field}\n"

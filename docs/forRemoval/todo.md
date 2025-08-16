@@ -40,7 +40,7 @@ docs/forRemoval/empty-tool-files-analysis.md
 
 docs/forRemoval/mcp-critical-gap-analysis.md
 docs/forRemoval/mcp-gap-fix-implementation-plan.md
-docs/directive-integration-completion-plan.md
+docs/forRemoval/directive-integration-completion-plan.md
 
 docs/forRemoval/grep_results.md
 docs/forRemoval/grep_results-full.txt

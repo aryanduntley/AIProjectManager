@@ -7,6 +7,7 @@ Handles session creation, context management, and activity updates.
 import json
 import logging
 from typing import Dict, Any, Optional
+from datetime import datetime
 
 from ...database.session_queries import SessionQueries
 from ...database.file_metadata_queries import FileMetadataQueries
@@ -18,9 +19,11 @@ class CoreOperations:
     """Core session management operations."""
     
     def __init__(self, session_queries: Optional[SessionQueries] = None,
-                 file_metadata_queries: Optional[FileMetadataQueries] = None):
+                 file_metadata_queries: Optional[FileMetadataQueries] = None,
+                 server_instance=None):
         self.session_queries = session_queries
         self.file_metadata_queries = file_metadata_queries
+        self.server_instance = server_instance
 
     async def start_work_period(self, arguments: Dict[str, Any]) -> str:
         """Start a new work period with activity tracking."""
@@ -85,6 +88,22 @@ class CoreOperations:
                     session_id=session_id,
                     details={"project_path": project_path, "context_mode": context_mode, "branch_info": branch_info}
                 )
+            
+            # Add directive hook for server notification
+            if self.server_instance and hasattr(self.server_instance, 'on_session_operation_complete'):
+                hook_context = {
+                    "trigger": "session_start_complete",
+                    "operation_type": "session_start",
+                    "session_id": session_id,
+                    "project_path": project_path,
+                    "context_mode": context_mode,
+                    "branch_info": branch_info,
+                    "timestamp": datetime.now().isoformat()
+                }
+                try:
+                    await self.server_instance.on_session_operation_complete(hook_context, "sessionManagement")
+                except Exception as e:
+                    logger.warning(f"Session start hook failed: {e}")
             
             return f"Started new session {session_id} for project {project_path}. Context mode: {context_mode}{branch_info}{initialization_status}"
             

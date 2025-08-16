@@ -23,10 +23,11 @@ logger = logging.getLogger(__name__)
 class DatabaseTools:
     """Tools for database management operations."""
     
-    def __init__(self, db_manager: Optional[DatabaseManager] = None, config_manager=None):
+    def __init__(self, db_manager: Optional[DatabaseManager] = None, config_manager=None, server_instance=None):
         self.tools = []
         self.db_manager = db_manager
         self.config_manager = config_manager
+        self.server_instance = server_instance
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get all database management tools."""
@@ -136,6 +137,22 @@ class DatabaseTools:
                 backup_size_mb = backup_path.stat().st_size / (1024 * 1024)
                 
                 logger.info(f"Database backup created: {backup_path}")
+                
+                # Add directive hook for server notification
+                if self.server_instance and hasattr(self.server_instance, 'on_database_operation_complete'):
+                    hook_context = {
+                        "trigger": "database_backup_complete",
+                        "operation_type": "database_backup",
+                        "project_path": str(project_path),
+                        "backup_filename": backup_filename,
+                        "backup_size_mb": backup_size_mb,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    try:
+                        await self.server_instance.on_database_operation_complete(hook_context, "databaseIntegration")
+                    except Exception as e:
+                        logger.warning(f"Database backup hook failed: {e}")
+                
                 return f"""✅ Database backup created successfully!
 
 **Backup Details:**
@@ -242,6 +259,23 @@ Use this backup to restore your project database if needed."""
 • Test your project to ensure everything works correctly
 • If satisfied with maintenance, you can delete the pre-maintenance backup
 • If issues arise, restore from the pre-maintenance backup"""
+            
+            # Add directive hook for server notification
+            if self.server_instance and hasattr(self.server_instance, 'on_database_operation_complete'):
+                hook_context = {
+                    "trigger": "database_maintenance_complete",
+                    "operation_type": "database_maintenance", 
+                    "project_path": str(project_path),
+                    "keep_modifications": keep_modifications,
+                    "keep_sessions": keep_sessions,
+                    "vacuum_performed": vacuum,
+                    "statistics": stats,
+                    "timestamp": datetime.now().isoformat()
+                }
+                try:
+                    await self.server_instance.on_database_operation_complete(hook_context, "databaseIntegration")
+                except Exception as e:
+                    logger.warning(f"Database maintenance hook failed: {e}")
             
             return result
             

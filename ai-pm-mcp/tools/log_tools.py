@@ -19,9 +19,10 @@ logger = logging.getLogger(__name__)
 class LogTools:
     """Event logging and management tools with database integration."""
     
-    def __init__(self, event_queries: Optional[EventQueries] = None):
+    def __init__(self, event_queries: Optional[EventQueries] = None, server_instance=None):
         """Initialize with event queries for database operations."""
         self.event_queries = event_queries
+        self.server_instance = server_instance
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get available event logging and management tools."""
@@ -244,6 +245,23 @@ class LogTools:
             }
             
             event_id = self.event_queries.create_event(event_data)
+            
+            # Add directive hook for server notification
+            if self.server_instance and hasattr(self.server_instance, 'on_logging_operation_complete'):
+                hook_context = {
+                    "trigger": "event_logging_complete",
+                    "operation_type": "event_logging",
+                    "event_id": event_id,
+                    "event_type": arguments.get('event_type', 'decision'),
+                    "title": arguments['title'],
+                    "impact_level": arguments.get('impact_level', 'medium'),
+                    "primary_theme": arguments.get('primary_theme'),
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+                try:
+                    await self.server_instance.on_logging_operation_complete(hook_context, "loggingDocumentation")
+                except Exception as e:
+                    logger.warning(f"Event logging hook failed: {e}")
             
             return f"✅ Event logged: {event_id} - {arguments['title']}"
             

@@ -7,6 +7,7 @@ Handles performance optimization and recommendations for large projects.
 import logging
 from pathlib import Path
 from typing import Dict, Any, Optional
+from datetime import datetime
 
 from ...core.performance_optimizer import LargeProjectOptimizer
 from ...database.db_manager import DatabaseManager
@@ -17,8 +18,9 @@ logger = logging.getLogger(__name__)
 class PerformanceOperations:
     """Performance optimization operations."""
     
-    def __init__(self, db_manager: Optional[DatabaseManager] = None):
+    def __init__(self, db_manager: Optional[DatabaseManager] = None, server_instance=None):
         self.db_manager = db_manager
+        self.server_instance = server_instance
 
     async def optimize_performance(self, arguments: Dict[str, Any]) -> str:
         """Run comprehensive performance optimization."""
@@ -48,6 +50,22 @@ class PerformanceOperations:
                     result["additional_indexes"] = index_result
             
             if result.get("optimizations_applied"):
+                # Add directive hook for server notification
+                if self.server_instance and hasattr(self.server_instance, 'on_advanced_operation_complete'):
+                    hook_context = {
+                        "trigger": "performance_optimization_complete",
+                        "operation_type": "performance_optimization",
+                        "project_path": str(project_path),
+                        "optimization_level": optimization_level,
+                        "optimizations_applied": result.get("optimizations_applied", []),
+                        "is_large_project": optimizer.is_large_project(),
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    try:
+                        await self.server_instance.on_advanced_operation_complete(hook_context, "systemInitialization")
+                    except Exception as e:
+                        logger.warning(f"Performance optimization hook failed: {e}")
+                
                 response = f"""🚀 Performance Optimization Complete!
 
 Optimization Level: {optimization_level.upper()}

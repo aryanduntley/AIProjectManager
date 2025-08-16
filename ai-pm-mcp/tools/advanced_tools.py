@@ -21,14 +21,15 @@ logger = logging.getLogger(__name__)
 class AdvancedTools:
     """Advanced integration tools for enhanced system capabilities."""
     
-    def __init__(self, db_manager: Optional[DatabaseManager] = None):
+    def __init__(self, db_manager: Optional[DatabaseManager] = None, server_instance=None):
         self.db_manager = db_manager
+        self.server_instance = server_instance
         
         # Initialize operation modules
-        self.performance_ops = PerformanceOperations(db_manager)
-        self.recovery_ops = RecoveryOperations(db_manager)
-        self.audit_ops = AuditOperations(db_manager)
-        self.health_ops = HealthOperations(db_manager)
+        self.performance_ops = PerformanceOperations(db_manager, server_instance)
+        self.recovery_ops = RecoveryOperations(db_manager, server_instance)
+        self.audit_ops = AuditOperations(db_manager, server_instance)
+        self.health_ops = HealthOperations(db_manager, server_instance)
     
     async def get_tools(self) -> List[ToolDefinition]:
         """Get all advanced integration tools."""

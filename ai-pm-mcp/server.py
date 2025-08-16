@@ -259,6 +259,160 @@ class AIProjectManagerServer:
             logger.error(f"Error in branch operation hook: {e}")
             return {"error": str(e), "actions_taken": []}
     
+    async def on_project_operation_complete(self, context: Dict[str, Any], directive_key: str) -> Dict[str, Any]:
+        """Hook point: Project management operation completed - update project understanding."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for project operation hook")
+            return {"error": "No directive processor"}
+        
+        try:
+            # Enhance context with server state
+            enhanced_context = {
+                **context,
+                "project_context": self.initial_state,
+                "server_state": {"ready": True},
+                "timestamp": "now"
+            }
+            
+            operation_type = context.get("operation_type", "unknown")
+            logger.info(f"Executing {directive_key} directive for {operation_type} completion")
+            
+            result = await self.directive_processor.execute_directive(directive_key, enhanced_context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in project operation hook: {e}")
+            return {"error": str(e), "actions_taken": []}
+    
+    async def on_database_operation_complete(self, context: Dict[str, Any], directive_key: str) -> Dict[str, Any]:
+        """Hook point: Database operation completed - update project data integrity tracking."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for database operation hook")
+            return {"error": "No directive processor"}
+        
+        try:
+            # Enhance context with server state
+            enhanced_context = {
+                **context,
+                "project_context": self.initial_state,
+                "server_state": {"ready": True},
+                "timestamp": "now"
+            }
+            
+            operation_type = context.get("operation_type", "unknown")
+            logger.info(f"Executing {directive_key} directive for {operation_type} completion")
+            
+            result = await self.directive_processor.execute_directive(directive_key, enhanced_context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in database operation hook: {e}")
+            return {"error": str(e), "actions_taken": []}
+    
+    async def on_initialization_operation_complete(self, context: Dict[str, Any], directive_key: str) -> Dict[str, Any]:
+        """Hook point: Initialization operation completed - update project understanding and workflow state."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for initialization operation hook")
+            return {"error": "No directive processor"}
+        
+        try:
+            # Enhance context with server state
+            enhanced_context = {
+                **context,
+                "project_context": self.initial_state,
+                "server_state": {"ready": True},
+                "timestamp": "now"
+            }
+            
+            operation_type = context.get("operation_type", "unknown")
+            choice = context.get("choice", "unknown")
+            logger.info(f"Executing {directive_key} directive for {operation_type} - choice: {choice}")
+            
+            result = await self.directive_processor.execute_directive(directive_key, enhanced_context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in initialization operation hook: {e}")
+            return {"error": str(e), "actions_taken": []}
+    
+    async def on_logging_operation_complete(self, context: Dict[str, Any], directive_key: str) -> Dict[str, Any]:
+        """Hook point: Logging operation completed - update project understanding and decision history."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for logging operation hook")
+            return {"error": "No directive processor"}
+        
+        try:
+            # Enhance context with server state
+            enhanced_context = {
+                **context,
+                "project_context": self.initial_state,
+                "server_state": {"ready": True},
+                "timestamp": "now"
+            }
+            
+            operation_type = context.get("operation_type", "unknown")
+            event_title = context.get("title", "unknown")
+            logger.info(f"Executing {directive_key} directive for {operation_type} - event: {event_title}")
+            
+            result = await self.directive_processor.execute_directive(directive_key, enhanced_context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in logging operation hook: {e}")
+            return {"error": str(e), "actions_taken": []}
+    
+    async def on_session_operation_complete(self, context: Dict[str, Any], directive_key: str) -> Dict[str, Any]:
+        """Hook point: Session operation completed - update session context and workflow state."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for session operation hook")
+            return {"error": "No directive processor"}
+        
+        try:
+            # Enhance context with server state
+            enhanced_context = {
+                **context,
+                "project_context": self.initial_state,
+                "server_state": {"ready": True},
+                "timestamp": "now"
+            }
+            
+            operation_type = context.get("operation_type", "unknown")
+            session_id = context.get("session_id", "unknown")
+            logger.info(f"Executing {directive_key} directive for {operation_type} - session: {session_id}")
+            
+            result = await self.directive_processor.execute_directive(directive_key, enhanced_context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in session operation hook: {e}")
+            return {"error": str(e), "actions_taken": []}
+    
+    async def on_advanced_operation_complete(self, context: Dict[str, Any], directive_key: str) -> Dict[str, Any]:
+        """Hook point: Advanced system operation completed - update system performance and optimization state."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for advanced operation hook")
+            return {"error": "No directive processor"}
+        
+        try:
+            # Enhance context with server state
+            enhanced_context = {
+                **context,
+                "project_context": self.initial_state,
+                "server_state": {"ready": True},
+                "timestamp": "now"
+            }
+            
+            operation_type = context.get("operation_type", "unknown")
+            optimization_level = context.get("optimization_level", "unknown")
+            logger.info(f"Executing {directive_key} directive for {operation_type} - level: {optimization_level}")
+            
+            result = await self.directive_processor.execute_directive(directive_key, enhanced_context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in advanced operation hook: {e}")
+            return {"error": str(e), "actions_taken": []}
+    
     async def on_conversation_to_action_transition(self, conversation_context: Dict[str, Any]) -> Dict[str, Any]:
         """Hook point: AI moving from conversation to action - state preservation opportunity."""
         if not self.directive_processor:
