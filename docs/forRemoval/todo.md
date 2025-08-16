@@ -26,7 +26,6 @@ docs/forRemoval/database-implementation-plan.md
 docs/forRemoval/mcp-implementation-plan.md
 docs/forRemoval/phase2-completion-summary.md
 docs/forRemoval/branch-based-git-implementation-plan.md
-ai-pm-mcp/reference/directivesmd/directive-escalation-system.md
 docs/forRemoval/database-investigation-and-fix-plan.md
 docs/forRemoval/file-metadata-initialization-implementation-plan.md
 docs/forRemoval/mcp-initialization-analysis.md
@@ -37,6 +36,7 @@ docs/forRemoval/communication-audit-resolution-status.md
 docs/forRemoval/testing-report.md
 docs/forRemoval/mcp-initialization-ux-problem.md
 docs/forRemoval/session-refactoring-plan.md
+docs/forRemoval/empty-tool-files-analysis.md
 
 docs/forRemoval/mcp-critical-gap-analysis.md
 docs/forRemoval/mcp-gap-fix-implementation-plan.md

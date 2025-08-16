@@ -112,7 +112,7 @@ class AIProjectManagerServer:
     async def _initialize_directive_system(self):
         """Initialize the directive processing and action execution system."""
         try:
-            # Create action executor with MCP tools reference (database manager will be added later)
+            # Create action executor with MCP tools reference
             mcp_tools = {
                 "task_tools": None,  # Will be populated after tool registry initialization
                 "project_tools": None,
@@ -120,11 +120,10 @@ class AIProjectManagerServer:
                 "theme_tools": None,
                 "database_tools": None,
                 "session_tools": None,
-                "file_tools": None,
                 "branch_tools": None
             }
             
-            self.action_executor = create_action_executor(mcp_tools, db_manager=None)  # Will get DB later
+            self.action_executor = create_action_executor(mcp_tools, db_manager=None)  # DB manager added after tool registry initialization
             
             # Create directive processor with action executor
             self.directive_processor = create_directive_processor(self.action_executor)
@@ -236,6 +235,30 @@ class AIProjectManagerServer:
             logger.error(f"Error in task completion hook: {e}")
             return {"error": str(e), "actions_taken": []}
     
+    async def on_branch_operation_complete(self, context: Dict[str, Any], directive_key: str) -> Dict[str, Any]:
+        """Hook point: Git branch operation completed - organizational state updates."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for branch operation hook")
+            return {"error": "No directive processor"}
+        
+        try:
+            # Enhance context with server state
+            enhanced_context = {
+                **context,
+                "project_context": self.initial_state,
+                "server_state": {"ready": True},
+                "timestamp": "now"
+            }
+            
+            operation_type = context.get("operation_type", "unknown")
+            logger.info(f"Executing branch operation directive for: {operation_type}")
+            result = await self.directive_processor.execute_directive(directive_key, enhanced_context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in branch operation hook: {e}")
+            return {"error": str(e), "actions_taken": []}
+    
     async def on_conversation_to_action_transition(self, conversation_context: Dict[str, Any]) -> Dict[str, Any]:
         """Hook point: AI moving from conversation to action - state preservation opportunity."""
         if not self.directive_processor:
@@ -257,6 +280,28 @@ class AIProjectManagerServer:
             
         except Exception as e:
             logger.error(f"Error in conversation transition hook: {e}")
+            return {"error": str(e), "actions_taken": []}
+    
+    async def on_workflow_completion(self, workflow_context: Dict[str, Any], directive_key: str = "workflowManagement") -> Dict[str, Any]:
+        """Hook point: High-level workflow completion - triggers comprehensive project understanding updates."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for workflow completion hook")
+            return {"error": "No directive processor"}
+        
+        try:
+            # Enhanced context for workflow completion directive
+            enhanced_context = {
+                **workflow_context,  # Include all workflow-specific context
+                "session_state": {"project_state": self.initial_state},
+                "project_context": self.initial_state
+            }
+            
+            logger.info(f"Executing workflow completion directive: {workflow_context.get('workflow_type', 'unknown')} via {workflow_context.get('command', 'direct')}")
+            result = await self.directive_processor.execute_directive(directive_key, enhanced_context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in workflow completion hook: {e}")
             return {"error": str(e), "actions_taken": []}
     
     async def analyze_initial_state(self):

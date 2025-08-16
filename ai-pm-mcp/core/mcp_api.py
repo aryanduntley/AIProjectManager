@@ -136,9 +136,7 @@ class MCPToolRegistry:
             session_manager = SessionManager(self.session_queries, self.file_metadata_queries)
             await self._register_tool_module(session_manager)
             
-            # Import file tools
-            from ..tools.file_tools import FileTools
-            await self._register_tool_module(FileTools())
+            # File operations handled through internal services, not user-facing tools
             
             # Import theme tools with database integration
             from ..tools.theme_tools import ThemeTools
@@ -163,13 +161,13 @@ class MCPToolRegistry:
             log_tools = LogTools(self.event_queries)
             await self._register_tool_module(log_tools)
             
-            # Import config tools
-            from ..tools.config_tools import ConfigTools
-            await self._register_tool_module(ConfigTools())
+            # Config operations handled through internal services, not user-facing tools
             
             # Import branch tools for simplified Git branch management
             from ..tools.branch_tools import BranchTools
-            await self._register_tool_module(BranchTools())
+            branch_tools = BranchTools()
+            branch_tools.server_instance = self.server_instance
+            await self._register_tool_module(branch_tools)
             
             # Import initialization tools for proper user interaction during server boot
             from ..tools.initialization_tools import InitializationTools
