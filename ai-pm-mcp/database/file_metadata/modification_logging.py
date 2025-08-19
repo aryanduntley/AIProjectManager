@@ -13,11 +13,12 @@ from ..db_manager import DatabaseManager
 class ModificationLogging:
     """File modification logging and history operations."""
     
-    def __init__(self, db_manager: DatabaseManager):
+    def __init__(self, db_manager: DatabaseManager, server_instance=None):
         """Initialize with database manager."""
         self.db = db_manager
+        self.server_instance = server_instance  # For directive hook integration
     
-    def log_file_modification(
+    async def log_file_modification(
         self,
         file_path: str,
         file_type: str,
@@ -45,10 +46,29 @@ class ModificationLogging:
                 VALUES (?, ?, ?, ?, ?)
             """
             
-            self.db.execute_update(query, (
+            await self.db.execute_update(query, (
                 file_path, file_type, operation, session_id,
                 json.dumps(details or {})
             ))
+            
+            # Hook point: File modification logging completed
+            if self.server_instance and hasattr(self.server_instance, 'on_core_operation_complete'):
+                try:
+                    context = {
+                        "trigger": "file_modification_logging_complete",
+                        "operation_type": "log_file_modification",
+                        "file_path": file_path,
+                        "file_type": file_type,
+                        "operation": operation,
+                        "session_id": session_id,
+                        "has_details": bool(details),
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    await self.server_instance.on_core_operation_complete(context, "fileOperations")
+                except Exception as e:
+                    # Don't fail logging if hook fails
+                    self.db.logger.warning(f"Failed to trigger file modification logging directive: {e}")
+            
             return True
             
         except Exception as e:

@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 class FileAnalyzer:
     """Analyzes files for theme discovery and dependency tracking."""
     
-    def __init__(self):
+    def __init__(self, server_instance=None):
+        self.server_instance = server_instance  # For directive hook integration
         self.programming_extensions = {
             '.py', '.js', '.ts', '.jsx', '.tsx', '.java', '.cpp', '.c', '.h',
             '.cs', '.php', '.rb', '.go', '.rs', '.swift', '.kt', '.scala',
@@ -35,7 +36,7 @@ class FileAnalyzer:
             '.md', '.txt', '.rst', '.adoc'
         }
     
-    def analyze_project_structure(self, project_path: Path) -> Dict[str, Any]:
+    async def analyze_project_structure(self, project_path: Path) -> Dict[str, Any]:
         """Analyze project structure for theme discovery."""
         try:
             structure = {
@@ -101,6 +102,27 @@ class FileAnalyzer:
             structure['frameworks'] = list(structure['frameworks'])
             structure['languages'] = list(structure['languages'])
             structure['keywords'] = dict(structure['keywords'])
+            
+            # Hook point: Project structure analysis completed
+            if self.server_instance and hasattr(self.server_instance, 'on_core_operation_complete'):
+                try:
+                    from datetime import datetime
+                    context = {
+                        "trigger": "project_structure_analysis_complete",
+                        "operation_type": "analyze_project_structure", 
+                        "project_path": str(project_path),
+                        "analysis_results": {
+                            "total_files": len(structure['files']),
+                            "directories_count": len(structure['directories']),
+                            "frameworks_found": structure['frameworks'],
+                            "languages_detected": structure['languages'],
+                            "keyword_count": len(structure['keywords'])
+                        },
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    await self.server_instance.on_core_operation_complete(context, "projectInitialization")
+                except Exception as e:
+                    logger.warning(f"Failed to trigger project analysis completion directive: {e}")
             
             return structure
             

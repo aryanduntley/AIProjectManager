@@ -19,6 +19,7 @@ from .commands.task_commands import TaskCommandHandler
 from .commands.git_commands import GitCommandHandler
 from .commands.database_commands import DatabaseCommandHandler  
 from .commands.analysis_commands import AnalysisCommandHandler
+from .commands.session_commands import SessionCommandHandler
 
 logger = logging.getLogger(__name__)
 
@@ -37,12 +38,13 @@ class CommandTools:
         self.git_handler = GitCommandHandler(db_manager, config_manager, server_instance)
         self.database_handler = DatabaseCommandHandler(db_manager, config_manager, server_instance)
         self.analysis_handler = AnalysisCommandHandler(db_manager, config_manager, server_instance)
+        self.session_handler = SessionCommandHandler(db_manager, config_manager, server_instance)
         
         self.commands = self.init_handler._get_all_commands()
         
         # Pass commands to all handlers
         for handler in [self.init_handler, self.task_handler, self.git_handler, 
-                       self.database_handler, self.analysis_handler]:
+                       self.database_handler, self.analysis_handler, self.session_handler]:
             handler.commands = self.commands
     
     async def get_tools(self) -> List[ToolDefinition]:
@@ -164,6 +166,9 @@ class CommandTools:
                     return await self.analysis_handler.execute_flows(project_path, args)
                 elif command == "aipm-config":
                     return await self.analysis_handler.execute_config(project_path, args)
+            
+            elif command == "aipm-pause":
+                return await self.session_handler.execute_pause(project_path, args)
             
             else:
                 cmd_info = self.commands[command]

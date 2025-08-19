@@ -33,16 +33,18 @@ class DatabaseManager:
     - Analytics and metrics collection
     """
     
-    def __init__(self, project_path: str, config_manager: Optional['ConfigManager'] = None):
+    def __init__(self, project_path: str, config_manager: Optional['ConfigManager'] = None, server_instance=None):
         """
         Initialize the database manager.
         
         Args:
             project_path: Path to the project root directory
             config_manager: Optional ConfigManager instance for folder name configuration
+            server_instance: Optional server instance for directive hook integration
         """
         self.project_path = Path(project_path)
         self.config_manager = config_manager
+        self.server_instance = server_instance  # For directive hook integration
         
         # Get management folder name from config or use default
         management_folder_name = "projectManagement"
@@ -169,7 +171,7 @@ class DatabaseManager:
         cursor.execute(query, params)
         return cursor.fetchall()
     
-    def execute_update(self, query: str, params: Tuple = ()) -> int:
+    async def execute_update(self, query: str, params: Tuple = ()) -> int:
         """
         Execute an INSERT, UPDATE, or DELETE query.
         
@@ -188,9 +190,18 @@ class DatabaseManager:
         if not self._in_transaction:
             connection.commit()
         
+        # Hook point: Database update executed
+        if self.server_instance and hasattr(self.server_instance, 'on_core_operation_complete'):
+            await self._trigger_database_hook("database_update_complete", {
+                "operation_type": "execute_update",
+                "query_type": "UPDATE/DELETE",
+                "rows_affected": cursor.rowcount,
+                "success": True
+            })
+        
         return cursor.rowcount
     
-    def execute_insert(self, query: str, params: Tuple = ()) -> int:
+    async def execute_insert(self, query: str, params: Tuple = ()) -> int:
         """
         Execute an INSERT query and return the inserted row ID.
         
@@ -208,10 +219,19 @@ class DatabaseManager:
         # Only commit if we're not inside a transaction
         if not self._in_transaction:
             connection.commit()
+        
+        # Hook point: Database insert executed
+        if self.server_instance and hasattr(self.server_instance, 'on_core_operation_complete'):
+            await self._trigger_database_hook("database_insert_complete", {
+                "operation_type": "execute_insert",
+                "query_type": "INSERT",
+                "row_id": cursor.lastrowid,
+                "success": True
+            })
             
         return cursor.lastrowid
     
-    def backup_database(self, backup_path: Optional[str] = None) -> str:
+    async def backup_database(self, backup_path: Optional[str] = None) -> str:
         """
         Create a backup of the database.
         
@@ -230,7 +250,31 @@ class DatabaseManager:
             connection.backup(backup_conn)
         
         self.logger.info(f"Database backup created: {backup_path}")
+        
+        # Hook point: Database backup completed
+        if self.server_instance and hasattr(self.server_instance, 'on_core_operation_complete'):
+            await self._trigger_database_hook("database_backup_complete", {
+                "operation_type": "backup_database",
+                "backup_path": backup_path,
+                "database_path": str(self.db_path),
+                "success": True
+            })
+        
         return backup_path
+    
+    async def _trigger_database_hook(self, trigger: str, operation_data: Dict[str, Any]):
+        """Helper method to trigger directive hooks for database operations."""
+        try:
+            context = {
+                "trigger": trigger,
+                **operation_data,
+                "project_path": str(self.project_path),
+                "timestamp": datetime.now().isoformat()
+            }
+            await self.server_instance.on_core_operation_complete(context, "databaseIntegration")
+        except Exception as e:
+            # Don't fail the database operation if hook fails
+            self.logger.warning(f"Database hook error: {e}")
     
     def get_database_stats(self) -> Dict[str, Any]:
         """

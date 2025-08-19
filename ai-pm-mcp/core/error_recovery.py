@@ -236,10 +236,11 @@ class BackupManager:
 
 class ErrorRecoveryManager:
     """Main error recovery and rollback system adapted for Git branches"""
-    def __init__(self, project_root: Path, db_manager: DatabaseManager, config_manager=None):
+    def __init__(self, project_root: Path, db_manager: DatabaseManager, config_manager=None, server_instance=None):
         self.project_root = Path(project_root)
         self.db_manager = db_manager
         self.config_manager = config_manager
+        self.server_instance = server_instance  # For directive hook integration
         
         # Recovery components
         self.backup_manager = BackupManager(project_root, config_manager)
@@ -251,7 +252,7 @@ class ErrorRecoveryManager:
         recovery_dir.mkdir(parents=True, exist_ok=True)
         self.recovery_log_file = recovery_dir / "recovery_log.jsonl"
     
-    def create_recovery_point(self, operation_type: OperationType, 
+    async def create_recovery_point(self, operation_type: OperationType, 
                             description: str, context_data: Dict[str, Any]) -> str:
         """Create a recovery point before a critical operation"""
         try:
@@ -283,6 +284,23 @@ class ErrorRecoveryManager:
                 "description": description,
                 "backup_success": backup_result["success"]
             })
+            
+            # Hook point: Recovery point creation completed
+            if self.server_instance and hasattr(self.server_instance, 'on_core_operation_complete'):
+                try:
+                    context = {
+                        "trigger": "recovery_point_creation_complete",
+                        "operation_type": "create_recovery_point",
+                        "recovery_point_id": recovery_point.id,
+                        "operation_category": operation_type.value,
+                        "description": description,
+                        "backup_success": backup_result["success"],
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    await self.server_instance.on_core_operation_complete(context, "systemInitialization")
+                except Exception as hook_error:
+                    # Don't fail recovery point creation if hook fails
+                    self._log_recovery_event("hook_error", {"error": str(hook_error)})
             
             return recovery_point.id
             

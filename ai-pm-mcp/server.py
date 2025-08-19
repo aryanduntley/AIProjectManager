@@ -436,6 +436,31 @@ class AIProjectManagerServer:
             logger.error(f"Error in conversation transition hook: {e}")
             return {"error": str(e), "actions_taken": []}
     
+    async def on_core_operation_complete(self, context: Dict[str, Any], directive_key: str) -> Dict[str, Any]:
+        """Hook point: Core module operation completed - update system understanding."""
+        if not self.directive_processor:
+            logger.warning("Directive processor not available for core operation hook")
+            return {"error": "No directive processor"}
+        
+        try:
+            # Enhance context with server state
+            enhanced_context = {
+                **context,
+                "project_context": self.initial_state,
+                "server_state": {"ready": True},
+                "timestamp": "now"
+            }
+            
+            operation_type = context.get("operation_type", "unknown")
+            logger.info(f"Executing {directive_key} directive for core operation: {operation_type}")
+            
+            result = await self.directive_processor.execute_directive(directive_key, enhanced_context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in core operation hook: {e}")
+            return {"error": str(e), "actions_taken": []}
+    
     async def on_workflow_completion(self, workflow_context: Dict[str, Any], directive_key: str = "workflowManagement") -> Dict[str, Any]:
         """Hook point: High-level workflow completion - triggers comprehensive project understanding updates."""
         if not self.directive_processor:

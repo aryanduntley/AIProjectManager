@@ -10,6 +10,7 @@ import subprocess
 from pathlib import Path
 from typing import Dict, Any, Optional
 import logging
+from datetime import datetime
 
 from pydantic import BaseModel, ValidationError
 from ..utils.project_paths import (
@@ -47,10 +48,11 @@ class ServerConfig(BaseModel):
 class ConfigManager:
     """Manages configuration loading and validation."""
     
-    def __init__(self, config_dir: Optional[Path] = None):
+    def __init__(self, config_dir: Optional[Path] = None, server_instance=None):
         self.config_dir = config_dir or Path.cwd()
         self.config: ServerConfig = ServerConfig()
         self._config_loaded = False
+        self.server_instance = server_instance  # For directive hook integration
     
     async def load_config(self, config_path: Optional[Path] = None, project_root: Optional[Path] = None) -> ServerConfig:
         """Load configuration from file or environment variables with branch awareness."""
@@ -90,10 +92,23 @@ class ConfigManager:
                 self.config = ServerConfig()
             
             # Override with environment variables
-            self._load_env_overrides()
+            await self._load_env_overrides()
             
             self._config_loaded = True
             logger.info("Configuration loaded successfully")
+            
+            # Hook point: Configuration loading completed
+            if self.server_instance and hasattr(self.server_instance, 'on_core_operation_complete'):
+                context = {
+                    "trigger": "configuration_load_complete",
+                    "operation_type": "load_config",
+                    "config_source": str(config_file) if config_file and config_file.exists() else "defaults",
+                    "config_data": self.config.model_dump(),
+                    "project_root": str(project_root) if project_root else None,
+                    "timestamp": datetime.now().isoformat()
+                }
+                await self.server_instance.on_core_operation_complete(context, "systemInitialization")
+            
             return self.config
             
         except Exception as e:
@@ -123,7 +138,7 @@ class ConfigManager:
             logger.error(f"Error reading config file {config_path}: {e}")
             raise
     
-    def _load_env_overrides(self):
+    async def _load_env_overrides(self):
         """Load configuration overrides from environment variables."""
         env_mappings = {
             "AI_PM_DEBUG": ("debug", bool),
@@ -132,6 +147,8 @@ class ConfigManager:
             "AI_PM_LOG_RETENTION": ("logging.retention_days", int),
             "AI_PM_MANAGEMENT_FOLDER": ("project.management_folder_name", str),
         }
+        
+        applied_overrides = {}
         
         for env_var, (config_path, value_type) in env_mappings.items():
             env_value = os.getenv(env_var)
@@ -148,9 +165,21 @@ class ConfigManager:
                     # Set the configuration value
                     self._set_nested_config(config_path, converted_value)
                     logger.debug(f"Override from {env_var}: {config_path} = {converted_value}")
+                    applied_overrides[env_var] = {"config_path": config_path, "value": converted_value}
                     
                 except (ValueError, TypeError) as e:
                     logger.warning(f"Invalid value for {env_var}: {env_value} ({e})")
+        
+        # Hook point: Environment variable overrides applied
+        if applied_overrides and self.server_instance and hasattr(self.server_instance, 'on_core_operation_complete'):
+            context = {
+                "trigger": "environment_overrides_complete",
+                "operation_type": "load_env_overrides",
+                "applied_overrides": applied_overrides,
+                "override_count": len(applied_overrides),
+                "timestamp": datetime.now().isoformat()
+            }
+            await self.server_instance.on_core_operation_complete(context, "systemInitialization")
     
     def _set_nested_config(self, path: str, value: Any):
         """Set a nested configuration value using dot notation."""
@@ -197,6 +226,17 @@ class ConfigManager:
                 json.dump(config_dict, f, indent=2)
             
             logger.info(f"Configuration saved to {config_path}")
+            
+            # Hook point: Configuration change completed
+            if self.server_instance and hasattr(self.server_instance, 'on_core_operation_complete'):
+                context = {
+                    "trigger": "configuration_save_complete",
+                    "operation_type": "save_config",
+                    "config_path": str(config_path),
+                    "config_data": config_dict,
+                    "timestamp": datetime.now().isoformat()
+                }
+                await self.server_instance.on_core_operation_complete(context, "systemInitialization")
             
         except Exception as e:
             logger.error(f"Error saving configuration: {e}")
@@ -285,3 +325,15 @@ class ConfigManager:
             config_path = get_config_path(project_root, self)
         
         await self.save_config(config_path)
+        
+        # Hook point: Branch-aware configuration change completed
+        if self.server_instance and hasattr(self.server_instance, 'on_core_operation_complete'):
+            context = {
+                "trigger": "branch_aware_config_save_complete",
+                "operation_type": "save_branch_aware_config",
+                "config_path": str(config_path),
+                "project_root": str(project_root),
+                "current_branch": self.get_current_branch(project_root),
+                "timestamp": datetime.now().isoformat()
+            }
+            await self.server_instance.on_core_operation_complete(context, "systemInitialization")

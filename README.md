@@ -208,6 +208,7 @@ The server will:
 - **`/aipm-resume`** - Resume previous work and active tasks
 - **`/aipm-tasks`** - Show active tasks and progress
 - **`/aipm-newTask <description>`** - Create and start new task
+- **`/aipm-pause`** - Find suitable stopping point and prepare for clean resumption
 
 ### Project Analysis
 - **`/aipm-analyze`** - Full project analysis and theme discovery

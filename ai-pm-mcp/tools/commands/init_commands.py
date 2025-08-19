@@ -207,6 +207,7 @@ Use `/aipm-help <command>` for detailed information about a specific command.
 - **`/aipm-resume`** - Resume previous work and active tasks
 - **`/aipm-tasks`** - Show active tasks and progress
 - **`/aipm-newTask <description>`** - Create and start working on new task
+- **`/aipm-pause`** - Find suitable stopping point and prepare for clean resumption
 
 ## Project Understanding
 - **`/aipm-analyze`** - Full project analysis and theme discovery
@@ -315,6 +316,11 @@ Use `/aipm-help <command>` for detailed information about any specific command.
             "aipm-db-stats": {
                 "description": "Show database health, storage usage, and performance statistics",
                 "workflow": ["database_stats"],
+                "approval_level": "none"
+            },
+            "aipm-pause": {
+                "description": "Find suitable stopping point and prepare project for clean resumption",
+                "workflow": ["work_pause_preparation", "thorough_cleanup", "context_preservation"],
                 "approval_level": "none"
             }
         }

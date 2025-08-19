@@ -26,6 +26,7 @@
 - **`/aipm-resume`** - Resume previous work and active tasks
 - **`/aipm-tasks`** - Show active tasks and progress
 - **`/aipm-newTask <description>`** - Create and start working on new task
+- **`/aipm-pause`** - Find suitable stopping point and prepare for clean resumption
 
 ### Project Understanding
 - **`/aipm-themes`** - Show project themes and file organization
@@ -77,6 +78,9 @@ AI: Loads context → Finds active tasks → Continues where you left off
 
 User: "/aipm-tasks"
 AI: Shows active work → Progress status → Next steps
+
+User: "/aipm-pause"
+AI: Finds stopping point → Saves all progress → Prepares for clean resumption
 ```
 
 **Project Analysis:**
@@ -159,6 +163,7 @@ The AI Project Manager provides 65+ MCP tools that commands use behind the scene
 | `/aipm-init` | Initialize | Workflow | New project setup |
 | `/aipm-resume` | Continue work | Workflow | Daily development |
 | `/aipm-tasks` | Show tasks | None | Check progress |
+| `/aipm-pause` | Pause & save | None | End work session |
 | `/aipm-analyze` | Deep analysis | Workflow | Understand project |
 | `/aipm-themes` | Show themes | None | See organization |
 | `/aipm-flows` | Show flows | None | See user journeys |

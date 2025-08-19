@@ -175,6 +175,19 @@ class ThemeManagementOperations(BaseThemeOperations):
                     details={"theme_name": theme_name, "updates": list(updates.keys())}
                 )
             
+            # Hook point: Theme update completed
+            if self.server_instance and hasattr(self.server_instance, 'on_file_edit_complete'):
+                try:
+                    changes_made = {
+                        "operation": "update_theme",
+                        "theme_name": theme_name,
+                        "updates_applied": list(updates.keys()),
+                        "file_path": str(theme_file)
+                    }
+                    await self.server_instance.on_file_edit_complete(str(theme_file), changes_made)
+                except Exception as e:
+                    logger.warning(f"Failed to trigger theme update completion directive: {e}")
+            
             return f"Theme '{theme_name}' updated successfully."
             
         except Exception as e:
@@ -209,6 +222,19 @@ class ThemeManagementOperations(BaseThemeOperations):
                     operation="delete",
                     details={"theme_name": theme_name}
                 )
+            
+            # Hook point: Theme deletion completed
+            if self.server_instance and hasattr(self.server_instance, 'on_file_edit_complete'):
+                try:
+                    changes_made = {
+                        "operation": "delete_theme",
+                        "theme_name": theme_name,
+                        "file_path": str(theme_file),
+                        "action": "file_removed"
+                    }
+                    await self.server_instance.on_file_edit_complete(str(theme_file), changes_made)
+                except Exception as e:
+                    logger.warning(f"Failed to trigger theme deletion completion directive: {e}")
             
             return f"Theme '{theme_name}' deleted successfully."
             
