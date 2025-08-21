@@ -19,9 +19,11 @@ class InitializationOperations:
     """Initialization management operations."""
     
     def __init__(self, session_queries: Optional[SessionQueries] = None,
-                 file_metadata_queries: Optional[FileMetadataQueries] = None):
+                 file_metadata_queries: Optional[FileMetadataQueries] = None,
+                 server_instance=None):
         self.session_queries = session_queries
         self.file_metadata_queries = file_metadata_queries
+        self.server_instance = server_instance
 
     async def check_initialization_status(self, session_id: str) -> str:
         """Check file metadata initialization status and provide user feedback."""

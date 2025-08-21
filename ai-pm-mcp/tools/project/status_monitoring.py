@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class ProjectStatusMonitor(BaseProjectOperations):
     """Monitors project status and health."""
     
-    def __init__(self, db_manager=None, config_manager=None, directive_processor=None):
+    def __init__(self, db_manager=None, config_manager=None, directive_processor=None, **kwargs):
         super().__init__(db_manager, config_manager, directive_processor)
         self.session_queries = SessionQueries(db_manager) if db_manager else None
         self.task_queries = TaskStatusQueries(db_manager) if db_manager else None

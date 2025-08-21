@@ -16,8 +16,9 @@ logger = logging.getLogger(__name__)
 class AnalyticsOperations:
     """Session analytics and management operations."""
     
-    def __init__(self, session_queries: Optional[SessionQueries] = None):
+    def __init__(self, session_queries: Optional[SessionQueries] = None, server_instance=None):
         self.session_queries = session_queries
+        self.server_instance = server_instance
 
     async def list_recent_sessions(self, arguments: Dict[str, Any]) -> str:
         """List recent sessions for a project."""

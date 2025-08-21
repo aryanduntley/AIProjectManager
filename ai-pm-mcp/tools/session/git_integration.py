@@ -20,10 +20,11 @@ class GitIntegration:
     
     def __init__(self, session_queries: Optional[SessionQueries] = None,
                  git_queries: Optional[GitQueries] = None,
-                 db_manager=None):
+                 db_manager=None, server_instance=None):
         self.session_queries = session_queries
         self.git_queries = git_queries
         self.db_manager = db_manager
+        self.server_instance = server_instance
 
     async def boot_session_with_git_detection(self, arguments: Dict[str, Any]) -> str:
         """

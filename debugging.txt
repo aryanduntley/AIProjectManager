@@ -1,0 +1,72 @@
+[ERROR] MCP server "ai-project-manager" Server stderr: 2025-08-20 20:21:09,799 - ai-pm-mcp-production.server - INFO - <module>:45 - Starting AI Project Manager MCP Server
+[ERROR] MCP server "ai-project-manager" Server stderr: 2025-08-20 20:21:09,799 - ai-pm-mcp-production.server - INFO - <module>:46 - Python path: ['/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/deps', '/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/deps', '/home/eveningb4dawn/Desktop/Projects/AIProjectManager', '/home/eveningb4dawn/python-libraries/selenium', '/home/eveningb4dawn/python-libraries/vosk-project', '/home/eveningb4dawn/python-libraries', '/home/eveningb4dawn/Desktop/Projects/AIProjectManager', '/usr/lib/python313.zip', '/usr/lib/python3.13', '/usr/lib/python3.13/lib-dynload', '/usr/local/lib/python3.13/dist-packages', '/usr/lib/python3/dist-packages']
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.server - INFO - <module>:47 - Server file location: /home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/server.py
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.server - INFO - <module>:48 - Working directory: /home/eveningb4dawn/Desktop/Projects/AIProjectManager
+2025-08-20 20:21:09,799 - asyncio - DEBUG - __init__:64 - Using selector: EpollSelector
+2025-08-20 20:21:09,799 - mcp.server.lowlevel.server - DEBUG - __init__:154 - Initializing server 'ai-project-manager'
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.server - DEBUG - run:637 - Initializing server
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.server - DEBUG - initialize:69 - Starting server initialization
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.server - DEBUG - initialize:72 - Loading configuration
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.core.config_manager - INFO - load_config:91 - No configuration file found, using defaults
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.core.config_manager - INFO - load_config:98 - Configuration loaded successfully
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.server - DEBUG - initialize:74 - Configuration loaded successfully
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.server - DEBUG - initialize:77 - Initializing directive processing system
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.core.action_executors.base_executor - DEBUG - _initialize_database_queries:43 - DatabaseActionExecutor initialized without database access
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.core.action_executors.base_executor - DEBUG - _initialize_database_queries:43 - SessionActionExecutor initialized without database access
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.core.action_executors.base_executor - DEBUG - _initialize_database_queries:43 - TaskActionExecutor initialized without database access
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.core.action_executors.base_executor - DEBUG - _initialize_database_queries:43 - ProjectActionExecutor initialized without database access
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.core.action_executors.base_executor - DEBUG - _initialize_database_queries:43 - FileActionExecutor initialized without database access
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.core.action_executors.base_executor - DEBUG - _initialize_database_queries:43 - LoggingActionExecutor initialized without database access
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.core.action_executor - INFO - __init__:55 - Modular ActionExecutor initialized with 23 supported actions
+2025-08-20 20:21:09,799 - ai-pm-mcp-production.core.action_executor - INFO - create_action_executor:216 - Modular ActionExecutor created with 23 available actions without database
+[ERROR] MCP server "ai-project-manager" Server stderr: 2025-08-20 20:21:09,800 - ai-pm-mcp-production.core.directive_processor - INFO - _load_compressed_directives:47 - Loaded 20 compressed directives
+2025-08-20 20:21:09,800 - ai-pm-mcp-production.core.directive_processor - INFO - create_directive_processor:514 - DirectiveProcessor created with 20 directives
+2025-08-20 20:21:09,800 - ai-pm-mcp-production.server - INFO - _initialize_directive_system:131 - Directive processing system initialized
+2025-08-20 20:21:09,800 - ai-pm-mcp-production.server - DEBUG - initialize:79 - Directive processing system initialized
+2025-08-20 20:21:09,800 - ai-pm-mcp-production.server - DEBUG - initialize:82 - Creating tool registry with directive processor
+2025-08-20 20:21:09,800 - ai-pm-mcp-production.server - DEBUG - initialize:87 - Registering tools
+[ERROR] MCP server "ai-project-manager" Server stderr: 2025-08-20 20:21:09,801 - ai-pm-mcp-production.core.mcp_api - ERROR - register_all_tools:111 - Error registering tools: ProjectDatabaseOperations.__init__() got an unexpected keyword argument 'server_instance'
+[ERROR] MCP server "ai-project-manager" Server stderr: 2025-08-20 20:21:09,801 - ai-pm-mcp-production.server - ERROR - initialize:109 - Failed to initialize server: ProjectDatabaseOperations.__init__() got an unexpected keyword argument 'server_instance'
+Traceback (most recent call last):
+  File "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/server.py", line 88, in initialize
+    await self.tool_registry.register_all_tools(self.server)
+  File "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/core/mcp_api.py", line 87, in register_all_tools
+    await self._discover_tools()
+  File "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/core/mcp_api.py", line 119, in _discover_tools
+    project_tools = ProjectTools(self.db_manager, self.config_manager, self.directive_processor)
+  File "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/tools/project_tools.py", line 59, in __init__
+    self.database_ops = ProjectDatabaseOperations(**handler_kwargs)
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+TypeError: ProjectDatabaseOperations.__init__() got an unexpected keyword argument 'server_instance'
+[ERROR] MCP server "ai-project-manager" Server stderr: 2025-08-20 20:21:09,802 - ai-pm-mcp-production.server - ERROR - run:653 - Server error: ProjectDatabaseOperations.__init__() got an unexpected keyword argument 'server_instance'
+Traceback (most recent call last):
+  File "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/server.py", line 638, in run
+    await self.initialize()
+  File "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/server.py", line 88, in initialize
+    await self.tool_registry.register_all_tools(self.server)
+  File "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/core/mcp_api.py", line 87, in register_all_tools
+    await self._discover_tools()
+  File "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/core/mcp_api.py", line 119, in _discover_tools
+    project_tools = ProjectTools(self.db_manager, self.config_manager, self.directive_processor)
+  File "/home/eveningb4dawn/Desktop/Projects/AIProjectManager/ai-pm-mcp-production/tools/project_tools.py", line 59, in __init__
+    self.database_ops = ProjectDatabaseOperations(**handler_kwargs)
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+[DEBUG] MCP server "ai-project-manager": Connection failed: McpError: MCP error -32000: Connection closed
+[DEBUG] MCP server "ai-project-manager": Error message: MCP error -32000: Connection closed
+[DEBUG] MCP server "ai-project-manager": Error stack: McpError: MCP error -32000: Connection closed
+    at az0._onclose (file:///home/eveningb4dawn/.nvm/versions/node/v23.11.0/lib/node_modules/@anthropic-ai/claude-code/cli.js:1838:14643)
+    at _transport.onclose (file:///home/eveningb4dawn/.nvm/versions/node/v23.11.0/lib/node_modules/@anthropic-ai/claude-code/cli.js:1838:13961)
+    at ChildProcess.<anonymous> (file:///home/eveningb4dawn/.nvm/versions/node/v23.11.0/lib/node_modules/@anthropic-ai/claude-code/cli.js:1840:1460)
+    at ChildProcess.emit (node:events:507:28)
+    at ChildProcess.emit (node:domain:489:12)
+    at maybeClose (node:internal/child_process:1101:16)
+    at Socket.<anonymous> (node:internal/child_process:457:11)
+    at Socket.emit (node:events:507:28)
+    at Socket.emit (node:domain:489:12)
+    at Pipe.<anonymous> (node:net:351:12)
+
+╭───────────────────────────────────────────────────────────────────╮
+[DEBUG] MCP server "ai-project-manager": Connection attempt completed in 385ms - status: failed
+[DEBUG] MCP server "ai-project-manager": Connection attempt completed in 248ms - status: failed
+[DEBUG] MCP server "ai-project-manager": Connection attempt completed in 167ms - status: failed
+[DEBUG] Shell snapshot created successfully (231860 bytes)

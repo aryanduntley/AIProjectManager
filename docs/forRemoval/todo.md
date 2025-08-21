@@ -59,6 +59,21 @@ ensure database file metadata is useful so that general state of files can be as
 
 test_directive_integration.py
 
+Fixed! The MCP server is now starting successfully. The issue
+  was that several class constructors were missing the **kwargs
+  parameter to handle the server_instance argument being passed
+  to them.
+
+  The changes made:
+  - ProjectDatabaseOperations.__init__(): Added **kwargs
+  - ProjectStatusMonitor.__init__(): Added **kwargs
+  - AnalyticsOperations.__init__() (session): Added
+  server_instance=None parameter
+  - GitIntegration.__init__(): Added server_instance=None
+  parameter
+  - InitializationOperations.__init__(): Added
+  server_instance=None parameter
+  
 ======================
 -ril for just unique files only
 grep -ri --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=out --exclude-dir=build --exclude-dir=cache --exclude-dir=deps --exclude-dir=lib --exclude-dir=_mocks_ --exclude-dir=.vscode --exclude-dir=cache --exclude-dir=pbli --exclude-dir=__pycache__ --exclude-dir=test-results --exclude-dir=examples --exclude-dir=tests --exclude-dir=sample-inputs 'session'
