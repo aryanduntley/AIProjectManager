@@ -19,12 +19,12 @@ from ..utils.project_paths import (
 )
 
 # Import modular components
-from .git_integration.repository_management import RepositoryManagement
-from .git_integration.change_detection import ChangeDetection
-from .git_integration.theme_impact_analysis import ThemeImpactAnalysis
-from .git_integration.organizational_reconciliation import OrganizationalReconciliation
-from .git_integration.branch_operations import BranchOperations
-from .git_integration.validation_utilities import ValidationUtilities
+from .gitIntegration.repository_management import RepositoryManagement
+from .gitIntegration.change_detection import ChangeDetection
+from .gitIntegration.theme_impact_analysis import ThemeImpactAnalysis
+from .gitIntegration.organizational_reconciliation import OrganizationalReconciliation
+from .gitIntegration.branch_operations import BranchOperations
+from .gitIntegration.validation_utilities import ValidationUtilities
 
 
 class GitIntegrationManager:

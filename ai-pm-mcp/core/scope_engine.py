@@ -20,11 +20,11 @@ from ..database.file_metadata_queries import FileMetadataQueries
 from ..utils.project_paths import get_project_management_path, get_themes_path, get_flows_path
 
 # Import modular components
-from .scope_engine.compressed_context import CompressedContextManager, ContextMode, ContextResult
-from .scope_engine.context_loading import ContextLoading
-from .scope_engine.database_loading import DatabaseLoading
-from .scope_engine.flow_intelligence import FlowIntelligence
-from .scope_engine.multi_flow_optimization import MultiFlowOptimization
+from .scopeEngine.compressed_context import CompressedContextManager, ContextMode, ContextResult
+from .scopeEngine.context_loading import ContextLoading
+from .scopeEngine.database_loading import DatabaseLoading
+from .scopeEngine.flow_intelligence import FlowIntelligence
+from .scopeEngine.multi_flow_optimization import MultiFlowOptimization
 
 logger = logging.getLogger(__name__)
 
