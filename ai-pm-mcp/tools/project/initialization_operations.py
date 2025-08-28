@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class ProjectInitializationOperations(BaseProjectOperations):
     """Handles project initialization and structure creation."""
     
-    async def initialize_project(self, project_path: Path, project_name: str, force: bool = False) -> str:
+    async def initialize_project(self, project_path: Path, project_name: str, force: bool = False, description: str = None, initialize_database: bool = True) -> str:
         """Initialize project management structure with directive-driven consultation."""
         try:
             project_path = Path(project_path).resolve()
@@ -31,7 +31,7 @@ class ProjectInitializationOperations(BaseProjectOperations):
             
             # Check if project structure already exists
             project_mgmt_dir = self.get_project_management_dir(project_path)
-            if project_mgmt_dir.exists() and not force_reinitialize:
+            if project_mgmt_dir.exists() and not force:
                 return f"Project management structure already exists at {project_mgmt_dir}. Use force=true to override."
             
             # CRITICAL: Use directive processor for proper AI-driven initialization
@@ -42,14 +42,14 @@ class ProjectInitializationOperations(BaseProjectOperations):
                     "trigger": "project_initialization", 
                     "project_path": str(project_path),
                     "project_name": project_name,
-                    "force": force_reinitialize,
+                    "force": force,
                     "management_dir": str(project_mgmt_dir),
                     "initialization_request": {
                         "project_path": str(project_path),
                         "project_name": project_name,
-                        "description": description,
+                        "description": description or f"AI-managed project: {project_name}",
                         "initialize_database": initialize_database,
-                        "force_reinitialize": force_reinitialize
+                        "force_reinitialize": force
                     }
                 }
                 
@@ -86,8 +86,7 @@ class ProjectInitializationOperations(BaseProjectOperations):
             
             # Create and save blueprint
             blueprint_data = self.create_default_blueprint(project_name)
-            if description:
-                blueprint_data["description"] = description
+            blueprint_data["description"] = description or f"AI-managed project: {project_name}"
             
             self.save_blueprint(project_path, blueprint_data)
             

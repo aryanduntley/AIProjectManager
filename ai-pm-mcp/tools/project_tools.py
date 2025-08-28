@@ -71,7 +71,9 @@ class ProjectTools:
                     "properties": {
                         "project_path": {"type": "string", "description": "Path to the project directory"},
                         "project_name": {"type": "string", "description": "Name of the project"},
-                        "force": {"type": "boolean", "description": "Force initialization even if structure exists", "default": False}
+                        "force": {"type": "boolean", "description": "Force initialization even if structure exists", "default": False},
+                        "description": {"type": "string", "description": "Project description (optional)"},
+                        "initialize_database": {"type": "boolean", "description": "Initialize project database", "default": True}
                     },
                     "required": ["project_path", "project_name"]
                 },
@@ -175,7 +177,9 @@ class ProjectTools:
         return await self.initialization_ops.initialize_project(
             Path(arguments["project_path"]),
             arguments["project_name"],
-            arguments.get("force", False)
+            arguments.get("force", False),
+            arguments.get("description"),
+            arguments.get("initialize_database", True)
         )
     
     async def get_blueprint(self, arguments: Dict[str, Any]) -> str:
