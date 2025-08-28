@@ -221,25 +221,20 @@ The server will:
 - **`/aipm-deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
 - **`/aipm-config`** - Show current configuration settings
 
-### 🔄 Git Remote Operations (New!)
-Advanced Git tools for team collaboration and remote repository management:
+### 🤖 AI-Handled Git Operations
+The AI automatically manages complex Git operations for team collaboration. **Simply request git actions in natural language**:
 
-**AI Branch Remote Operations:**
-- **`git_push_ai_main_remote`** - Push ai-pm-org-main to remote origin
-- **`git_fetch_ai_main_updates`** - Fetch latest ai-pm-org-main updates from remote
-- **`git_sync_ai_main_branch`** - Sync local with remote (fetch + merge/rebase)  
-- **`git_pull_ai_main_changes`** - Pull changes from remote (fetch + merge in one step)
+*"Push our AI improvements to the team repository"*  
+*"Pull the latest changes from the team"*  
+*"Set up remote collaboration for this project"*  
+*"Sync with the remote AI branch"*
 
-**AI Branch Setup & Team Collaboration:**
-- **`git_setup_ai_main_from_user`** - Create ai-pm-org-main branch from user's main branch
-- **`git_clone_remote_ai_main`** - Clone existing remote ai-pm-org-main (team setup)
-- **`git_push_work_branch_remote`** - Push ai-pm-org-branch-{XXX} work branches to remote
+**Available MCP Tools (AI uses automatically):**
+- **Git Remote Operations**: `git_push_ai_main_remote`, `git_fetch_ai_main_updates`, `git_sync_ai_main_branch`, `git_pull_ai_main_changes`
+- **Team Setup**: `git_setup_ai_main_from_user`, `git_clone_remote_ai_main`
+- **Branch Management**: `git_push_work_branch_remote`, `git_fetch_all_remotes`
 
-**General Remote Operations:**
-- **`git_fetch_all_remotes`** - Fetch updates from all configured remote repositories  
-- **`git_check_remote_status`** - Check remote connectivity and branch information
-- **`git_merge_ai_main_to_user`** - **Deploy AI improvements to user's main branch (primary workflow)**
-- **`git_reconcile_user_changes`** - Merge user's main into ai-pm-org-main (reconciliation only)
+- **General Operations**: `git_fetch_all_remotes`, `git_check_remote_status`, `git_merge_ai_main_to_user`, `git_reconcile_user_changes`
 
 These tools enable seamless team collaboration with the AI Project Manager's 3-branch architecture:
 - **User's main** (your production code) ↔ **ai-pm-org-main** (AI improvements) ↔ **ai-pm-org-branch-{XXX}** (work branches)

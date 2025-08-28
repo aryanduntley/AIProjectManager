@@ -362,18 +362,32 @@ class DirectiveProcessor:
             
             # Project initialization actions
             elif directive_key == "projectInitialization":
+                # Extract initialization parameters properly
+                init_request = context.get("initialization_request", {})
+                force_reinit = init_request.get("force_reinitialize", False) or context.get("force", False)
+                
                 actions.extend([
                     {
                         "type": "analyze_project_structure",
-                        "parameters": {"project_path": context.get("project_path", "")}
+                        "parameters": {
+                            "project_path": context.get("project_path", ""),
+                            "force": force_reinit
+                        }
                     },
                     {
                         "type": "create_project_blueprint",
-                        "parameters": {"project_analysis": "pending"}
+                        "parameters": {
+                            "project_analysis": "pending",
+                            "project_name": init_request.get("project_name", ""),
+                            "description": init_request.get("description", "")
+                        }
                     },
                     {
                         "type": "initialize_database",
-                        "parameters": {"fresh_init": True}
+                        "parameters": {
+                            "fresh_init": force_reinit,
+                            "initialize_database": init_request.get("initialize_database", True)
+                        }
                     }
                 ])
                 analysis = "Project initialization requested - analyzing structure and creating blueprint"

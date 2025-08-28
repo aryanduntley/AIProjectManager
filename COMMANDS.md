@@ -42,13 +42,16 @@
 - **`/aipm-maintenance`** - Run database cleanup, archiving, and optimization
 - **`/aipm-db-stats`** - Show database health and storage statistics
 
-### 🔄 Git Remote Operations (New!)
-- **`/aipm-push`** - Push AI organizational state to remote repository
-- **`/aipm-pull`** - Pull latest AI organizational changes from remote
-- **`/aipm-sync`** - Synchronize local AI branch with remote (fetch + merge)
-- **`/aipm-setup-remote`** - Set up AI branch from user's code for team collaboration
-- **`/aipm-clone-team`** - Join existing team by cloning remote AI organizational state
-- **`/aipm-git-status`** - Check remote repository connection and branch status
+### 🤖 AI-Handled Git Operations
+The AI automatically handles complex git operations when needed. You can simply **request git actions in natural language**:
+
+- *"Push the AI organizational changes to remote"*
+- *"Pull the latest AI changes from the team"*  
+- *"Set up remote collaboration for this project"*
+- *"Sync with the remote AI branch"*
+- *"Check if there are remote updates"*
+
+The AI will automatically use the appropriate MCP tools for git operations behind the scenes.
 
 ## How Commands Work
 
@@ -104,25 +107,22 @@ User: "/aipm-deploy"
 AI: Merges ai-pm-org-main → User's main → Creates backup → AI improvements deployed!
 ```
 
-**Team Collaboration:**
+**Team Collaboration (AI-Handled):**
 ```
-User: "/aipm-setup-remote"
+User: "Set up remote collaboration for this project"
 AI: Creates ai-pm-org-main → Sets up team structure → Pushes to remote
 
-User: "/aipm-clone-team" 
-AI: Clones remote AI state → Sets up local collaboration → Ready to work
-
-User: "/aipm-push"
-AI: Pushes AI organizational changes → Updates remote → Notifies team ready
-
-User: "/aipm-sync"
+User: "Pull the latest team changes" 
 AI: Fetches remote updates → Merges changes → Keeps AI state current
+
+User: "Push our AI improvements to the team"
+AI: Pushes AI organizational changes → Updates remote → Confirms team sync
 ```
 
 ## Technical Details
 
 ### Command vs MCP Tools
-- **Commands** (`/status`, `/init`, etc.) - High-level workflows with single approval
+- **Commands** (`/aipm-status`, `/aipm-init`, etc.) - High-level workflows with single approval
 - **MCP Tools** (`get_project_state_analysis`, etc.) - Individual operations with separate approvals
 
 ### Available MCP Tools
@@ -136,9 +136,9 @@ The AI Project Manager provides 65+ MCP tools that commands use behind the scene
 - Database tools (queries, analytics, optimization, backup, maintenance)
 
 ### Getting Help
-- **`/help`** - Overview of all commands
-- **`help_commands`** tool - Detailed help system
-- **`help_commands` with specific command** - Detailed help for individual commands
+- **`/aipm-help`** - Overview of all commands
+- **`help_commands`** MCP tool - Detailed help system (AI uses automatically)
+- **`help_commands` with specific command** - Detailed help for individual commands (AI uses automatically)
 
 ## Troubleshooting
 
@@ -152,7 +152,7 @@ The AI Project Manager provides 65+ MCP tools that commands use behind the scene
 **Solution**: Commands provide workflow approval. Use `/aipm-init` for initial setup, `/aipm-resume` for ongoing work.
 
 ### "I want to see all available options"
-**Solution**: Use `/aipm-help` for command overview, or `help_commands` tool for detailed information.
+**Solution**: Use `/aipm-help` for command overview, or ask "show me detailed help" (AI will use `help_commands` tool automatically).
 
 ## Command Reference Card
 
@@ -170,12 +170,6 @@ The AI Project Manager provides 65+ MCP tools that commands use behind the scene
 | `/aipm-branch` | Create branch | Workflow | Parallel work |
 | `/aipm-merge` | Merge branch | Workflow | Complete work |
 | `/aipm-deploy` | Deploy to main | Workflow | Accept AI improvements |
-| `/aipm-push` | Push to remote | Workflow | Share AI state with team |
-| `/aipm-pull` | Pull from remote | Workflow | Get team updates |
-| `/aipm-sync` | Sync with remote | Workflow | Stay up-to-date |
-| `/aipm-setup-remote` | Setup team collab | Workflow | First-time team setup |
-| `/aipm-clone-team` | Join existing team | Workflow | Join team project |
-| `/aipm-git-status` | Remote status | None | Check connections |
 | `/aipm-config` | Show config | None | Check settings |
 | `/aipm-backup` | Database backup | None | Before major changes |
 | `/aipm-maintenance` | Database cleanup | Workflow | Monthly maintenance |
