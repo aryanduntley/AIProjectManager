@@ -16,7 +16,7 @@ parent_dir = current_dir.parent  # ai-pm-mcp/
 sys.path.insert(0, str(parent_dir))
 sys.path.insert(0, str(parent_dir / "deps"))
 
-# Import handling for both script and module execution
+# Enhanced import handling with marker-file fallback
 try:
     # Try relative imports first (when run as module from server)
     from .core.config_manager import ConfigManager
@@ -24,11 +24,25 @@ try:
     from .tools.project_tools import ProjectTools
     from .utils.project_paths import get_project_management_path
 except ImportError:
-    # Fall back to absolute imports (when run directly as script)
-    from core.config_manager import ConfigManager
-    from core.mcp_api import MCPToolRegistry
-    from tools.project_tools import ProjectTools
-    from utils.project_paths import get_project_management_path
+    try:
+        # Fall back to absolute imports (when run directly as script)
+        from core.config_manager import ConfigManager
+        from core.mcp_api import MCPToolRegistry
+        from tools.project_tools import ProjectTools
+        from utils.project_paths import get_project_management_path
+    except ImportError:
+        # Final fallback using marker-file based path resolution
+        try:
+            from utils.paths import add_mcp_server_to_path
+            add_mcp_server_to_path()
+            from core.config_manager import ConfigManager
+            from core.mcp_api import MCPToolRegistry
+            from tools.project_tools import ProjectTools
+            from utils.project_paths import get_project_management_path
+        except ImportError as e:
+            print(f"❌ Critical import failure: {e}")
+            print("Unable to resolve imports even with marker-file system")
+            sys.exit(1)
 
 
 async def test_config_manager():

@@ -52,6 +52,22 @@ def isolate_python_environment():
     sys.path.clear()
     sys.path.extend(clean_path)
     
+    # Add marker-file based resolution for robust import handling
+    # This enables the marker-file fallback system throughout the codebase
+    try:
+        # Find the MCP server root using marker file
+        current_path = Path(__file__).parent.absolute()
+        while current_path != current_path.parent:
+            marker_file = current_path / ".ai-pm-mcp-root"
+            if marker_file.exists():
+                if str(current_path) not in sys.path:
+                    sys.path.insert(0, str(current_path))
+                    print(f"[MCP ISOLATION] Added marker-based root: {current_path}", file=sys.stderr)
+                break
+            current_path = current_path.parent
+    except Exception as e:
+        print(f"[MCP ISOLATION] Warning: Could not set up marker-file system: {e}", file=sys.stderr)
+    
     print(f"[MCP ISOLATION] Removed {len(original_path)} paths, kept {len(clean_path)} essential paths", file=sys.stderr)
     print(f"[MCP ISOLATION] Bundled deps: {deps_path}", file=sys.stderr)
     

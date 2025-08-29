@@ -13,9 +13,38 @@ import logging
 from datetime import datetime
 
 from pydantic import BaseModel, ValidationError
-from ..utils.project_paths import (
-    get_config_path, get_current_git_branch, is_on_main_branch, can_modify_config
-)
+
+# Enhanced import handling with marker-file fallback
+try:
+    from ..utils.project_paths import (
+        get_config_path, get_current_git_branch, is_on_main_branch, can_modify_config
+    )
+except ImportError:
+    try:
+        # Fall back to absolute imports
+        from utils.project_paths import (
+            get_config_path, get_current_git_branch, is_on_main_branch, can_modify_config
+        )
+    except ImportError:
+        # Final fallback using marker-file based path resolution
+        import sys
+        from pathlib import Path
+        
+        # Find the MCP server root using marker file
+        current_path = Path(__file__).parent.absolute()
+        while current_path != current_path.parent:
+            marker_file = current_path / ".ai-pm-mcp-root"
+            if marker_file.exists():
+                if str(current_path) not in sys.path:
+                    sys.path.insert(0, str(current_path))
+                break
+            current_path = current_path.parent
+        else:
+            raise ImportError("Could not locate .ai-pm-mcp-root marker file")
+        
+        from utils.project_paths import (
+            get_config_path, get_current_git_branch, is_on_main_branch, can_modify_config
+        )
 
 logger = logging.getLogger(__name__)
 
