@@ -144,17 +144,19 @@ The server will:
    Once connected with Claude, use these commands to get started:
    
    ```
-   /aipm-status    - Get current project state and available options
-   /aipm-init      - Initialize AI project management  
-   /aipm-help      - Show all available commands
-   /aipm-resume    - Resume previous work
+   run-aipm-status    - Get current project state and available options
+   run-aipm-init      - Initialize AI project management  
+   run-aipm-help      - Show all available commands
+   run-aipm-resume    - Resume previous work
    ```
+   
+   **Note**: Due to Claude Code UI limitations with custom slash commands, we use `run-` prefix instead of `/` for commands.
    
    📋 **See [COMMANDS.md](COMMANDS.md) for complete command reference and troubleshooting**
 
 3. **Initialize a New Project**:
-   - Use `/aipm-status` to see current project state
-   - Use `/aipm-init` to set up AI project management
+   - Use `run-aipm-status` to see current project state
+   - Use `run-aipm-init` to set up AI project management
    - Or use individual MCP tools for fine-grained control
 
 3. **Connect with Claude Code**:
@@ -190,36 +192,43 @@ The server will:
 
 5. **Start Managing Your Project**:
    ```
-   User: "/aipm-status"
+   User: "run-aipm-status"
    AI: Shows project state and available options
    
-   User: "/aipm-init" 
+   User: "run-aipm-init" 
    AI: Initializes project management and begins work
    ```
 
 ## 🎯 AI Project Manager Commands
 
 ### Getting Started
-- **`/aipm-status`** - See current project state and available options
-- **`/aipm-help`** - Show all available commands with descriptions  
-- **`/aipm-init`** - Initialize AI project management (intelligently detects existing setups and suggests `/aipm-resume` when appropriate)
+- **`run-aipm-status`** - See current project state and available options
+- **`run-aipm-help`** - Show all available commands with descriptions  
+- **`run-aipm-init`** - Initialize AI project management (intelligently detects existing setups and suggests `run-aipm-resume` when appropriate)
 
 ### Task Management  
-- **`/aipm-resume`** - Resume previous work and active tasks
-- **`/aipm-tasks`** - Show active tasks and progress
-- **`/aipm-newTask <description>`** - Create and start new task
-- **`/aipm-pause`** - Find suitable stopping point and prepare for clean resumption
+- **`run-aipm-resume`** - Resume previous work and active tasks
+- **`run-aipm-tasks`** - Show active tasks and progress
+- **`run-aipm-newTask`** - Create and start new task
+- **`run-aipm-pause`** - Find suitable stopping point and prepare for clean resumption
 
 ### Project Analysis
-- **`/aipm-analyze`** - Full project analysis and theme discovery
-- **`/aipm-themes`** - Show project themes and structure
-- **`/aipm-flows`** - Show user experience flows
+- **`run-aipm-analyze`** - Full project analysis and theme discovery
+- **`run-aipm-themes`** - Show project themes and structure
+- **`run-aipm-flows`** - Show user experience flows
 
 ### Advanced Features
-- **`/aipm-branch`** - Create AI work branch for parallel development with comprehensive Git safety checks
-- **`/aipm-merge`** - Merge AI work using pull requests when possible, direct merge as fallback
-- **`/aipm-deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
-- **`/aipm-config`** - Show current configuration settings
+- **`run-aipm-branch`** - Create AI work branch for parallel development with comprehensive Git safety checks
+- **`run-aipm-merge`** - Merge AI work using pull requests when possible, direct merge as fallback
+- **`run-aipm-deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
+- **`run-aipm-config`** - Show current configuration settings
+
+### Database Management
+- **`run-aipm-backup`** - Create manual database backup with timestamp
+- **`run-aipm-maintenance`** - Run database cleanup and optimization
+- **`run-aipm-db-stats`** - Show database health and storage statistics
+
+> **Note**: All commands use the `run-` prefix instead of `/` due to Claude Code UI limitations with custom slash commands. Simply type the command naturally (e.g., "run-aipm-init") and the AI will execute it automatically.
 
 ### 🤖 AI-Handled Git Operations
 The AI automatically manages complex Git operations for team collaboration. **Simply request git actions in natural language**:

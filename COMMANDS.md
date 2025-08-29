@@ -5,42 +5,44 @@
 **First time using AI Project Manager?** Try these commands in order:
 
 ```
-1. /aipm-status    - See what state your project is in
-2. /aipm-help      - Learn all available commands  
-3. /aipm-init      - Set up AI project management
-4. /aipm-resume    - Start working on your project
+1. run-aipm-status    - See what state your project is in
+2. run-aipm-help      - Learn all available commands  
+3. run-aipm-init      - Set up AI project management
+4. run-aipm-resume    - Start working on your project
 ```
+
+> **Note**: Due to Claude Code UI limitations with custom slash commands, all commands now use the `run-` prefix instead of `/`. Simply type the command naturally (e.g., "run-aipm-init") and the AI will execute it automatically.
 
 ## Essential Commands
 
 ### Discovery Commands
-- **`/aipm-status`** - Get current project state and suggested next steps
-- **`/aipm-help`** - Show all commands with detailed descriptions
-- **`/aipm-analyze`** - Full project analysis and theme discovery
+- **`run-aipm-status`** - Get current project state and suggested next steps
+- **`run-aipm-help`** - Show all commands with detailed descriptions
+- **`run-aipm-analyze`** - Full project analysis and theme discovery
 
 ### Setup Commands  
-- **`/aipm-init`** - Initialize AI project management (auto-selects best option)
-- **`/aipm-config`** - View current configuration settings
+- **`run-aipm-init`** - Initialize AI project management (auto-selects best option)
+- **`run-aipm-config`** - View current configuration settings
 
 ### Work Commands
-- **`/aipm-resume`** - Resume previous work and active tasks
-- **`/aipm-tasks`** - Show active tasks and progress
-- **`/aipm-newTask <description>`** - Create and start working on new task
-- **`/aipm-pause`** - Find suitable stopping point and prepare for clean resumption
+- **`run-aipm-resume`** - Resume previous work and active tasks
+- **`run-aipm-tasks`** - Show active tasks and progress
+- **`run-aipm-newTask`** - Create and start working on new task
+- **`run-aipm-pause`** - Find suitable stopping point and prepare for clean resumption
 
 ### Project Understanding
-- **`/aipm-themes`** - Show project themes and file organization
-- **`/aipm-flows`** - Show user experience flows and journeys
+- **`run-aipm-themes`** - Show project themes and file organization
+- **`run-aipm-flows`** - Show user experience flows and journeys
 
 ### Advanced Workflow
-- **`/aipm-branch`** - Create AI work branch for parallel development
-- **`/aipm-merge`** - Merge completed AI branch work back to ai-pm-org-main
-- **`/aipm-deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
+- **`run-aipm-branch`** - Create AI work branch for parallel development
+- **`run-aipm-merge`** - Merge completed AI branch work back to ai-pm-org-main
+- **`run-aipm-deploy`** - Deploy AI improvements to your main branch (ai-pm-org-main → user's main)
 
 ### Database Management
-- **`/aipm-backup`** - Create manual database backup with timestamp
-- **`/aipm-maintenance`** - Run database cleanup, archiving, and optimization
-- **`/aipm-db-stats`** - Show database health and storage statistics
+- **`run-aipm-backup`** - Create manual database backup with timestamp
+- **`run-aipm-maintenance`** - Run database cleanup, archiving, and optimization
+- **`run-aipm-db-stats`** - Show database health and storage statistics
 
 ### 🤖 AI-Handled Git Operations
 The AI automatically handles complex git operations when needed. You can simply **request git actions in natural language**:

@@ -176,13 +176,19 @@ class MCPToolRegistry:
             
             # Import command tools for better user experience and command discovery
             from ..tools.command_tools import CommandTools
-            command_tools = CommandTools(self.db_manager, self.config_manager)
+            command_tools = CommandTools(self.db_manager, self.config_manager, self.server_instance)
             await self._register_tool_module(command_tools)
             
             # Import test tools for internal test execution within server context
             from ..tools.test_tools import TestTools
             test_tools = TestTools(self.config_manager)
             await self._register_tool_module(test_tools)
+            
+            
+            # Import run command processor for direct slash command replacement
+            from ..tools.run_command_processor import RunCommandProcessor
+            run_processor = RunCommandProcessor(self.db_manager, self.config_manager)
+            await self._register_tool_module(run_processor)
             
         except ImportError as e:
             logger.error(f"Critical tool modules not available: {e}")
