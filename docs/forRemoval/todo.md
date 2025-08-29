@@ -114,3 +114,16 @@ ai-pm-mcp-production/
   # 5. Restart MCP connection (changes will 
   be live)
   # 6. Test again
+
+
+READ:
+README.md
+ai-pm-mcp/reference/index.json
+ai-pm-mcp/reference/organization.json
+ai-pm-mcp/reference/organization.md
+ai-pm-mcp/core-context/directive-compressed.json
+ai-pm-mcp/reference/directivesmd/directive-escalation-system.md
+docs/forRemoval/mcp-critical-gap-analysis.md
+docs/forRemoval/mcp-gap-fix-implementation-plan.md
+docs/forRemoval/directive-integration-completion-plan.md
+ai-pm-mcp/tests/README.md

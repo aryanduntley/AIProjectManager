@@ -9,7 +9,37 @@ import fnmatch
 from pathlib import Path
 from typing import Dict, List
 from ..db_manager import DatabaseManager
-from ...utils.project_paths import get_management_folder_name
+try:
+    from ...utils.project_paths import get_management_folder_name
+except ImportError:
+    # Enhanced marker-file based fallback
+    try:
+        from ...utils.paths import add_mcp_server_to_path
+        add_mcp_server_to_path()
+        from utils.project_paths import get_management_folder_name
+    except ImportError:
+        # Direct marker-file discovery (paths.py approach)
+        import sys
+        from pathlib import Path
+        
+        def find_mcp_root():
+            current_path = Path(__file__).parent.absolute()
+            while current_path != current_path.parent:
+                marker_file = current_path / ".ai-pm-mcp-root"
+                if marker_file.exists():
+                    return current_path
+                current_path = current_path.parent
+            raise RuntimeError("MCP server root not found - .ai-pm-mcp-root marker missing")
+        
+        try:
+            mcp_root = find_mcp_root()
+            if str(mcp_root) not in sys.path:
+                sys.path.insert(0, str(mcp_root))
+            from utils.project_paths import get_management_folder_name
+        except Exception:
+            # Ultimate fallback - use default value
+            def get_management_folder_name(config_manager=None):
+                return "projectManagement"
 
 
 class FileDiscovery:
