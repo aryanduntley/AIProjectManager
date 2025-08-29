@@ -127,3 +127,9 @@ docs/forRemoval/mcp-critical-gap-analysis.md
 docs/forRemoval/mcp-gap-fix-implementation-plan.md
 docs/forRemoval/directive-integration-completion-plan.md
 ai-pm-mcp/tests/README.md
+
+debug.txt
+docs/forRemoval/global-dependency-isolation-fix.md
+docs/forRemoval/database-import-error-resolution.md
+docs/forRemoval/marker-file-import-system-implementation-plan.md
+docs/forRemoval/comprehensive-system-failure-assessment.md
