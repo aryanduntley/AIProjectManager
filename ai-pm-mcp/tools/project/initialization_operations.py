@@ -35,8 +35,25 @@ class ProjectInitializationOperations(BaseProjectOperations):
                 return f"Project management structure already exists at {project_mgmt_dir}. Use force=true to override."
             
             # CRITICAL: Use directive processor for proper AI-driven initialization
+            # Debug logging to file for visibility
+            debug_file = project_path / "debug_init.log"
+            with open(debug_file, "w") as f:
+                f.write("=== DEBUG INITIALIZATION LOG ===\n")
+                f.write(f"Timestamp: {datetime.utcnow().isoformat()}\n\n")
+            
+            def write_debug(msg):
+                with open(debug_file, "a") as f:
+                    f.write(f"{msg}\n")
+            
             if self.directive_processor:
-                logger.info("Using directive processor for project initialization")
+                write_debug("[DEBUG_INIT] === PROJECT INITIALIZATION WITH DIRECTIVE PROCESSOR ===")
+                write_debug(f"[DEBUG_INIT] Project path: {project_path}")
+                write_debug(f"[DEBUG_INIT] Project name: {project_name}")
+                write_debug(f"[DEBUG_INIT] DirectiveProcessor available: {self.directive_processor is not None}")
+                logger.info("[DEBUG_INIT] === PROJECT INITIALIZATION WITH DIRECTIVE PROCESSOR ===")
+                logger.info(f"[DEBUG_INIT] Project path: {project_path}")
+                logger.info(f"[DEBUG_INIT] Project name: {project_name}")
+                logger.info(f"[DEBUG_INIT] DirectiveProcessor available: {self.directive_processor is not None}")
                 
                 context = {
                     "trigger": "project_initialization", 
@@ -53,8 +70,23 @@ class ProjectInitializationOperations(BaseProjectOperations):
                     }
                 }
                 
+                write_debug(f"[DEBUG_INIT] Context prepared: {list(context.keys())}")
+                write_debug(f"[DEBUG_INIT] About to call directive_processor.execute_directive('projectInitialization')")
+                logger.info(f"[DEBUG_INIT] Context prepared: {list(context.keys())}")
+                logger.info(f"[DEBUG_INIT] About to call directive_processor.execute_directive('projectInitialization')")
+                
                 # Execute projectInitialization directive - this will escalate for proper consultation
                 result = await self.directive_processor.execute_directive("projectInitialization", context)
+                
+                write_debug(f"[DEBUG_INIT] DirectiveProcessor result received")
+                write_debug(f"[DEBUG_INIT] Result keys: {list(result.keys()) if result else 'None'}")
+                write_debug(f"[DEBUG_INIT] Actions taken: {result.get('actions_taken', []) if result else 'None'}")
+                write_debug(f"[DEBUG_INIT] Has actions: {bool(result.get('actions_taken')) if result else False}")
+                write_debug(f"[DEBUG_INIT] Full result: {result}")
+                logger.info(f"[DEBUG_INIT] DirectiveProcessor result received")
+                logger.info(f"[DEBUG_INIT] Result keys: {list(result.keys()) if result else 'None'}")
+                logger.info(f"[DEBUG_INIT] Actions taken: {result.get('actions_taken', []) if result else 'None'}")
+                logger.info(f"[DEBUG_INIT] Has actions: {bool(result.get('actions_taken')) if result else False}")
                 
                 # The directive execution should handle the actual consultation and blueprint creation
                 if result.get("actions_taken"):
@@ -75,14 +107,28 @@ class ProjectInitializationOperations(BaseProjectOperations):
                     
                     return f"Project initialization directive executed successfully. Actions taken: {len(result.get('actions_taken', []))}"
                 else:
-                    return f"Project initialization directive executed but no actions determined. Result: {result}"
+                    write_debug(f"[DEBUG_INIT] *** DIRECTIVE PROCESSOR FAILED - NO ACTIONS DETERMINED ***")
+                    write_debug(f"[DEBUG_INIT] DirectiveProcessor result: {result}")
+                    write_debug(f"[DEBUG_INIT] FALLING BACK TO BASIC STRUCTURE CREATION")
+                    logger.warning(f"[DEBUG_INIT] *** DIRECTIVE PROCESSOR FAILED - NO ACTIONS DETERMINED ***")
+                    logger.warning(f"[DEBUG_INIT] DirectiveProcessor result: {result}")
+                    logger.warning(f"[DEBUG_INIT] FALLING BACK TO BASIC STRUCTURE CREATION")
+                    # Fall through to basic structure creation
                     
             else:
+                write_debug("[DEBUG_INIT] *** NO DIRECTIVE PROCESSOR AVAILABLE - FALLING BACK ***")
                 # Fallback to old behavior if no directive processor (should not happen in fixed system)
-                logger.warning("No directive processor available - falling back to basic structure creation")
+                logger.warning("[DEBUG_INIT] *** NO DIRECTIVE PROCESSOR AVAILABLE - FALLING BACK ***")
+            
+            write_debug(f"[DEBUG_INIT] === CREATING BASIC PROJECT STRUCTURE ===")
+            write_debug(f"[DEBUG_INIT] About to call _create_project_structure")
+            logger.info(f"[DEBUG_INIT] === CREATING BASIC PROJECT STRUCTURE ===")
+            logger.info(f"[DEBUG_INIT] About to call _create_project_structure")
             
             # Create project structure
             await self._create_project_structure(project_path, project_name)
+            
+            logger.info(f"[DEBUG_INIT] Project structure created successfully")
             
             # Create and save blueprint
             blueprint_data = self.create_default_blueprint(project_name)

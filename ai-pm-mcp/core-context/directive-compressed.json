@@ -61,7 +61,8 @@
     },
     "initializationPhases": ["not_started", "discovering_files", "analyzing_themes", "building_flows", "complete"],
     "progressTracking": "Database file_metadata table with real-time progress updates and resumption capability",
-    "approvalRequired": ["ProjectBlueprint", "Theme definitions", "ProjectFlow outline"]
+    "approvalRequired": ["ProjectBlueprint", "Theme definitions", "ProjectFlow outline"],
+    "implementationNote": "ROUTINE OPERATIONS REQUIRE: Load reference/directives/02-project-initialization.json for complete project initialization protocols, user consultation workflows, and database integration procedures"
   },
   "sessionManagement": {
     "prerequisites": "Assumes automatic state detection (from systemInitialization) has notified user and they chose to proceed",

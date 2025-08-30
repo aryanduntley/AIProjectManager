@@ -65,12 +65,43 @@ class DirectiveProcessor:
         Returns:
             Dict containing actions taken, results, and escalation status
         """
-        logger.info(f"Executing directive: {directive_key}")
+        # DEBUG_DIRECTIVE: Entry point logging + file logging for visibility
+        logger.info(f"[DEBUG_DIRECTIVE] === EXECUTING DIRECTIVE: {directive_key} ===")
+        logger.info(f"[DEBUG_DIRECTIVE] Context keys: {list(context.keys())}")
+        logger.info(f"[DEBUG_DIRECTIVE] Trigger: {context.get('trigger', 'NOT_SET')}")
+        
+        # Write debug to file for reliable access
+        import os
+        from pathlib import Path
+        debug_file = Path(context.get('project_path', '.')) / "debug_directive.log"
+        
+        def write_directive_debug(msg):
+            try:
+                with open(debug_file, "a") as f:
+                    f.write(f"{msg}\n")
+            except Exception:
+                pass  # Don't fail if we can't write debug
+        
+        write_directive_debug(f"=== DIRECTIVE PROCESSOR DEBUG ===")
+        write_directive_debug(f"[DEBUG_DIRECTIVE] === EXECUTING DIRECTIVE: {directive_key} ===")
+        write_directive_debug(f"[DEBUG_DIRECTIVE] Context keys: {list(context.keys())}")
+        write_directive_debug(f"[DEBUG_DIRECTIVE] Trigger: {context.get('trigger', 'NOT_SET')}")
         
         try:
+            # DEBUG_DIRECTIVE: Validation check
+            write_directive_debug(f"[DEBUG_DIRECTIVE] Compressed directives loaded: {self.compressed_directives is not None}")
+            if self.compressed_directives:
+                write_directive_debug(f"[DEBUG_DIRECTIVE] Available directive keys: {list(self.compressed_directives.keys())}")
+            logger.info(f"[DEBUG_DIRECTIVE] Compressed directives loaded: {self.compressed_directives is not None}")
+            if self.compressed_directives:
+                logger.info(f"[DEBUG_DIRECTIVE] Available directive keys: {list(self.compressed_directives.keys())}")
+            
             # 1. Validate directive key exists
             if not self.compressed_directives or directive_key not in self.compressed_directives:
-                logger.error(f"Unknown directive key: {directive_key}")
+                write_directive_debug(f"[DEBUG_DIRECTIVE] ERROR: Unknown directive key: {directive_key}")
+                write_directive_debug(f"[DEBUG_DIRECTIVE] Available keys: {list(self.compressed_directives.keys()) if self.compressed_directives else 'NONE'}")
+                logger.error(f"[DEBUG_DIRECTIVE] ERROR: Unknown directive key: {directive_key}")
+                logger.error(f"[DEBUG_DIRECTIVE] Available keys: {list(self.compressed_directives.keys()) if self.compressed_directives else 'NONE'}")
                 return {
                     "directive_key": directive_key,
                     "error": f"Unknown directive key: {directive_key}",
@@ -80,6 +111,7 @@ class DirectiveProcessor:
             
             # 2. Get compressed directive content
             directive_content = self.compressed_directives[directive_key]
+            logger.info(f"[DEBUG_DIRECTIVE] Retrieved directive content type: {type(directive_content)}")
             
             # 3. Check for forced escalation operations
             forced_escalation_keys = [
@@ -93,17 +125,26 @@ class DirectiveProcessor:
                 "implementationNote" in str(directive_content)
             )
             
+            logger.info(f"[DEBUG_DIRECTIVE] Needs escalation: {needs_escalation} (in forced keys: {directive_key in forced_escalation_keys})")
+            
             if needs_escalation:
-                logger.info(f"Auto-escalating directive {directive_key} (forced operation)")
+                logger.info(f"[DEBUG_DIRECTIVE] Auto-escalating directive {directive_key} (forced operation)")
                 return await self.escalate_directive(directive_key, context, "Forced escalation operation")
             
             # 4. Analyze directive + context to determine actions
-            # This is where AI would analyze the directive guidance and context
-            # For now, we'll implement basic action determination
+            logger.info(f"[DEBUG_DIRECTIVE] Proceeding to AI action determination for {directive_key}")
             actions = await self._ai_determine_actions(directive_content, context, directive_key)
+            
+            # DEBUG_DIRECTIVE: AI determination results
+            logger.info(f"[DEBUG_DIRECTIVE] AI determination completed for {directive_key}")
+            logger.info(f"[DEBUG_DIRECTIVE] Actions returned: {len(actions.get('actions', []))}")
+            logger.info(f"[DEBUG_DIRECTIVE] Needs escalation: {actions.get('needs_escalation', False)}")
+            if actions.get("actions"):
+                logger.info(f"[DEBUG_DIRECTIVE] Action types: {[action.get('type', 'NO_TYPE') for action in actions.get('actions', [])]}")
             
             # 5. Handle escalation if AI requests it
             if actions.get("needs_escalation"):
+                logger.info(f"[DEBUG_DIRECTIVE] AI requested escalation: {actions.get('escalation_reason', 'No reason provided')}")
                 escalated_actions = await self.escalate_directive(
                     directive_key, 
                     context, 
@@ -113,18 +154,23 @@ class DirectiveProcessor:
             
             # 6. Execute determined actions via action executor
             execution_results = []
+            logger.info(f"[DEBUG_DIRECTIVE] Action executor available: {self.action_executor is not None}")
             if self.action_executor:
+                logger.info(f"[DEBUG_DIRECTIVE] Executing {len(actions.get('actions', []))} actions via action executor")
                 execution_results = await self.action_executor.execute_actions(actions.get("actions", []))
+                logger.info(f"[DEBUG_DIRECTIVE] Action execution completed with {len(execution_results)} results")
             else:
-                logger.warning("No action executor available - actions not executed")
+                logger.warning("[DEBUG_DIRECTIVE] No action executor available - actions not executed")
             
-            return {
+            final_result = {
                 "directive_key": directive_key,
                 "actions_taken": actions.get("actions", []),
                 "execution_results": execution_results,
                 "escalated": False,
                 "analysis": actions.get("analysis", "")
             }
+            logger.info(f"[DEBUG_DIRECTIVE] Final result for {directive_key}: {len(final_result.get('actions_taken', []))} actions taken")
+            return final_result
             
         except Exception as e:
             logger.error(f"Error executing directive {directive_key}: {e}")
@@ -142,10 +188,26 @@ class DirectiveProcessor:
         Implements the 3-tier escalation system:
         1. compressed -> 2. JSON -> 3. MD
         """
-        logger.info(f"Escalating directive {directive_key}, reason: {reason}")
+        logger.info(f"[DEBUG_DIRECTIVE] === ESCALATING DIRECTIVE: {directive_key} ===")
+        logger.info(f"[DEBUG_DIRECTIVE] Escalation reason: {reason}")
+        
+        # Check if directive has implementationNote with specific file path
+        directive_content = self.compressed_directives.get(directive_key, {})
+        implementation_note = directive_content.get("implementationNote", "")
+        
+        # Extract file path from implementationNote if available
+        actual_directive_name = directive_key  # default fallback
+        if implementation_note and "reference/directives/" in implementation_note:
+            # Extract filename from implementationNote
+            # Format: "...Load reference/directives/02-project-initialization.json for..."
+            import re
+            match = re.search(r'reference/directives/([^.]+)\.json', implementation_note)
+            if match:
+                actual_directive_name = match.group(1)
+                logger.info(f"[DEBUG_DIRECTIVE] Extracted directive name from implementationNote: {actual_directive_name}")
         
         # Try JSON first (Tier 2)
-        json_path = Path(__file__).parent.parent / "reference" / "directives" / f"{directive_key}.json"
+        json_path = Path(__file__).parent.parent / "reference" / "directives" / f"{actual_directive_name}.json"
         if json_path.exists():
             try:
                 with open(json_path, 'r', encoding='utf-8') as f:
@@ -187,9 +249,22 @@ class DirectiveProcessor:
     
     async def escalate_to_markdown(self, directive_key: str, context: Dict[str, Any], reason: str) -> Dict[str, Any]:
         """Final escalation to Markdown directive files."""
-        logger.info(f"Final escalation to MD for directive {directive_key}")
+        logger.info(f"[DEBUG_DIRECTIVE] Final escalation to MD for directive {directive_key}")
         
-        md_path = Path(__file__).parent.parent / "reference" / "directivesmd" / f"{directive_key}.md"
+        # Check if directive has implementationNote with specific file path (same logic as JSON escalation)
+        directive_content = self.compressed_directives.get(directive_key, {})
+        implementation_note = directive_content.get("implementationNote", "")
+        
+        # Extract file path from implementationNote if available
+        actual_directive_name = directive_key  # default fallback
+        if implementation_note and "reference/directives/" in implementation_note:
+            import re
+            match = re.search(r'reference/directives/([^.]+)\.json', implementation_note)
+            if match:
+                actual_directive_name = match.group(1)
+                logger.info(f"[DEBUG_DIRECTIVE] Using directive name for MD: {actual_directive_name}")
+        
+        md_path = Path(__file__).parent.parent / "reference" / "directivesmd" / f"{actual_directive_name}.md"
         if md_path.exists():
             try:
                 with open(md_path, 'r', encoding='utf-8') as f:
@@ -242,7 +317,11 @@ class DirectiveProcessor:
         For now, implementing basic rule-based action determination that can be 
         enhanced with actual AI analysis later.
         """
-        logger.debug(f"AI analyzing directive {directive_key} (tier {tier})")
+        # DEBUG_DIRECTIVE: AI determination entry
+        logger.info(f"[DEBUG_DIRECTIVE] === AI DETERMINE ACTIONS START ===")
+        logger.info(f"[DEBUG_DIRECTIVE] Directive: {directive_key}, Tier: {tier}")
+        logger.info(f"[DEBUG_DIRECTIVE] Directive content type: {type(directive_content)}")
+        logger.info(f"[DEBUG_DIRECTIVE] Context keys: {list(context.keys())}")
         
         # Basic action determination based on common patterns
         actions = []
@@ -253,6 +332,7 @@ class DirectiveProcessor:
         try:
             # Extract trigger information
             trigger = context.get("trigger", "unknown")
+            logger.info(f"[DEBUG_DIRECTIVE] Trigger extracted: {trigger}")
             
             # Session management actions
             if directive_key == "sessionManagement" or "session" in directive_key:
@@ -362,9 +442,15 @@ class DirectiveProcessor:
             
             # Project initialization actions
             elif directive_key == "projectInitialization":
+                logger.info(f"[DEBUG_DIRECTIVE] MATCHED: projectInitialization directive")
+                
                 # Extract initialization parameters properly
                 init_request = context.get("initialization_request", {})
                 force_reinit = init_request.get("force_reinitialize", False) or context.get("force", False)
+                
+                logger.info(f"[DEBUG_DIRECTIVE] Init request: {init_request}")
+                logger.info(f"[DEBUG_DIRECTIVE] Force reinit: {force_reinit}")
+                logger.info(f"[DEBUG_DIRECTIVE] Project path from context: {context.get('project_path', 'NOT_SET')}")
                 
                 actions.extend([
                     {
@@ -394,6 +480,10 @@ class DirectiveProcessor:
                 # This usually needs escalation for user consultation
                 needs_escalation = True
                 escalation_reason = "Need detailed project consultation workflow"
+                
+                logger.info(f"[DEBUG_DIRECTIVE] Project init actions created: {len(actions)}")
+                logger.info(f"[DEBUG_DIRECTIVE] Project init needs escalation: {needs_escalation}")
+                logger.info(f"[DEBUG_DIRECTIVE] Project init escalation reason: {escalation_reason}")
             
             # Theme management actions  
             elif directive_key == "themeManagement":
@@ -428,12 +518,13 @@ class DirectiveProcessor:
                 analysis = f"Basic logging for directive {directive_key} with trigger {trigger}"
         
         except Exception as e:
-            logger.error(f"Error in AI action determination: {e}")
+            logger.error(f"[DEBUG_DIRECTIVE] ERROR in AI action determination: {e}")
             analysis = f"Error analyzing directive: {e}"
             needs_escalation = True
             escalation_reason = f"Error during analysis: {e}"
         
-        return {
+        # DEBUG_DIRECTIVE: Final action determination results
+        final_result = {
             "actions": actions,
             "analysis": analysis,
             "needs_escalation": needs_escalation,
@@ -441,6 +532,14 @@ class DirectiveProcessor:
             "directive_key": directive_key,
             "tier": tier
         }
+        
+        logger.info(f"[DEBUG_DIRECTIVE] === AI DETERMINE ACTIONS END ===")
+        logger.info(f"[DEBUG_DIRECTIVE] Final actions count: {len(actions)}")
+        logger.info(f"[DEBUG_DIRECTIVE] Final analysis: {analysis}")
+        logger.info(f"[DEBUG_DIRECTIVE] Final needs_escalation: {needs_escalation}")
+        logger.info(f"[DEBUG_DIRECTIVE] Final escalation_reason: {escalation_reason}")
+        
+        return final_result
     
     def get_available_directives(self) -> List[str]:
         """Get list of available directive keys."""

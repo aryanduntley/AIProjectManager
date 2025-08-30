@@ -15,10 +15,11 @@ logger = logging.getLogger(__name__)
 class RunCommandProcessor:
     """Process run- commands as direct slash command replacements."""
     
-    def __init__(self, db_manager=None, config_manager=None):
+    def __init__(self, db_manager=None, config_manager=None, directive_processor=None):
         """Initialize the run command processor."""
         self.db_manager = db_manager
         self.config_manager = config_manager
+        self.directive_processor = directive_processor
         
         # Available commands - direct mapping to aipm commands
         self.available_commands = [
@@ -74,39 +75,71 @@ class RunCommandProcessor:
         args = arguments.get("args", {})
         
         # Convert run-aipm-init to aimp-init
-        aipm_command = run_command.replace("run-", "")
+        aimp_command = run_command.replace("run-", "")
         
-        logger.info(f"Executing {run_command} -> {aipm_command}")
+        logger.info(f"[DEBUG_RUN_COMMAND] Executing {run_command} -> {aimp_command}")
+        logger.info(f"[DEBUG_RUN_COMMAND] db_manager available: {self.db_manager is not None}")
+        logger.info(f"[DEBUG_RUN_COMMAND] config_manager available: {self.config_manager is not None}")
         
         try:
             # Use the existing command system
             from ..tools.command_tools import CommandTools
             
             if self.db_manager and self.config_manager:
+                logger.info(f"[DEBUG_RUN_COMMAND] Using CommandTools for {aimp_command}")
                 command_tools = CommandTools(self.db_manager, self.config_manager, None)
                 
                 execute_args = {
-                    "command": aipm_command,
+                    "command": aimp_command,
                     "project_path": project_path,
                     "args": args
                 }
                 
+                logger.info(f"[DEBUG_RUN_COMMAND] Calling CommandTools.execute_command with args: {execute_args}")
                 result = await command_tools.execute_command(execute_args)
+                logger.info(f"[DEBUG_RUN_COMMAND] CommandTools result: {result}")
                 
                 return f"✅ **{run_command}** executed successfully!\n\n{result}"
             
             else:
                 # Fallback for specific commands
-                return await self._fallback_execution(aipm_command, arguments)
+                logger.info(f"[DEBUG_RUN_COMMAND] Using fallback execution for {aimp_command}")
+                return await self._fallback_execution(aimp_command, arguments)
                 
         except Exception as e:
-            logger.error(f"Error executing {run_command}: {e}")
+            logger.error(f"[DEBUG_RUN_COMMAND] Exception executing {run_command}: {e}")
+            logger.error(f"[DEBUG_RUN_COMMAND] Exception type: {type(e)}")
+            import traceback
+            logger.error(f"[DEBUG_RUN_COMMAND] Traceback: {traceback.format_exc()}")
             return f"❌ Error executing **{run_command}**: {str(e)}"
     
     async def _fallback_execution(self, command: str, arguments: Dict[str, Any]) -> str:
         """Fallback execution when full system isn't available."""
         
-        if command == "aipm-help":
+        if command == "aipm-init":
+            logger.info(f"[DEBUG_RUN_COMMAND] Fallback execution for aipm-init")
+            # Direct project initialization when command routing fails
+            try:
+                from ..tools.project_tools import ProjectTools
+                project_tools = ProjectTools(self.db_manager, self.config_manager, self.directive_processor, None)
+                
+                init_args = {
+                    "project_path": arguments.get("project_path", "."),
+                    "project_name": "AI Project Manager",  # Default name
+                    "description": "AI-powered project management system",
+                    "force": False,
+                    "initialize_database": True
+                }
+                
+                logger.info(f"[DEBUG_RUN_COMMAND] Calling project_initialize directly with args: {init_args}")
+                result = await project_tools.initialize_project(init_args)
+                return f"✅ **aipm-init** executed via fallback!\n\n{result}"
+                
+            except Exception as e:
+                logger.error(f"[DEBUG_RUN_COMMAND] Fallback project initialization failed: {e}")
+                return f"❌ **aipm-init** fallback failed: {str(e)}\n\nPlease try using the direct project_initialize tool."
+        
+        elif command == "aipm-help":
             return """🚀 **AI Project Manager Commands**
 
 **Available run- commands** (replacement for slash commands):

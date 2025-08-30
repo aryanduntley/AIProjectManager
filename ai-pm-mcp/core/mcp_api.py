@@ -187,7 +187,7 @@ class MCPToolRegistry:
             
             # Import run command processor for direct slash command replacement
             from ..tools.run_command_processor import RunCommandProcessor
-            run_processor = RunCommandProcessor(self.db_manager, self.config_manager)
+            run_processor = RunCommandProcessor(self.db_manager, self.config_manager, self.directive_processor)
             await self._register_tool_module(run_processor)
             
         except ImportError as e:
