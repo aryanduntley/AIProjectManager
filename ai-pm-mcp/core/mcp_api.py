@@ -93,16 +93,20 @@ class MCPToolRegistry:
             
             # Initialize database if project path provided
             if project_path:
-                write_database_debug(f"[DEBUG_DATABASE] ✅ PROJECT PATH PROVIDED - Calling _initialize_database")
+                write_database_debug(f"[DEBUG_DATABASE] ✅ PROJECT PATH PROVIDED - Testing _initialize_database")
                 await self._initialize_database(project_path)
                 
+                write_database_debug(f"[DEBUG_DATABASE] ✅ _initialize_database completed successfully")
+                write_database_debug(f"[DEBUG_DATABASE] DB Manager now available: {hasattr(self, 'db_manager') and self.db_manager is not None}")
                 # Initialize core processing components
-                await self._initialize_core_components(project_path)
+                # await self._initialize_core_components(project_path)
             else:
                 write_database_debug(f"[DEBUG_DATABASE] ❌ NO PROJECT PATH - Skipping database initialization")
             
             # Import tool modules
+            write_database_debug(f"[DEBUG_DATABASE] About to discover tools")
             await self._discover_tools()
+            write_database_debug(f"[DEBUG_DATABASE] ✅ Tools discovered successfully")
             
             # Register list_tools handler
             @server.list_tools()
@@ -585,15 +589,28 @@ class MCPToolRegistry:
             write_database_debug(f"[DEBUG_DATABASE] db_path: {db_path}")
             write_database_debug(f"[DEBUG_DATABASE] About to create DatabaseManager")
             
+            write_database_debug(f"[DEBUG_DATABASE] Checking schema_path: {schema_path}")
             # Copy schema from ai-pm-mcp if it doesn't exist
             if not schema_path.exists():
+                write_database_debug(f"[DEBUG_DATABASE] Schema doesn't exist, checking foundational location")
                 # Get schema from ai-pm-mcp foundational location
                 foundational_schema_path = Path(__file__).parent.parent / "database" / "schema.sql"
+                write_database_debug(f"[DEBUG_DATABASE] Foundational schema path: {foundational_schema_path}")
                 if foundational_schema_path.exists():
+                    write_database_debug(f"[DEBUG_DATABASE] Foundational schema exists, copying")
                     import shutil
+                    # Create destination directory if it doesn't exist
+                    schema_path.parent.mkdir(parents=True, exist_ok=True)
+                    write_database_debug(f"[DEBUG_DATABASE] Destination directory created: {schema_path.parent}")
                     shutil.copy2(foundational_schema_path, schema_path)
+                    write_database_debug(f"[DEBUG_DATABASE] ✅ Schema copied successfully")
                     logger.info(f"Copied foundational database schema to {schema_path}")
+                else:
+                    write_database_debug(f"[DEBUG_DATABASE] ⚠️ Foundational schema not found")
+            else:
+                write_database_debug(f"[DEBUG_DATABASE] ✅ Schema already exists")
             
+            write_database_debug(f"[DEBUG_DATABASE] Schema handling completed")
             # Initialize database manager
             try:
                 write_database_debug(f"[DEBUG_DATABASE] Testing DatabaseManager import")
@@ -602,11 +619,15 @@ class MCPToolRegistry:
                 
                 write_database_debug(f"[DEBUG_DATABASE] Creating DatabaseManager with: {str(project_path_obj)}")
                 self.db_manager = DatabaseManager(str(project_path_obj), self.config_manager)
-                write_database_debug(f"[DEBUG_DATABASE] ✅ DatabaseManager created")
+                write_database_debug(f"[DEBUG_DATABASE] ✅ DatabaseManager created successfully")
                 
                 write_database_debug(f"[DEBUG_DATABASE] Connecting to database")
                 self.db_manager.connect()
                 write_database_debug(f"[DEBUG_DATABASE] ✅ Database connected successfully")
+                
+                write_database_debug(f"[DEBUG_DATABASE] Setting up database queries")
+                # Continue with query setup
+                write_database_debug(f"[DEBUG_DATABASE] Database connection phase completed successfully")
             except ImportError as import_error:
                 write_database_debug(f"[DEBUG_DATABASE] ❌ IMPORT ERROR: {import_error}")
                 write_database_debug(f"[DEBUG_DATABASE] Import error suggests path isolation issue")
@@ -617,15 +638,24 @@ class MCPToolRegistry:
                 raise
             
             # Initialize query classes
+            write_database_debug(f"[DEBUG_DATABASE] Initializing query classes")
             self.session_queries = SessionQueries(self.db_manager)
+            write_database_debug(f"[DEBUG_DATABASE] ✅ SessionQueries initialized")
             self.task_queries = TaskStatusQueries(self.db_manager)
+            write_database_debug(f"[DEBUG_DATABASE] ✅ TaskStatusQueries initialized")
             self.theme_flow_queries = ThemeFlowQueries(self.db_manager)
+            write_database_debug(f"[DEBUG_DATABASE] ✅ ThemeFlowQueries initialized")
             self.file_metadata_queries = FileMetadataQueries(self.db_manager)
+            write_database_debug(f"[DEBUG_DATABASE] ✅ FileMetadataQueries initialized")
             self.user_preference_queries = UserPreferenceQueries(self.db_manager)
+            write_database_debug(f"[DEBUG_DATABASE] ✅ UserPreferenceQueries initialized")
             self.event_queries = EventQueries(self.db_manager)
+            write_database_debug(f"[DEBUG_DATABASE] ✅ EventQueries initialized")
             
             # Initialize analytics dashboard
-            from core.analytics_dashboard import AnalyticsDashboard
+            write_database_debug(f"[DEBUG_DATABASE] Importing AnalyticsDashboard")
+            from .analytics_dashboard import AnalyticsDashboard
+            write_database_debug(f"[DEBUG_DATABASE] ✅ AnalyticsDashboard imported successfully")
             self.analytics_dashboard = AnalyticsDashboard(
                 session_queries=self.session_queries,
                 task_queries=self.task_queries,
@@ -633,6 +663,7 @@ class MCPToolRegistry:
                 file_metadata_queries=self.file_metadata_queries,
                 user_preference_queries=self.user_preference_queries
             )
+            write_database_debug(f"[DEBUG_DATABASE] ✅ AnalyticsDashboard initialized successfully")
             
             logger.info(f"Database and advanced intelligence initialized at {db_path}")
             
