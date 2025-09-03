@@ -42,26 +42,55 @@ class DatabaseManager:
             config_manager: Optional ConfigManager instance for folder name configuration
             server_instance: Optional server instance for directive hook integration
         """
+        # Debug: Track constructor progress
+        debug_file = Path(project_path) / "debug_database.log"
+        def write_constructor_debug(msg):
+            try:
+                with open(debug_file, "a") as f:
+                    f.write(f"[DEBUG_DB_CONSTRUCTOR] {msg}\n")
+            except Exception:
+                pass
+        
+        write_constructor_debug("=== DatabaseManager constructor started ===")
+        write_constructor_debug(f"project_path: {project_path}")
+        write_constructor_debug(f"config_manager: {config_manager}")
+        
         self.project_path = Path(project_path)
+        write_constructor_debug("✅ project_path Path object created")
         self.config_manager = config_manager
+        write_constructor_debug("✅ config_manager assigned")
         self.server_instance = server_instance  # For directive hook integration
+        write_constructor_debug("✅ server_instance assigned")
         
         # Get management folder name from config or use default
         management_folder_name = "projectManagement"
+        write_constructor_debug("✅ default management_folder_name set")
+        
         if self.config_manager and ConfigManager:
             try:
                 management_folder_name = self.config_manager.get_management_folder_name()
-            except Exception:
+                write_constructor_debug(f"✅ got management folder name from config: {management_folder_name}")
+            except Exception as e:
+                write_constructor_debug(f"⚠️ config fallback: {e}")
                 # Fall back to default if config is not loaded
                 pass
         
         self.project_mgmt_path = self.project_path / management_folder_name
+        write_constructor_debug(f"✅ project_mgmt_path: {self.project_mgmt_path}")
         self.db_path = self.project_mgmt_path / "project.db"
+        write_constructor_debug(f"✅ db_path: {self.db_path}")
         self.schema_path = Path(__file__).parent / "schema.sql"
+        write_constructor_debug(f"✅ schema_path: {self.schema_path}")
         self.connection: Optional[sqlite3.Connection] = None
+        write_constructor_debug("✅ connection initialized as None")
         self.logger = logging.getLogger(__name__)
+        write_constructor_debug("✅ logger created")
         self._lock = threading.RLock()  # For thread safety
+        write_constructor_debug("✅ threading lock created")
         self._in_transaction = False  # Track transaction state
+        write_constructor_debug("✅ transaction state initialized")
+        write_constructor_debug("=== DatabaseManager constructor completed successfully ===")
+        
         
         # Configuration
         self.enable_foreign_keys = True

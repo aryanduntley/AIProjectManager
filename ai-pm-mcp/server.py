@@ -9,6 +9,7 @@ and seamless session continuity.
 
 import asyncio
 import sys
+import os
 import logging
 import subprocess
 from pathlib import Path
@@ -85,7 +86,24 @@ class AIProjectManagerServer:
             
             # Register all tools
             logger.debug("Registering tools")
+            
+            # DEBUG_DATABASE: Minimal debugging for database initialization tracking
+            debug_file = Path.cwd() / "debug_database.log"
+            def write_database_debug(msg):
+                try:
+                    with open(debug_file, "a") as f:
+                        f.write(f"{msg}\n")
+                except Exception:
+                    pass
+            
+            write_database_debug(f"[DEBUG_DATABASE] === SERVER: Calling register_all_tools ===")
+            write_database_debug(f"[DEBUG_DATABASE] PROJECT_PATH: None (not provided)")
+            
             await self.tool_registry.register_all_tools(self.server)
+            
+            write_database_debug(f"[DEBUG_DATABASE] === SERVER: register_all_tools completed ===")
+            write_database_debug(f"[DEBUG_DATABASE] DB Manager available: {hasattr(self.tool_registry, 'db_manager') and self.tool_registry.db_manager is not None}")
+            
             logger.debug("Tools registered successfully")
             
             # Update ActionExecutor with database manager now that tool registry has initialized it

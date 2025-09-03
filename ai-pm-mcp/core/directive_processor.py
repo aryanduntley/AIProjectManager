@@ -35,6 +35,7 @@ class DirectiveProcessor:
         """Initialize the directive processor with compressed directives."""
         self.compressed_directives = None
         self.action_executor = action_executor
+        self._execution_stack = []  # Track recursion depth
         self._load_compressed_directives()
     
     def _load_compressed_directives(self):
@@ -65,13 +66,28 @@ class DirectiveProcessor:
         Returns:
             Dict containing actions taken, results, and escalation status
         """
+        # Recursion protection
+        execution_id = f"{directive_key}:{context.get('trigger', 'unknown')}"
+        if len(self._execution_stack) > 5 or execution_id in self._execution_stack:
+            logger.warning(f"[RECURSION_GUARD] Blocking recursive/deep execution: {execution_id}")
+            logger.warning(f"[RECURSION_GUARD] Stack: {self._execution_stack}")
+            return {
+                "directive_key": directive_key,
+                "error": "recursion depth exceeded or circular reference detected",
+                "actions_taken": [],
+                "escalated": False
+            }
+        
+        # Track this execution
+        self._execution_stack.append(execution_id)
+        
         # DEBUG_DIRECTIVE: Entry point logging + file logging for visibility
         logger.info(f"[DEBUG_DIRECTIVE] === EXECUTING DIRECTIVE: {directive_key} ===")
         logger.info(f"[DEBUG_DIRECTIVE] Context keys: {list(context.keys())}")
         logger.info(f"[DEBUG_DIRECTIVE] Trigger: {context.get('trigger', 'NOT_SET')}")
+        logger.info(f"[DEBUG_DIRECTIVE] Stack depth: {len(self._execution_stack)}")
         
         # Write debug to file for reliable access
-        import os
         from pathlib import Path
         debug_file = Path(context.get('project_path', '.')) / "debug_directive.log"
         
@@ -180,6 +196,10 @@ class DirectiveProcessor:
                 "actions_taken": [],
                 "escalated": False
             }
+        finally:
+            # Clean up execution stack
+            if execution_id in self._execution_stack:
+                self._execution_stack.remove(execution_id)
     
     async def escalate_directive(self, directive_key: str, context: Dict[str, Any], reason: str) -> Dict[str, Any]:
         """
@@ -463,6 +483,7 @@ class DirectiveProcessor:
                     {
                         "type": "create_project_blueprint",
                         "parameters": {
+                            "project_path": context.get("project_path", ""),
                             "project_analysis": "pending",
                             "project_name": init_request.get("project_name", ""),
                             "description": init_request.get("description", "")

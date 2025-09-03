@@ -131,6 +131,4 @@ docs/forRemoval/global-dependency-isolation-fix.md
 docs/forRemoval/database-import-error-resolution.md
 docs/forRemoval/marker-file-import-system-implementation-plan.md
 docs/forRemoval/comprehensive-system-failure-assessment.md
-
-cp ai-pm-mcp/server.py ai-pm-mcp/server_backup.py
-remove server_backup.py
+docs/forRemoval/enterprise-architectural-solutions.md

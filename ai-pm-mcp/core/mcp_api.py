@@ -75,16 +75,31 @@ class MCPToolRegistry:
         
     async def register_all_tools(self, server: Server, project_path: Optional[str] = None):
         """Register all available tools with the MCP server."""
+        # DEBUG_DATABASE: Minimal debugging for database initialization tracking
+        debug_file = Path(".") / "debug_database.log"
+        def write_database_debug(msg):
+            try:
+                with open(debug_file, "a") as f:
+                    f.write(f"{msg}\n")
+            except Exception:
+                pass
+        
+        write_database_debug(f"[DEBUG_DATABASE] === MCP_API: register_all_tools called ===")
+        write_database_debug(f"[DEBUG_DATABASE] project_path: {project_path}")
+        
         try:
             # Store server instance for hook point integration
             self.server_instance = server
             
             # Initialize database if project path provided
             if project_path:
+                write_database_debug(f"[DEBUG_DATABASE] ✅ PROJECT PATH PROVIDED - Calling _initialize_database")
                 await self._initialize_database(project_path)
                 
                 # Initialize core processing components
                 await self._initialize_core_components(project_path)
+            else:
+                write_database_debug(f"[DEBUG_DATABASE] ❌ NO PROJECT PATH - Skipping database initialization")
             
             # Import tool modules
             await self._discover_tools()
@@ -549,11 +564,26 @@ class MCPToolRegistry:
     
     async def _initialize_database(self, project_path: str):
         """Initialize database components for the project."""
+        # DEBUG_DATABASE: Track database initialization process
+        debug_file = Path(".") / "debug_database.log"
+        def write_database_debug(msg):
+            try:
+                with open(debug_file, "a") as f:
+                    f.write(f"{msg}\n")
+            except Exception:
+                pass
+        
+        write_database_debug(f"[DEBUG_DATABASE] === _initialize_database CALLED ===")
+        write_database_debug(f"[DEBUG_DATABASE] project_path: {project_path}")
+        
         try:
             project_path_obj = Path(project_path)
             db_path = get_database_path(project_path_obj, self.config_manager)
             project_mgmt_dir = get_project_management_path(project_path_obj, self.config_manager)
             schema_path = project_mgmt_dir / "database" / "schema.sql"
+            
+            write_database_debug(f"[DEBUG_DATABASE] db_path: {db_path}")
+            write_database_debug(f"[DEBUG_DATABASE] About to create DatabaseManager")
             
             # Copy schema from ai-pm-mcp if it doesn't exist
             if not schema_path.exists():
@@ -565,8 +595,26 @@ class MCPToolRegistry:
                     logger.info(f"Copied foundational database schema to {schema_path}")
             
             # Initialize database manager
-            self.db_manager = DatabaseManager(str(project_path_obj))
-            self.db_manager.connect()
+            try:
+                write_database_debug(f"[DEBUG_DATABASE] Testing DatabaseManager import")
+                from ..database.db_manager import DatabaseManager
+                write_database_debug(f"[DEBUG_DATABASE] ✅ DatabaseManager import successful")
+                
+                write_database_debug(f"[DEBUG_DATABASE] Creating DatabaseManager with: {str(project_path_obj)}")
+                self.db_manager = DatabaseManager(str(project_path_obj), self.config_manager)
+                write_database_debug(f"[DEBUG_DATABASE] ✅ DatabaseManager created")
+                
+                write_database_debug(f"[DEBUG_DATABASE] Connecting to database")
+                self.db_manager.connect()
+                write_database_debug(f"[DEBUG_DATABASE] ✅ Database connected successfully")
+            except ImportError as import_error:
+                write_database_debug(f"[DEBUG_DATABASE] ❌ IMPORT ERROR: {import_error}")
+                write_database_debug(f"[DEBUG_DATABASE] Import error suggests path isolation issue")
+                raise
+            except Exception as db_error:
+                write_database_debug(f"[DEBUG_DATABASE] ❌ DATABASE ERROR: {db_error}")
+                write_database_debug(f"[DEBUG_DATABASE] Error type: {type(db_error)}")
+                raise
             
             # Initialize query classes
             self.session_queries = SessionQueries(self.db_manager)
