@@ -131,5 +131,4 @@ docs/forRemoval/global-dependency-isolation-fix.md
 docs/forRemoval/database-import-error-resolution.md
 docs/forRemoval/marker-file-import-system-implementation-plan.md
 docs/forRemoval/comprehensive-system-failure-assessment.md
-
-check system faulure assessment for directives class looping. A fix was put into place, but is it comprehensive and enterprise level?
+docs/forRemoval/directive-recursion-architectural-fix.md
