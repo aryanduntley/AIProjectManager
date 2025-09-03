@@ -70,6 +70,9 @@ class MCPToolRegistry:
         # Advanced intelligence components
         self.analytics_dashboard = None
         
+        # Tool instances for ActionExecutor integration (FIX for ActionExecutor access)
+        self.tool_instances: Dict[str, Any] = {}
+        
     async def register_all_tools(self, server: Server, project_path: Optional[str] = None):
         """Register all available tools with the MCP server."""
         try:
@@ -117,11 +120,13 @@ class MCPToolRegistry:
             # Import project tools with database integration and directive processor
             from ..tools.project_tools import ProjectTools
             project_tools = ProjectTools(self.db_manager, self.config_manager, self.directive_processor)
+            self.tool_instances['project_tools'] = project_tools  # Store for ActionExecutor
             await self._register_tool_module(project_tools)
             
             # Import database tools
             from ..tools.database_tools import DatabaseTools
             database_tools = DatabaseTools(self.db_manager, self.config_manager)
+            self.tool_instances['database_tools'] = database_tools  # Store for ActionExecutor
             await self._register_tool_module(database_tools)
             
             # Import task tools with database integration
@@ -129,6 +134,7 @@ class MCPToolRegistry:
             task_tools = TaskTools(self.task_queries, self.session_queries, self.file_metadata_queries)
             # Add server instance for hook point integration
             task_tools.server_instance = self.server_instance
+            self.tool_instances['task_tools'] = task_tools  # Store for ActionExecutor
             await self._register_tool_module(task_tools)
             
             # Import session manager with database integration

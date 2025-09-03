@@ -95,6 +95,12 @@ class AIProjectManagerServer:
                 self.action_executor._initialize_database_queries()
                 logger.debug("ActionExecutor database integration completed")
             
+            # FIX: Update ActionExecutor with real MCP tool instances
+            if hasattr(self.tool_registry, 'tool_instances') and self.tool_registry.tool_instances:
+                logger.debug(f"Updating ActionExecutor with {len(self.tool_registry.tool_instances)} MCP tool instances")
+                self.action_executor.set_mcp_tools(self.tool_registry.tool_instances)
+                logger.debug("ActionExecutor MCP tools integration completed")
+            
             # Execute session start hook
             await self._on_session_start()
             
