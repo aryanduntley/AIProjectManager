@@ -3,14 +3,10 @@ Central AI-powered directive processing with explicit escalation.
 
 This module implements the critical gap fix identified in the MCP implementation -
 providing explicit integration points between MCP execution and directive guidance.
-
-ARCHITECTURAL FIX: Event queue system implemented to prevent recursive execution loops.
 """
 
 import json
 import asyncio
-import time
-import uuid
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 import logging
@@ -36,18 +32,10 @@ class DirectiveProcessor:
     """
     
     def __init__(self, action_executor=None):
-        """Initialize the directive processor with compressed directives and event queue."""
+        """Initialize the directive processor with compressed directives."""
         self.compressed_directives = None
         self.action_executor = action_executor
-        
-        # Event queue system (replaces recursion-prone direct calls)
-        self._event_queue = asyncio.Queue()
-        self._processing_events = False
-        self._event_processor_task = None
-        
-        # Legacy recursion tracking (kept as ultimate failsafe during transition)
-        self._execution_stack = []  # Will be removed after full event queue adoption
-        
+        self._execution_stack = []  # Track recursion depth
         self._load_compressed_directives()
     
     def _load_compressed_directives(self):
@@ -65,62 +53,71 @@ class DirectiveProcessor:
             logger.error(f"Failed to load compressed directives: {e}")
             self.compressed_directives = {}
     
-    def queue_event(self, event_type: str, context: Dict[str, Any], priority: int = 0):
-        """Queue an event for processing instead of immediate execution."""
-        event = {
-            "event_type": event_type,
-            "context": context.copy(),  # Prevent context mutation
-            "priority": priority,
-            "timestamp": time.time(),
-            "event_id": f"{event_type}:{uuid.uuid4().hex[:8]}"
-        }
+    async def execute_directive(self, directive_key: str, context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Execute specific directive with AI decision-making and optional escalation.
         
-        self._event_queue.put_nowait(event)
-        logger.debug(f"[EVENT_QUEUE] Queued: {event['event_id']}")
+        This is the core method that MCP code should call at integration points.
         
-        # Start event processor if not running
-        if not self._processing_events:
-            self._event_processor_task = asyncio.create_task(self._process_event_queue())
-    
-    async def _process_event_queue(self):
-        """Process queued events sequentially to prevent recursion."""
-        self._processing_events = True
-        logger.info("[EVENT_PROCESSOR] Starting event queue processing")
+        Args:
+            directive_key: Key identifying which directive to execute
+            context: Execution context containing trigger info, project state, etc.
+            
+        Returns:
+            Dict containing actions taken, results, and escalation status
+        """
+        # Recursion protection
+        execution_id = f"{directive_key}:{context.get('trigger', 'unknown')}"
+        if len(self._execution_stack) > 5 or execution_id in self._execution_stack:
+            logger.warning(f"[RECURSION_GUARD] Blocking recursive/deep execution: {execution_id}")
+            logger.warning(f"[RECURSION_GUARD] Stack: {self._execution_stack}")
+            return {
+                "directive_key": directive_key,
+                "error": "recursion depth exceeded or circular reference detected",
+                "actions_taken": [],
+                "escalated": False
+            }
         
-        try:
-            while not self._event_queue.empty():
-                event = await self._event_queue.get()
-                
-                try:
-                    logger.info(f"[EVENT_PROCESSOR] Processing: {event['event_id']}")
-                    await self._execute_directive_internal(
-                        event["event_type"], 
-                        event["context"]
-                    )
-                    logger.debug(f"[EVENT_PROCESSOR] Completed: {event['event_id']}")
-                    
-                except Exception as e:
-                    logger.error(f"[EVENT_PROCESSOR] Failed {event['event_id']}: {e}")
-                    # Continue processing other events
-                
-                # Small delay to prevent CPU spinning
-                await asyncio.sleep(0.001)
-                
-        finally:
-            self._processing_events = False
-            logger.info("[EVENT_PROCESSOR] Event queue processing complete")
-    
-    async def _execute_directive_internal(self, directive_key: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Internal directive execution - does NOT queue events (prevents recursion)."""
-        logger.info(f"[DIRECTIVE_EXEC] Executing: {directive_key}")
+        # Track this execution
+        self._execution_stack.append(execution_id)
         
-        # Flag to prevent decorators from queuing events during execution
-        context["_suppress_events"] = True
+        # DEBUG_DIRECTIVE: Entry point logging + file logging for visibility
+        logger.info(f"[DEBUG_DIRECTIVE] === EXECUTING DIRECTIVE: {directive_key} ===")
+        logger.info(f"[DEBUG_DIRECTIVE] Context keys: {list(context.keys())}")
+        logger.info(f"[DEBUG_DIRECTIVE] Trigger: {context.get('trigger', 'NOT_SET')}")
+        logger.info(f"[DEBUG_DIRECTIVE] Stack depth: {len(self._execution_stack)}")
+        
+        # Write debug to file for reliable access
+        from pathlib import Path
+        debug_file = Path(context.get('project_path', '.')) / "debug_directive.log"
+        
+        def write_directive_debug(msg):
+            try:
+                with open(debug_file, "a") as f:
+                    f.write(f"{msg}\n")
+            except Exception:
+                pass  # Don't fail if we can't write debug
+        
+        write_directive_debug(f"=== DIRECTIVE PROCESSOR DEBUG ===")
+        write_directive_debug(f"[DEBUG_DIRECTIVE] === EXECUTING DIRECTIVE: {directive_key} ===")
+        write_directive_debug(f"[DEBUG_DIRECTIVE] Context keys: {list(context.keys())}")
+        write_directive_debug(f"[DEBUG_DIRECTIVE] Trigger: {context.get('trigger', 'NOT_SET')}")
         
         try:
+            # DEBUG_DIRECTIVE: Validation check
+            write_directive_debug(f"[DEBUG_DIRECTIVE] Compressed directives loaded: {self.compressed_directives is not None}")
+            if self.compressed_directives:
+                write_directive_debug(f"[DEBUG_DIRECTIVE] Available directive keys: {list(self.compressed_directives.keys())}")
+            logger.info(f"[DEBUG_DIRECTIVE] Compressed directives loaded: {self.compressed_directives is not None}")
+            if self.compressed_directives:
+                logger.info(f"[DEBUG_DIRECTIVE] Available directive keys: {list(self.compressed_directives.keys())}")
+            
             # 1. Validate directive key exists
             if not self.compressed_directives or directive_key not in self.compressed_directives:
-                logger.error(f"[DIRECTIVE_EXEC] Unknown directive key: {directive_key}")
+                write_directive_debug(f"[DEBUG_DIRECTIVE] ERROR: Unknown directive key: {directive_key}")
+                write_directive_debug(f"[DEBUG_DIRECTIVE] Available keys: {list(self.compressed_directives.keys()) if self.compressed_directives else 'NONE'}")
+                logger.error(f"[DEBUG_DIRECTIVE] ERROR: Unknown directive key: {directive_key}")
+                logger.error(f"[DEBUG_DIRECTIVE] Available keys: {list(self.compressed_directives.keys()) if self.compressed_directives else 'NONE'}")
                 return {
                     "directive_key": directive_key,
                     "error": f"Unknown directive key: {directive_key}",
@@ -130,6 +127,7 @@ class DirectiveProcessor:
             
             # 2. Get compressed directive content
             directive_content = self.compressed_directives[directive_key]
+            logger.info(f"[DEBUG_DIRECTIVE] Retrieved directive content type: {type(directive_content)}")
             
             # 3. Check for forced escalation operations
             forced_escalation_keys = [
@@ -143,14 +141,26 @@ class DirectiveProcessor:
                 "implementationNote" in str(directive_content)
             )
             
+            logger.info(f"[DEBUG_DIRECTIVE] Needs escalation: {needs_escalation} (in forced keys: {directive_key in forced_escalation_keys})")
+            
             if needs_escalation:
+                logger.info(f"[DEBUG_DIRECTIVE] Auto-escalating directive {directive_key} (forced operation)")
                 return await self.escalate_directive(directive_key, context, "Forced escalation operation")
             
             # 4. Analyze directive + context to determine actions
+            logger.info(f"[DEBUG_DIRECTIVE] Proceeding to AI action determination for {directive_key}")
             actions = await self._ai_determine_actions(directive_content, context, directive_key)
+            
+            # DEBUG_DIRECTIVE: AI determination results
+            logger.info(f"[DEBUG_DIRECTIVE] AI determination completed for {directive_key}")
+            logger.info(f"[DEBUG_DIRECTIVE] Actions returned: {len(actions.get('actions', []))}")
+            logger.info(f"[DEBUG_DIRECTIVE] Needs escalation: {actions.get('needs_escalation', False)}")
+            if actions.get("actions"):
+                logger.info(f"[DEBUG_DIRECTIVE] Action types: {[action.get('type', 'NO_TYPE') for action in actions.get('actions', [])]}")
             
             # 5. Handle escalation if AI requests it
             if actions.get("needs_escalation"):
+                logger.info(f"[DEBUG_DIRECTIVE] AI requested escalation: {actions.get('escalation_reason', 'No reason provided')}")
                 escalated_actions = await self.escalate_directive(
                     directive_key, 
                     context, 
@@ -160,72 +170,23 @@ class DirectiveProcessor:
             
             # 6. Execute determined actions via action executor
             execution_results = []
+            logger.info(f"[DEBUG_DIRECTIVE] Action executor available: {self.action_executor is not None}")
             if self.action_executor:
+                logger.info(f"[DEBUG_DIRECTIVE] Executing {len(actions.get('actions', []))} actions via action executor")
                 execution_results = await self.action_executor.execute_actions(actions.get("actions", []))
+                logger.info(f"[DEBUG_DIRECTIVE] Action execution completed with {len(execution_results)} results")
+            else:
+                logger.warning("[DEBUG_DIRECTIVE] No action executor available - actions not executed")
             
-            return {
+            final_result = {
                 "directive_key": directive_key,
                 "actions_taken": actions.get("actions", []),
                 "execution_results": execution_results,
                 "escalated": False,
                 "analysis": actions.get("analysis", "")
             }
-            
-        except Exception as e:
-            logger.error(f"[DIRECTIVE_EXEC] Error in {directive_key}: {e}")
-            return {
-                "directive_key": directive_key,
-                "error": str(e),
-                "actions_taken": [],
-                "escalated": False
-            }
-        finally:
-            # Remove suppression flag
-            context.pop("_suppress_events", None)
-    
-    async def execute_directive(self, directive_key: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Execute specific directive with AI decision-making and optional escalation.
-        
-        This is the core method that MCP code should call at integration points.
-        Uses the new event queue architecture to prevent recursion.
-        
-        Args:
-            directive_key: Key identifying which directive to execute
-            context: Execution context containing trigger info, project state, etc.
-            
-        Returns:
-            Dict containing actions taken, results, and escalation status
-        """
-        # Check if we're in event suppression mode (prevents recursive queueing)
-        if context.get("_suppress_events", False):
-            logger.debug(f"[EXECUTE_DIRECTIVE] Events suppressed, using internal execution: {directive_key}")
-            return await self._execute_directive_internal(directive_key, context)
-        
-        # For external calls, use the new event-queue based execution
-        logger.info(f"[EXECUTE_DIRECTIVE] === EXECUTING DIRECTIVE: {directive_key} ===")
-        logger.info(f"[EXECUTE_DIRECTIVE] Context keys: {list(context.keys())}")
-        logger.info(f"[EXECUTE_DIRECTIVE] Trigger: {context.get('trigger', 'NOT_SET')}")
-        
-        # Write debug to file for reliable access
-        from pathlib import Path
-        debug_file = Path(context.get('project_path', '.')) / "debug_directive.log"
-        
-        def write_directive_debug(msg):
-            try:
-                with open(debug_file, "a") as f:
-                    f.write(f"{msg}\n")
-            except Exception:
-                pass  # Don't fail if we can't write debug
-        
-        write_directive_debug(f"=== NEW DIRECTIVE PROCESSOR (NO RECURSION) ===")
-        write_directive_debug(f"[EXECUTE_DIRECTIVE] === EXECUTING DIRECTIVE: {directive_key} ===")
-        write_directive_debug(f"[EXECUTE_DIRECTIVE] Context keys: {list(context.keys())}")
-        write_directive_debug(f"[EXECUTE_DIRECTIVE] Trigger: {context.get('trigger', 'NOT_SET')}")
-        
-        try:
-            # Execute directly using internal method (no recursion possible)
-            return await self._execute_directive_internal(directive_key, context)
+            logger.info(f"[DEBUG_DIRECTIVE] Final result for {directive_key}: {len(final_result.get('actions_taken', []))} actions taken")
+            return final_result
             
         except Exception as e:
             logger.error(f"Error executing directive {directive_key}: {e}")
@@ -235,6 +196,10 @@ class DirectiveProcessor:
                 "actions_taken": [],
                 "escalated": False
             }
+        finally:
+            # Clean up execution stack
+            if execution_id in self._execution_stack:
+                self._execution_stack.remove(execution_id)
     
     async def escalate_directive(self, directive_key: str, context: Dict[str, Any], reason: str) -> Dict[str, Any]:
         """
@@ -597,28 +562,6 @@ class DirectiveProcessor:
         
         return final_result
     
-    async def shutdown(self):
-        """Graceful shutdown with event queue cleanup."""
-        logger.info("[SHUTDOWN] Stopping DirectiveProcessor")
-        
-        # Wait for event queue to empty
-        if self._processing_events and self._event_processor_task:
-            try:
-                await asyncio.wait_for(self._event_processor_task, timeout=30.0)
-            except asyncio.TimeoutError:
-                logger.warning("[SHUTDOWN] Event processor timeout - forcing stop")
-                self._event_processor_task.cancel()
-        
-        # Clear any remaining events
-        while not self._event_queue.empty():
-            try:
-                event = self._event_queue.get_nowait()
-                logger.warning(f"[SHUTDOWN] Discarding event: {event.get('event_id', 'unknown')}")
-            except asyncio.QueueEmpty:
-                break
-        
-        logger.info("[SHUTDOWN] DirectiveProcessor stopped")
-
     def get_available_directives(self) -> List[str]:
         """Get list of available directive keys."""
         return list(self.compressed_directives.keys()) if self.compressed_directives else []
@@ -630,20 +573,20 @@ class DirectiveProcessor:
 
 # Integration hook point decorators for easy MCP integration
 def on_conversation_to_action(directive_processor: DirectiveProcessor):
-    """Decorator for conversation-to-action transition hooks - FIXED VERSION."""
+    """Decorator for conversation-to-action transition hooks."""
     def decorator(func):
         async def wrapper(*args, **kwargs):
             # Execute original function
             result = await func(*args, **kwargs)
             
-            # QUEUE event instead of immediate execution (prevents recursion)
+            # Execute directive
             context = {
                 "trigger": "conversation_to_action_transition",
                 "function_result": result,
                 "args": args,
                 "kwargs": kwargs
             }
-            directive_processor.queue_event("sessionManagement", context)
+            await directive_processor.execute_directive("sessionManagement", context)
             
             return result
         return wrapper
@@ -651,13 +594,13 @@ def on_conversation_to_action(directive_processor: DirectiveProcessor):
 
 
 def on_file_edit_complete(directive_processor: DirectiveProcessor):
-    """Decorator for file edit completion hooks - FIXED VERSION."""
+    """Decorator for file edit completion hooks."""
     def decorator(func):
         async def wrapper(file_path: str, *args, **kwargs):
             # Execute original function
             result = await func(file_path, *args, **kwargs)
             
-            # QUEUE event instead of immediate execution (prevents recursion)
+            # Execute directive
             context = {
                 "trigger": "file_edit_completion",
                 "file_path": file_path,
@@ -665,7 +608,7 @@ def on_file_edit_complete(directive_processor: DirectiveProcessor):
                 "function_args": args,
                 "function_kwargs": kwargs
             }
-            directive_processor.queue_event("fileOperations", context)
+            await directive_processor.execute_directive("fileOperations", context)
             
             return result
         return wrapper
@@ -673,13 +616,13 @@ def on_file_edit_complete(directive_processor: DirectiveProcessor):
 
 
 def on_task_completion(directive_processor: DirectiveProcessor):
-    """Decorator for task completion hooks - FIXED VERSION."""
+    """Decorator for task completion hooks."""
     def decorator(func):
         async def wrapper(task_id: str, *args, **kwargs):
             # Execute original function 
             result = await func(task_id, *args, **kwargs)
             
-            # QUEUE event instead of immediate execution (prevents recursion)
+            # Execute directive
             context = {
                 "trigger": "task_completion",
                 "task_id": task_id,
@@ -687,7 +630,7 @@ def on_task_completion(directive_processor: DirectiveProcessor):
                 "function_args": args,
                 "function_kwargs": kwargs
             }
-            directive_processor.queue_event("taskManagement", context)
+            await directive_processor.execute_directive("taskManagement", context)
             
             return result
         return wrapper
